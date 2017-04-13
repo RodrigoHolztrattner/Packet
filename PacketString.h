@@ -1,0 +1,83 @@
+////////////////////////////////////////////////////////////////////////////////
+// Filename: PacketString.h
+////////////////////////////////////////////////////////////////////////////////
+#pragma once
+
+//////////////
+// INCLUDES //
+//////////////
+#include <string>
+
+#include "..\NamespaceDefinitions.h"
+
+///////////////
+// NAMESPACE //
+///////////////
+
+/////////////
+// DEFINES //
+/////////////
+
+////////////
+// GLOBAL //
+////////////
+
+///////////////
+// NAMESPACE //
+///////////////
+
+// Packet data explorer
+NamespaceBegin(Packet)
+
+////////////////
+// FORWARDING //
+////////////////
+
+////////////////
+// STRUCTURES //
+////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// Class name: PacketString
+////////////////////////////////////////////////////////////////////////////////
+class PacketString
+{
+public:
+
+	static const int MaxStringSize = 63;
+
+//////////////////
+// CONSTRUCTORS //
+public: //////////
+
+	// Constructor / destructor
+	PacketString();
+	PacketString(const char* _string);
+	~PacketString();
+
+//////////////////
+// MAIN METHODS //
+public: //////////
+
+	void operator =(const char* _string);
+
+	void SetString(const char* _string);
+
+	void SetString(const char* _string, uint32_t _stringSize);
+
+	char* GetString();
+
+	bool IsEqual(PacketString& _string, uint32_t _stringSize = -1);
+
+	bool IsEqual(const char* _string, uint32_t _stringSize = -1);
+
+///////////////
+// VARIABLES //
+private: //////
+
+	// The internal string
+	char m_String[MaxStringSize];
+};
+
+// Packet data explorer
+NamespaceEnd(Packet)
