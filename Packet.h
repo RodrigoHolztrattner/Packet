@@ -6,7 +6,7 @@
 //////////////
 // INCLUDES //
 //////////////
-#include "..\NamespaceDefinitions.h"
+#include "PacketConfig.h"
 
 #include "PacketString.h"
 #include "PacketFile.h"
@@ -33,7 +33,7 @@
 ///////////////
 
 // Packet data explorer
-NamespaceBegin(Packet)
+PacketNamespaceBegin(Packet)
 
 /////////////
 // DEFINES //
@@ -48,4 +48,4 @@ typedef PacketManager				Manager;
 typedef PacketIndexLoader			IndexLoader;
 
 // Packet data explorer
-NamespaceEnd(Packet)
+PacketNamespaceEnd(Packet)

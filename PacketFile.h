@@ -6,8 +6,8 @@
 //////////////
 // INCLUDES //
 //////////////
-#include "..\NamespaceDefinitions.h"
-#include "..\Serialize.h"
+#include "PacketConfig.h"
+#include "PacketSerialize.h"
 #include "PacketString.h"
 
 ///////////////
@@ -27,7 +27,7 @@
 ///////////////
 
 // Packet data explorer
-NamespaceBegin(Packet)
+PacketNamespaceBegin(Packet)
 
 ////////////////
 // FORWARDING //
@@ -88,4 +88,4 @@ private: //////
 };
 
 // Packet data explorer
-NamespaceEnd(Packet)
+PacketNamespaceEnd(Packet)

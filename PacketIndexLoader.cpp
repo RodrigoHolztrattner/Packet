@@ -2,6 +2,11 @@
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketIndexLoader.h"
+#include <vector>
+#include <string>
+#include <map>
+#include <iostream>
+#include <fstream>
 
 Packet::PacketIndexLoader::PacketIndexLoader()
 {
@@ -167,14 +172,14 @@ void Packet::PacketIndexLoader::ReadFolder(std::vector<unsigned char>& _data, ui
 	_indexData.folderIdentifierReferences[_folder->folderId] = _folder;
 
 	// Read each child file info data
-	for (int i = 0; i < _folder->childFileInfos.size(); i++)
+	for (unsigned int i = 0; i < _folder->childFileInfos.size(); i++)
 	{
 		// Read this file
 		ReadFile(_data, _index, &_folder->childFileInfos[i], _indexData);
 	}
 
 	// Read each child folder data
-	for (int i = 0; i < _folder->childFolders.size(); i++)
+	for (unsigned int i = 0; i < _folder->childFolders.size(); i++)
 	{
 		// Read this file
 		ReadFolder(_data, _index, &_folder->childFolders[i], _indexData);
@@ -199,14 +204,14 @@ void Packet::PacketIndexLoader::WriteFolder(std::vector<unsigned char>& _data, P
 	_data.insert(_data.end(), serializedData.begin(), serializedData.end());
 
 	// Write each child file info data
-	for (int i = 0; i < _folder->childFileInfos.size(); i++)
+	for (unsigned int i = 0; i < _folder->childFileInfos.size(); i++)
 	{
 		// Write this file
 		WriteFile(_data, &_folder->childFileInfos[i]);
 	}
 
 	// Write each child folder data
-	for (int i = 0; i < _folder->childFolders.size(); i++)
+	for (unsigned int i = 0; i < _folder->childFolders.size(); i++)
 	{
 		// Write this file
 		WriteFolder(_data, &_folder->childFolders[i]);

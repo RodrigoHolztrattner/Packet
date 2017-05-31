@@ -6,9 +6,9 @@
 //////////////
 // INCLUDES //
 //////////////
-#include <string>
+#include "PacketConfig.h"
 
-#include "..\NamespaceDefinitions.h"
+#include <string>
 
 ///////////////
 // NAMESPACE //
@@ -27,7 +27,7 @@
 ///////////////
 
 // Packet data explorer
-NamespaceBegin(Packet)
+PacketNamespaceBegin(Packet)
 
 ////////////////
 // FORWARDING //
@@ -80,4 +80,4 @@ private: //////
 };
 
 // Packet data explorer
-NamespaceEnd(Packet)
+PacketNamespaceEnd(Packet)

@@ -6,7 +6,7 @@
 //////////////
 // INCLUDES //
 //////////////
-#include "..\NamespaceDefinitions.h"
+#include "PacketConfig.h"
 
 ///////////////
 // NAMESPACE //
@@ -25,7 +25,7 @@
 ///////////////
 
 // Packet data explorer
-NamespaceBegin(Packet)
+PacketNamespaceBegin(Packet)
 
 ////////////////
 // FORWARDING //
@@ -42,4 +42,4 @@ enum class PacketMode
 };
 
 // Packet data explorer
-NamespaceEnd(Packet)
+PacketNamespaceEnd(Packet)

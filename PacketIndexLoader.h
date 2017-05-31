@@ -6,12 +6,8 @@
 //////////////
 // INCLUDES //
 //////////////
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include "PacketConfig.h"
 
-#include <vector>
-#include <string>
-#include <map>
 #include <iostream>
 #include <fstream>
 
@@ -19,8 +15,6 @@
 #include "PacketFile.h"
 #include "PacketDirectory.h"
 #include "PacketIndex.h"
-
-#include "..\NamespaceDefinitions.h"
 
 ///////////////
 // NAMESPACE //
@@ -39,7 +33,7 @@
 ///////////////
 
 // Packet data explorer
-NamespaceBegin(Packet)
+PacketNamespaceBegin(Packet)
 
 ////////////////
 // FORWARDING //
@@ -140,4 +134,4 @@ private: //////
 };
 
 // Packet data explorer
-NamespaceEnd(Packet)
+PacketNamespaceEnd(Packet)
