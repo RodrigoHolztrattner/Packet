@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: PacketManager.h
+// Filename: PacketFragment.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
@@ -7,9 +7,6 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketObject.h"
-
-#include <string>
 
 ///////////////
 // NAMESPACE //
@@ -39,9 +36,9 @@ PacketNamespaceBegin(Packet)
 ////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class name: PacketManager
+// Class name: PacketFragment
 ////////////////////////////////////////////////////////////////////////////////
-class PacketManager
+class PacketFragment
 {
 public:
 
@@ -50,18 +47,12 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketManager();
-	~PacketManager();
+	PacketFragment();
+	~PacketFragment();
 
 //////////////////
 // MAIN METHODS //
 public: //////////
-
-	// Create a new packet object
-	PacketObject CreateNewPacket(std::string _packetName, std::string _pathLocation);
-
-	// Open an existing packet
-	PacketObject OpenPacket(std::string _packetLocation);
 
 ///////////////
 // VARIABLES //

@@ -7,9 +7,18 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketObject.h"
 
+#include <vector>
 #include <string>
+#include <map>
+
+#include "PacketString.h"
+#include "PacketFile.h"
+#include "PacketDirectory.h"
+#include "PacketIndex.h"
+
+#include "PacketLoader.h"
+#include "PacketIndexLoader.h"
 
 ///////////////
 // NAMESPACE //
@@ -56,12 +65,6 @@ public: //////////
 //////////////////
 // MAIN METHODS //
 public: //////////
-
-	// Create a new packet object
-	PacketObject CreateNewPacket(std::string _packetName, std::string _pathLocation);
-
-	// Open an existing packet
-	PacketObject OpenPacket(std::string _packetLocation);
 
 ///////////////
 // VARIABLES //

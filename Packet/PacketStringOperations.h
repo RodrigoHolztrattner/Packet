@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: PacketManager.h
+// Filename: PacketStringOperations.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
@@ -7,9 +7,11 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketObject.h"
+#include "PacketFragment.h"
 
 #include <string>
+#include <vector>
+#include <set>
 
 ///////////////
 // NAMESPACE //
@@ -39,10 +41,15 @@ PacketNamespaceBegin(Packet)
 ////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class name: PacketManager
+// Class name: PacketStringOperations
 ////////////////////////////////////////////////////////////////////////////////
-class PacketManager
+class PacketStringOperations
 {
+private:
+
+	// The slash type
+	static const char DelimiterType = '\\';
+
 public:
 
 //////////////////
@@ -50,18 +57,21 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketManager();
-	~PacketManager();
+	PacketStringOperations();
+	~PacketStringOperations();
 
 //////////////////
 // MAIN METHODS //
 public: //////////
 
-	// Create a new packet object
-	PacketObject CreateNewPacket(std::string _packetName, std::string _pathLocation);
+	// Return the directory from the given path
+	static std::string GetDirectoryFrompath(std::string _path);
 
-	// Open an existing packet
-	PacketObject OpenPacket(std::string _packetLocation);
+	// Return the filename from the given path
+	static std::string GetFilenameFromPath(std::string _path);
+
+	// Split the given path
+	static std::vector<std::string> SplitPath(std::string& str);
 
 ///////////////
 // VARIABLES //

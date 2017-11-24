@@ -1,95 +1,84 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: PacketLoader.h
+// Filename: SmallPack.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 //////////////
 // INCLUDES //
 //////////////
-#include <cstdint>
-
-///////////////
-// NAMESPACE //
-///////////////
 
 /////////////
 // DEFINES //
 /////////////
 
-////////////
-// GLOBAL //
-////////////
-
-///////////////
-// NAMESPACE //
-///////////////
-
 #define PacketNamespaceBegin(name) namespace name {
 #define PacketNamespaceEnd(name) }
 
-/*
-
-=> Pre-processor constant hashed strings only are created if those flags..:
-
-- C/C++ > Optimization > Full Optimization
-- C/C++ > Code Generation > Enable String Pooling
-
-are set to true... So, if you wanna use this, remember to change the project properties.
-
-*/
+#define PacketUsingNamespace(name) using namespace name
 
 PacketNamespaceBegin(Packet)
 
-typedef uint32_t HashedStringIdentifier;
+inline unsigned int SetFlag(unsigned int _val, unsigned int _flag) { return _val | _flag; }
+inline bool CheckFlag(unsigned int _val, unsigned int _flag) { return (_val & _flag) != 0; }
 
-HashedStringIdentifier constexpr SimpleHash(char const *input)
+inline unsigned int pow2roundup(unsigned int x)
 {
-	return *input ?
-		static_cast<uint32_t>(*input) + 33 * SimpleHash(input + 1) :
-		5381;
+	if (x < 0)
+		return 0;
+	--x;
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	return x + 1;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Class name: HashedString
-////////////////////////////////////////////////////////////////////////////////
-class HashedString
+template <typename ObjectType>
+struct GlobalInstance
 {
-public:
-
-	HashedString() {}
-	HashedString(const char* _string)
+	// Constructor
+	GlobalInstance()
 	{
-		m_String = _string;
-		m_Hash = SimpleHash(_string);
+		// Create a new instance in case of nullptr
+		if (m_InternalObject == nullptr)
+		{
+			m_InternalObject = new ObjectType();
+		}
 	}
 
-	// Compare 2 hashed strings
-	bool operator() (HashedString const& t1, HashedString const& t2) const
+	// Return the instance
+	const static ObjectType* GetInstance()
 	{
-		return (t1.m_Hash == t2.m_Hash);
+		return m_InternalObject;
 	}
 
-public:
-
-	// Return the original string
-	const char* String()
+	// Access the internal object
+	GlobalInstance operator=(ObjectType* _other)
 	{
-		return m_String;
+		m_InternalObject = _other;
+		return *this;
 	}
 
-	// Return the hash
-	HashedStringIdentifier Hash()
+	operator ObjectType*()
 	{
-		return m_Hash;
+		return m_InternalObject;
 	}
 
-public:
+	// Access the internal object
+	ObjectType* operator->() const
+	{
+		//m_iterator is a map<int, MyClass>::iterator in my code.
+		return m_InternalObject;
+	}
 
-	// The hash object (pre-calculated if we use the full optimization flag)
-	HashedStringIdentifier m_Hash;
+private:
 
-	// The original string
-	const char* m_String;
+	// The internal object
+	static ObjectType* m_InternalObject;
 };
+
+template <typename ObjectType>
+ObjectType* GlobalInstance<ObjectType>::m_InternalObject = nullptr;
 
 PacketNamespaceEnd(Packet)

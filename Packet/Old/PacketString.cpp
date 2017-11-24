@@ -12,7 +12,7 @@ Packet::PacketString::PacketString()
 Packet::PacketString::PacketString(const char* _string)
 {
 	if (strlen(_string) <= MaxStringSize)
-		strcpy(m_String, _string);
+		strcpy_s(m_String, _string);
 }
 
 Packet::PacketString::~PacketString()
@@ -22,13 +22,13 @@ Packet::PacketString::~PacketString()
 void Packet::PacketString::operator =(const char* _string)
 {
 	if (strlen(_string) <= MaxStringSize)
-		strcpy(m_String, _string);
+		strcpy_s(m_String, _string);
 }
 
 void Packet::PacketString::SetString(const char* _string)
 {
 	if (strlen(_string) <= MaxStringSize)
-		strcpy(m_String, _string);
+		strcpy_s(m_String, _string);
 }
 
 void Packet::PacketString::SetString(const char* _string, uint32_t _stringSize)

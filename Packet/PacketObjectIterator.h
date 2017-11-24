@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: PacketManager.h
+// Filename: PacketObjectIterator.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
@@ -7,7 +7,7 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketObject.h"
+#include "PacketFragment.h"
 
 #include <string>
 
@@ -39,9 +39,9 @@ PacketNamespaceBegin(Packet)
 ////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class name: PacketManager
+// Class name: PacketObjectIterator
 ////////////////////////////////////////////////////////////////////////////////
-class PacketManager
+class PacketObjectIterator
 {
 public:
 
@@ -50,18 +50,15 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketManager();
-	~PacketManager();
+	PacketObjectIterator();
+	~PacketObjectIterator();
 
 //////////////////
 // MAIN METHODS //
 public: //////////
 
-	// Create a new packet object
-	PacketObject CreateNewPacket(std::string _packetName, std::string _pathLocation);
-
-	// Open an existing packet
-	PacketObject OpenPacket(std::string _packetLocation);
+	// Seek to the given path
+	bool Seek(std::string _path);
 
 ///////////////
 // VARIABLES //

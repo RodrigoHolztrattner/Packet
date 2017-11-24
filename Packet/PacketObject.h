@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: PacketManager.h
+// Filename: PacketObject.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
@@ -7,7 +7,7 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketObject.h"
+#include "PacketFragment.h"
 
 #include <string>
 
@@ -39,34 +39,52 @@ PacketNamespaceBegin(Packet)
 ////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class name: PacketManager
+// Class name: PacketObject
 ////////////////////////////////////////////////////////////////////////////////
-class PacketManager
+class PacketObject
 {
 public:
+
+	// The attributes
+	struct Attributes
+	{
+		// The maximum fragment size (this cannot be changed after set)
+		uint32_t maximumFragmentSize;
+	};
 
 //////////////////
 // CONSTRUCTORS //
 public: //////////
 
 	// Constructor / destructor
-	PacketManager();
-	~PacketManager();
+	PacketObject();
+	~PacketObject();
+
+	// Create this packet object
+	bool Create(std::string _packetObjectName, Attributes _packetObjectAttributes);
 
 //////////////////
 // MAIN METHODS //
 public: //////////
 
-	// Create a new packet object
-	PacketObject CreateNewPacket(std::string _packetName, std::string _pathLocation);
-
-	// Open an existing packet
-	PacketObject OpenPacket(std::string _packetLocation);
-
 ///////////////
 // VARIABLES //
 private: //////
 
+	// The packet object name
+	std::string m_PacketObjectName;
+
+	// The packet object attributes
+	Attributes m_PacketObjectAttributes;
+
+	 // The number of fragments this object have
+	uint32_t m_TotalNumberFragments;
+
+	// The total number of files inside this packet
+	uint32_t m_TotalNumberFiles;
+
+	// The current internal identifier number
+	uint32_t m_CurrentInternalIdentifierNumber;
 };
 
 // Packet data explorer

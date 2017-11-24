@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
-#include "PacketManager.h"
+#include "PacketFragment.h"
 
-Packet::PacketManager::PacketManager()
+Packet::PacketFragment::PacketFragment()
 {
 	// Set the initial data
 	// ...
 }
 
-Packet::PacketManager::~PacketManager()
+Packet::PacketFragment::~PacketFragment()
 {
 }
