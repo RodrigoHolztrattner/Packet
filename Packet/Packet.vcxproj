@@ -89,6 +89,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\json-develop\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -119,6 +120,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\json-develop\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,7 +152,10 @@
     <ClCompile Include="PacketFragment.cpp" />
     <ClCompile Include="PacketManager.cpp" />
     <ClCompile Include="PacketObject.cpp" />
+    <ClCompile Include="PacketObjectHashTable.cpp" />
     <ClCompile Include="PacketObjectIterator.cpp" />
+    <ClCompile Include="PacketObjectManager.cpp" />
+    <ClCompile Include="PacketObjectStructure.cpp" />
     <ClCompile Include="PacketStringOperations.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -158,7 +163,10 @@
     <ClInclude Include="PacketFragment.h" />
     <ClInclude Include="PacketManager.h" />
     <ClInclude Include="PacketObject.h" />
+    <ClInclude Include="PacketObjectHashTable.h" />
     <ClInclude Include="PacketObjectIterator.h" />
+    <ClInclude Include="PacketObjectManager.h" />
+    <ClInclude Include="PacketObjectStructure.h" />
     <ClInclude Include="PacketStringOperations.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

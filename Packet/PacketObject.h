@@ -8,6 +8,10 @@
 //////////////
 #include "PacketConfig.h"
 #include "PacketFragment.h"
+#include "PacketObjectManager.h"
+#include "PacketObjectStructure.h"
+#include "PacketObjectHashTable.h"
+#include "PacketObjectIterator.h"
 
 #include <string>
 
@@ -45,13 +49,6 @@ class PacketObject
 {
 public:
 
-	// The attributes
-	struct Attributes
-	{
-		// The maximum fragment size (this cannot be changed after set)
-		uint32_t maximumFragmentSize;
-	};
-
 //////////////////
 // CONSTRUCTORS //
 public: //////////
@@ -61,11 +58,14 @@ public: //////////
 	~PacketObject();
 
 	// Create this packet object
-	bool Create(std::string _packetObjectName, Attributes _packetObjectAttributes);
+	// bool Create(std::string _packetObjectName, Attributes _packetObjectAttributes);
 
 //////////////////
 // MAIN METHODS //
 public: //////////
+
+	//
+	PacketObjectIterator GetIterator();
 
 ///////////////
 // VARIABLES //
@@ -75,7 +75,7 @@ private: //////
 	std::string m_PacketObjectName;
 
 	// The packet object attributes
-	Attributes m_PacketObjectAttributes;
+	// Attributes m_PacketObjectAttributes;
 
 	 // The number of fragments this object have
 	uint32_t m_TotalNumberFragments;
@@ -85,6 +85,10 @@ private: //////
 
 	// The current internal identifier number
 	uint32_t m_CurrentInternalIdentifierNumber;
+
+	PacketObjectManager m_ObjectManager;
+	PacketObjectStructure m_ObjectStructure;
+	PacketObjectHashTable m_ObjectHashTable;
 };
 
 // Packet data explorer

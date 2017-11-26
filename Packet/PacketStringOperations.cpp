@@ -13,7 +13,7 @@ Packet::PacketStringOperations::~PacketStringOperations()
 {
 }
 
-std::string Packet::PacketStringOperations::GetDirectoryFrompath(std::string _path)
+std::string Packet::PacketStringOperations::GetDirectoryFromPath(std::string _path)
 {
 	std::string result;
 	const size_t last_slash_idx = _path.rfind(DelimiterType);
@@ -68,4 +68,16 @@ std::vector<std::string> Packet::PacketStringOperations::SplitPath(std::string& 
 	result.push_back(start);
 
 	return result;
+}
+
+std::string Packet::PacketStringOperations::ComposeDirectory(std::vector<std::string> _dir)
+{
+	// Compose the string dir
+	std::string stringDir;
+	for (auto& folder : _dir)
+	{
+		stringDir += folder;
+	}
+
+	return stringDir;
 }

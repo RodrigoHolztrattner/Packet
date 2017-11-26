@@ -7,6 +7,9 @@
     <ClCompile Include="PacketFragment.cpp" />
     <ClCompile Include="PacketObjectIterator.cpp" />
     <ClCompile Include="PacketStringOperations.cpp" />
+    <ClCompile Include="PacketObjectManager.cpp" />
+    <ClCompile Include="PacketObjectStructure.cpp" />
+    <ClCompile Include="PacketObjectHashTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -15,5 +18,8 @@
     <ClInclude Include="PacketFragment.h" />
     <ClInclude Include="PacketObjectIterator.h" />
     <ClInclude Include="PacketStringOperations.h" />
+    <ClInclude Include="PacketObjectManager.h" />
+    <ClInclude Include="PacketObjectStructure.h" />
+    <ClInclude Include="PacketObjectHashTable.h" />
   </ItemGroup>
 </Project>
