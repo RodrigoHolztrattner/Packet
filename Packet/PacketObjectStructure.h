@@ -105,9 +105,16 @@ public: //////////
 
 	// Check if the given directory path is valid
 	bool DirectoryFromPathIsValid(std::vector<std::string>& _directoryPath);
+	bool DirectoryFromPathIsValid(std::vector<std::string>& _directoryPath, std::string _directoryName);
 
 	// Check a file from the given path exist
 	bool FileFromPathIsValid(std::vector<std::string>& _directoryPath, std::string _fileName);
+
+	// Return a list with all folders and files from the given directory
+	std::vector<std::string> GetFolderList(std::vector<std::string>& _directoryPath);
+
+	// Return the root folder name
+	std::string GetRootName();
 
 private:
 

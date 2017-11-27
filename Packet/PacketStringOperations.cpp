@@ -3,6 +3,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketStringOperations.h"
 
+const std::string Packet::PacketStringOperations::BackDelimiterType = "..";
+
 Packet::PacketStringOperations::PacketStringOperations()
 {
 	// Set the initial data
@@ -13,10 +15,10 @@ Packet::PacketStringOperations::~PacketStringOperations()
 {
 }
 
-std::string Packet::PacketStringOperations::GetDirectoryFromPath(std::string _path)
+std::string Packet::PacketStringOperations::GetDirectoryFromPath(std::string& _path)
 {
 	std::string result;
-	const size_t last_slash_idx = _path.rfind(DelimiterType);
+	const size_t last_slash_idx = _path.rfind(FolderDelimiterType);
 	if (std::string::npos != last_slash_idx)
 	{
 		result = _path.substr(0, last_slash_idx);
@@ -25,7 +27,7 @@ std::string Packet::PacketStringOperations::GetDirectoryFromPath(std::string _pa
 	return result;
 }
 
-std::string Packet::PacketStringOperations::GetFilenameFromPath(std::string _path)
+std::string Packet::PacketStringOperations::GetFilenameFromPath(std::string& _path)
 {
 	std::string result;
 
@@ -45,7 +47,7 @@ std::string Packet::PacketStringOperations::GetFilenameFromPath(std::string _pat
 std::vector<std::string> Packet::PacketStringOperations::SplitPath(std::string& str)
 {
 	std::vector<std::string> result;
-	std::set<char> delims{ DelimiterType };
+	std::set<char> delims{ FolderDelimiterType };
 
 	char const* pch = str.c_str();
 	char const* start = pch;
@@ -67,10 +69,22 @@ std::vector<std::string> Packet::PacketStringOperations::SplitPath(std::string& 
 	}
 	result.push_back(start);
 
+	// For each string
+	for (int i = 0; i < result.size(); i++)
+	{
+		// Check if this is an empty string
+		if (result[i].compare("") == 0)
+		{
+			// Remove this string
+			result.erase(result.begin() + i);
+			i--;
+		}
+	}
+
 	return result;
 }
 
-std::string Packet::PacketStringOperations::ComposeDirectory(std::vector<std::string> _dir)
+std::string Packet::PacketStringOperations::ComposeDirectory(std::vector<std::string>& _dir)
 {
 	// Compose the string dir
 	std::string stringDir;
@@ -80,4 +94,90 @@ std::string Packet::PacketStringOperations::ComposeDirectory(std::vector<std::st
 	}
 
 	return stringDir;
+}
+
+std::vector<std::string> Packet::PacketStringOperations::JoinDirectorySeek(std::vector<std::string>& _dir, std::vector<std::string>& _seek)
+{
+	// Copy the dir
+	std::vector<std::string> dir = _dir;
+
+	// For each seek command
+	for (int i = 0; i < _seek.size(); i++)
+	{
+		// Check if this is a "return" command
+		if (_seek[i].compare("..") == 0)
+		{
+			// If we have at last one string on the dir vector
+			if (dir.size() > 0)
+			{
+				// Remove the last entry from the dir
+				dir.erase(dir.begin() + dir.size() - 1);
+			}
+		}
+		else
+		{
+			// Add the seek command to the dir one
+			dir.push_back(_seek[i]);
+		}
+	}
+
+	return dir;
+}
+
+bool Packet::PacketStringOperations::PathIsFile(std::string _path)
+{
+	// Split the given path
+	std::vector<std::string> splitPath = SplitPath(_path);
+
+	// Check if we have at last one string
+	if (splitPath.size() == 0)
+	{
+		return false;
+	}
+
+	// Search for the back delimiter
+	if (_path.find(BackDelimiterType) != std::string::npos)
+	{
+		return false;
+	}
+
+	// Get a short reference to the last string
+	std::string& lastString = splitPath[splitPath.size() - 1];
+
+	// Search for the file delimiter
+	if(lastString.find(FileDelimiterType) == std::string::npos)
+	{
+		return false;
+	}
+		
+	return true;
+}
+
+bool Packet::PacketStringOperations::PathIsFolder(std::string& _path, bool _ignoreBackDelimiter)
+{
+	// Split the given path
+	std::vector<std::string> splitPath = SplitPath(_path);
+
+	// Check if we have at last one string
+	if (splitPath.size() == 0)
+	{
+		return false;
+	}
+
+	// Search for the back delimiter
+	if (_path.find(BackDelimiterType) != std::string::npos && _ignoreBackDelimiter)
+	{
+		return false;
+	}
+
+	// Get a short reference to the last string
+	std::string& lastString = splitPath[splitPath.size() - 1];
+
+	// Search for the file delimiter
+	if (lastString.find(FileDelimiterType) != std::string::npos && lastString.find(BackDelimiterType) == std::string::npos)
+	{
+		return false;
+	}
+
+	return true;
 }

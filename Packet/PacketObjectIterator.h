@@ -75,6 +75,9 @@ public: //////////
 	bool Put(std::string _filePath);
 	bool Put(std::string _filePath, std::string _iFileLocation);
 
+	// Create a dir <inside the current path>
+	bool MakeDir(std::string _dirPath);
+
 	// Get a file <from the current path>
 	bool Get(std::string _oFileLocation);
 	bool Get(std::string _filePath, std::string _oFileLocation);
@@ -82,13 +85,22 @@ public: //////////
 	// Delete the current path <file>
 	bool Delete(std::string _path);
 
-	// Create a folder inside the current path
-	// ...
+	// Get a list of each folder and file from the given path
+	std::vector<std::string> List();
+	std::vector<std::string> List(std::string _path);
+
+	// Return the current path
+	std::string GetCurrentPath();
 
 private:
 
 	// Put a file <inside the given path> aux
 	bool PutAux(std::string _filePath, std::string _fileName, std::vector<std::string> _dir, std::string _stringDir);
+
+private:
+
+	// Compose the action directory from the given path
+	std::vector<std::string> ComposeActionDirectory(std::string& _path, bool _seeking = false);
 
 ///////////////
 // VARIABLES //

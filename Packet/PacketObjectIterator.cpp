@@ -21,24 +21,23 @@ Packet::PacketObjectIterator::~PacketObjectIterator()
 
 bool Packet::PacketObjectIterator::Seek(std::string _path)
 {
-	// Get the directory path
-	std::vector<std::string> directoryPath = PacketStringOperations::SplitPath(_path);
-
-	// Compose the new directory
-	std::vector<std::string> newDirectory = m_CurrentDirectoryPath;
-	for (auto& folder : directoryPath)
+	// Check if the path is a folder or a seek command
+	if (!PacketStringOperations::PathIsFolder(_path, false))
 	{
-		newDirectory.push_back(folder);
+		return false;
 	}
 
+	// Compose the action directory
+	std::vector<std::string> actionDirectory = ComposeActionDirectory(_path, true);
+
 	// Check if the folder path if valid
-	if (!m_PacketStructureReference.DirectoryFromPathIsValid(newDirectory))
+	if (!m_PacketStructureReference.DirectoryFromPathIsValid(actionDirectory))
 	{
 		return false;
 	}
 
 	// Set the new current directory
-	m_CurrentDirectoryPath = newDirectory;
+	m_CurrentDirectoryPath = actionDirectory;
 
 	return true;
 }
@@ -54,15 +53,66 @@ bool Packet::PacketObjectIterator::Put(std::string _filePath)
 	return PutAux(_filePath, fileName, m_CurrentDirectoryPath, stringDir);
 }
 
-bool Packet::PacketObjectIterator::Put(std::string _filePath, std::string _iFileLocation)
+bool Packet::PacketObjectIterator::Put(std::string _filePath, std::string iFolderLocation)
 {
+	// Check if the iFolderLocation is a folder
+	if (!PacketStringOperations::PathIsFolder(iFolderLocation))
+	{
+		return false;
+	}
+
 	// Get the file name from the path
 	std::string fileName = PacketStringOperations::GetFilenameFromPath(_filePath);
 
 	// Get the directory path
-	std::vector<std::string> directoryPath = PacketStringOperations::SplitPath(_iFileLocation);
+	std::vector<std::string> directoryPath = PacketStringOperations::SplitPath(iFolderLocation);
 
-	return PutAux(_filePath, fileName, directoryPath, _iFileLocation);
+	return PutAux(_filePath, fileName, directoryPath, iFolderLocation);
+}
+
+bool Packet::PacketObjectIterator::MakeDir(std::string _dirPath)
+{
+	// Check if the dir is a folder path
+	if (!PacketStringOperations::PathIsFolder(_dirPath))
+	{
+		return false;
+	}
+
+	// Break the dir path
+	std::vector<std::string> dirPathVec = PacketStringOperations::SplitPath(_dirPath);
+
+	// If we have at last one element
+	if (dirPathVec.size() > 0)
+	{
+		// Look for the root folder
+		if (dirPathVec[0].compare(m_PacketStructureReference.GetRootName()) == 0)
+		{
+			// Remove the root folder from the vector
+			dirPathVec.erase(dirPathVec.begin() + 0);
+		}
+	}
+
+	// Compose the action directory
+	std::vector<std::string> currentDirectory = ComposeActionDirectory(_dirPath);
+
+	// For each folder
+	for (auto & folder : dirPathVec)
+	{
+		// Check if we already have a file on that location
+		if (!m_PacketStructureReference.DirectoryFromPathIsValid(currentDirectory, folder))
+		{
+			// try to create the new folder
+			if (!m_PacketStructureReference.InsertFolder(folder, currentDirectory))
+			{
+				return false;
+			}
+		}
+
+		// Move to the created directory
+		currentDirectory.push_back(folder);
+	}
+
+	return true;
 }
 
 bool Packet::PacketObjectIterator::Get(std::string _oFileLocation)
@@ -73,12 +123,57 @@ bool Packet::PacketObjectIterator::Get(std::string _oFileLocation)
 
 bool Packet::PacketObjectIterator::Get(std::string _filePath, std::string _oFileLocation)
 {
+	// Check if the _filePath is a file path
+	if (!PacketStringOperations::PathIsFile(_filePath))
+	{
+		return false;
+	}
+
 	return true;
 }
 
 bool Packet::PacketObjectIterator::Delete(std::string _path)
 {
 	return true;
+}
+
+std::vector<std::string> Packet::PacketObjectIterator::List()
+{
+	return m_PacketStructureReference.GetFolderList(m_CurrentDirectoryPath);
+}
+
+std::vector<std::string> Packet::PacketObjectIterator::List(std::string _path)
+{
+	// Split the path
+	std::vector<std::string> splitPath = PacketStringOperations::SplitPath(_path);
+
+	// If we have at last one element
+	if (splitPath.size() > 0)
+	{
+		// Look for the root folder
+		if (splitPath[0].compare(m_PacketStructureReference.GetRootName()) == 0)
+		{
+			// Remove the root folder from the vector
+			splitPath.erase(splitPath.begin() + 0);
+		}
+	}
+
+	return m_PacketStructureReference.GetFolderList(splitPath);
+}
+
+std::string Packet::PacketObjectIterator::GetCurrentPath()
+{
+	std::string result = m_PacketStructureReference.GetRootName() + ":\\";
+	
+	// For each folder
+	for (int i=0; i<m_CurrentDirectoryPath.size(); i++)
+	{
+		// Add it to the result
+		result += m_CurrentDirectoryPath[i];
+		if (i != m_CurrentDirectoryPath.size() - 1) result += '\\';
+	}
+	
+	return result;
 }
 
 bool Packet::PacketObjectIterator::PutAux(std::string _filePath, std::string _fileName, std::vector<std::string> _dir, std::string _stringDir)
@@ -114,4 +209,27 @@ bool Packet::PacketObjectIterator::PutAux(std::string _filePath, std::string _fi
 	}
 
 	return true;
+}
+
+std::vector<std::string> Packet::PacketObjectIterator::ComposeActionDirectory(std::string& _path, bool _seeking)
+{
+	// Split the path
+	std::vector<std::string> splitPath = PacketStringOperations::SplitPath(_path);
+
+	// Check the path is from the root element
+	if (splitPath[0].compare(m_PacketStructureReference.GetRootName()) == 0)
+	{
+		// Its the path itself
+		return{};
+	}
+
+	// If we are seeking
+	if (_seeking)
+	{
+		// Join the entry path with the current directory
+		return PacketStringOperations::JoinDirectorySeek(m_CurrentDirectoryPath, splitPath);
+	}
+
+	// Ok, our current directory
+	return m_CurrentDirectoryPath;
 }

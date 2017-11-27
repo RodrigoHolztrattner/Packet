@@ -10,7 +10,7 @@ Packet::PacketObjectStructure::PacketObjectStructure()
 
 	// Create the root folder
 	m_RootFolder = new FolderObjectType;
-	m_RootFolder->folderName = "";
+	m_RootFolder->folderName = "root";
 }
 
 Packet::PacketObjectStructure::~PacketObjectStructure()
@@ -81,6 +81,28 @@ bool Packet::PacketObjectStructure::DirectoryFromPathIsValid(std::vector<std::st
 	return true;
 }
 
+bool Packet::PacketObjectStructure::DirectoryFromPathIsValid(std::vector<std::string>& _directoryPath, std::string _directoryName)
+{
+	// Try to get the folder
+	FolderObjectType* folder = GetFolderFromDirectory(_directoryPath);
+	if (folder == nullptr)
+	{
+		return false;
+	}
+
+	// For each subfolder
+	for (auto & folder : folder->subFolders)
+	{
+		// Compare the names
+		if (folder->folderName.compare(_directoryName) == 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool Packet::PacketObjectStructure::FileFromPathIsValid(std::vector<std::string>& _directoryPath, std::string _fileName)
 {
 	// Try to get the folder
@@ -90,6 +112,38 @@ bool Packet::PacketObjectStructure::FileFromPathIsValid(std::vector<std::string>
 	}
 
 	return true;
+}
+
+std::vector<std::string> Packet::PacketObjectStructure::GetFolderList(std::vector<std::string>& _directoryPath)
+{
+	std::vector<std::string> result;
+
+	// Try to get the folder
+	FolderObjectType* folder = GetFolderFromDirectory(_directoryPath);
+	if (folder == nullptr)
+	{
+		return result;
+
+	}
+
+	// For each child folder
+	for (auto* childFolder : folder->subFolders)
+	{
+		result.push_back(childFolder->folderName);
+	}
+
+	// For each child file
+	for (auto* childFile : folder->files)
+	{
+		result.push_back(childFile->fileName);
+	}
+
+	return result;
+}
+
+std::string Packet::PacketObjectStructure::GetRootName()
+{
+	return m_RootFolder->folderName;
 }
 
 Packet::PacketObjectStructure::FolderObjectType* Packet::PacketObjectStructure::GetFolderFromDirectory(std::vector<std::string>& _directoryPath)
