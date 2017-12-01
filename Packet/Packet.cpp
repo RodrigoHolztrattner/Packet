@@ -10,7 +10,7 @@
 std::vector<std::string> Split(const std::string &txt, char ch)
 {
 	std::vector<std::string> result;
-	unsigned int pos = txt.find(ch);
+	size_t pos = txt.find(ch);
 	unsigned int initialPos = 0;
 	result.clear();
 
@@ -31,7 +31,7 @@ std::vector<std::string> Split(const std::string &txt, char ch)
 
 void Console()
 {
-	Packet::PacketObject packetObject;
+	Packet::PacketObject packetObject("Wonderland", 8096);
 
 	auto iterator = packetObject.GetIterator();
 
@@ -97,6 +97,7 @@ void Console()
 		// Put
 		if (commands[0].compare("put") == 0 && commands.size() >= 2)
 		{
+			packetObject.Save();
 			if (commands.size() == 2)
 			{
 				iterator.Put(commands[1]);
@@ -118,7 +119,7 @@ int main()
 
 
 
-	Packet::PacketObject packetObject;
+	Packet::PacketObject packetObject("Wonderland", 8096);
 
 	auto iterator = packetObject.GetIterator();
 	iterator.Put("Old\\Packet.h");

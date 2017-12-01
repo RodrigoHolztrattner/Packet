@@ -54,6 +54,9 @@ class PacketObjectStructure
 {
 private:
 
+	// The structure extension type
+	const std::string StructureExtensionType = ".structure";
+
 	// The file object type
 	struct FileObjectType
 	{
@@ -90,7 +93,7 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketObjectStructure();
+	PacketObjectStructure(std::string _packetName);
 	~PacketObjectStructure();
 
 //////////////////
@@ -130,12 +133,26 @@ private:
 	// Check if a folder has a child file with the given name
 	bool FolderHasFile(FolderObjectType* _folder, std::string _fileName);
 
+private:
+public:
+
+	// Load this object structure
+	bool LoadObjectStructure();
+	bool LoadObjectStructureAux(FolderObjectType* _folder, std::ifstream& _ofstream);
+
+	// Save this object structure
+	bool SaveObjectStructure();
+	bool SaveObjectStructureAux(FolderObjectType* _folder, std::ofstream& _ofstream);
+
 ///////////////
 // VARIABLES //
 private: //////
 
 	// The root folder object
 	FolderObjectType* m_RootFolder;
+
+	// The packet object name
+	std::string m_PacketObjectName;
 };
 
 // Packet data explorer

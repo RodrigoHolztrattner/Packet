@@ -3,10 +3,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketObjectManager.h"
 
-Packet::PacketObjectManager::PacketObjectManager()
+Packet::PacketObjectManager::PacketObjectManager(PacketObjectManager::PacketAttributes _packetAttributes)
 {
 	// Set the initial data
-	// ...
+	m_PacketObjectAttributes = _packetAttributes;
 }
 
 Packet::PacketObjectManager::~PacketObjectManager()

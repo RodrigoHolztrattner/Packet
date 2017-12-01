@@ -91,12 +91,24 @@ public: //////////
 	PacketObjectHashTable();
 	~PacketObjectHashTable();
 
+	// Initialize empty
+	bool InitializeEmpty();
+
+	// Initialize from data
+	bool InitializeFromData(std::vector<unsigned char>& _data, uint32_t& _location);
+
+	// Serialize
+	std::vector<unsigned char> Serialize();
+
 //////////////////
 // MAIN METHODS //
 public: //////////
 
-	// Insert an entry
+	// Insert an entry <non static key>
 	uint32_t InsertEntry(std::string _path, PacketObjectManager::FileFragmentIdentifier& _internalIdentifier);
+
+	// Insert an entry <static key>
+	uint32_t InsertEntry(uint32_t _key, std::string _path, PacketObjectManager::FileFragmentIdentifier& _internalIdentifier);
 
 	// Remove an entry
 	bool RemoveEntry(std::string _path);

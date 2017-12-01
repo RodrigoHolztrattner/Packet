@@ -84,6 +84,9 @@ public:
 	// The packet attributes
 	struct PacketAttributes
 	{
+		PacketAttributes() {}
+		PacketAttributes(std::string _packetObjectName, uint32_t maximumFragmentSize) : packetObjectName(_packetObjectName), maximumFragmentSize(maximumFragmentSize) {}
+
 		// The packet object name
 		std::string packetObjectName;
 
@@ -96,7 +99,7 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketObjectManager();
+	PacketObjectManager(PacketObjectManager::PacketAttributes _packetAttributes);
 	~PacketObjectManager();
 
 //////////////////
@@ -114,12 +117,6 @@ public: //////////
 
 	// Criar uma função que recebe uma função lambda de parâmetro que usaremos quando na otmização um hash identifier trocar de estado
 	// ... TODO
-
-	// Set the packet atributes (REMOVE THIS)
-	void SetPacketAttributes(PacketAttributes _attributes)
-	{
-		m_PacketObjectAttributes = _attributes;
-	}
 
 private:
 

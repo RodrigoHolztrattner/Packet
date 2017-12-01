@@ -54,7 +54,7 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketObject();
+	PacketObject(std::string _packetName, uint32_t _maximumFragmentSize);
 	~PacketObject();
 
 	// Create this packet object
@@ -66,6 +66,12 @@ public: //////////
 
 	//
 	PacketObjectIterator GetIterator();
+
+	bool Save()
+	{
+		m_ObjectStructure.SaveObjectStructure();
+		return true;
+	}
 
 ///////////////
 // VARIABLES //
@@ -86,6 +92,7 @@ private: //////
 	// The current internal identifier number
 	uint32_t m_CurrentInternalIdentifierNumber;
 
+	// Our object manager, structure and hash table
 	PacketObjectManager m_ObjectManager;
 	PacketObjectStructure m_ObjectStructure;
 	PacketObjectHashTable m_ObjectHashTable;
