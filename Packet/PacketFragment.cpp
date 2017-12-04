@@ -170,6 +170,12 @@ bool Packet::PacketFragment::AllocateSection(uint32_t _size, SectionMetadata& _s
 		return false;
 	}
 
+	// Check if it is possible to allocate this size
+	if (_size >= m_FragmentMaximumSize)
+	{
+		return false;
+	}
+
 	// For each section
 	int bestSectionIndex = -1;
 	uint32_t bestSectionSize = -1;

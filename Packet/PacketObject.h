@@ -54,24 +54,25 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketObject(std::string _packetName, uint32_t _maximumFragmentSize);
+	PacketObject();
 	~PacketObject();
 
-	// Create this packet object
-	// bool Create(std::string _packetObjectName, Attributes _packetObjectAttributes);
+	// Initialize this packet empty
+	bool InitializeEmpty(std::string _packetName, uint32_t _maximumFragmentSize);
+
+	// Initialize this packet from a file
+	bool InitializeFromFile(std::string _filePath);
+
+	// Save this packet data
+	bool SavePacketData();
+	bool SavePacketData(std::string _filePath);
 
 //////////////////
 // MAIN METHODS //
 public: //////////
 
-	//
+	// Return this packet object iterator
 	PacketObjectIterator GetIterator();
-
-	bool Save()
-	{
-		m_ObjectStructure.SaveObjectStructure();
-		return true;
-	}
 
 ///////////////
 // VARIABLES //
@@ -80,8 +81,11 @@ private: //////
 	// The packet object name
 	std::string m_PacketObjectName;
 
-	// The packet object attributes
-	// Attributes m_PacketObjectAttributes;
+	// The maximum fragment size
+	uint32_t m_MaximumFragmentSize;
+
+	// The oppened file path
+	std::string m_OppenedFilePath;
 
 	 // The number of fragments this object have
 	uint32_t m_TotalNumberFragments;

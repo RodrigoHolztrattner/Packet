@@ -2,15 +2,79 @@
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketObjectManager.h"
+#include "PacketFileDataOperations.h"
 
-Packet::PacketObjectManager::PacketObjectManager(PacketObjectManager::PacketAttributes _packetAttributes)
+Packet::PacketObjectManager::PacketObjectManager()
 {
-	// Set the initial data
-	m_PacketObjectAttributes = _packetAttributes;
+
 }
 
 Packet::PacketObjectManager::~PacketObjectManager()
 {
+}
+
+bool Packet::PacketObjectManager::InitializeEmpty(std::string _packetName, uint32_t _maximumFragmentSize)
+{
+	// Set the initial data
+	m_PacketObjectAttributes = PacketAttributes(_packetName, _maximumFragmentSize);
+
+	return true;
+}
+
+bool Packet::PacketObjectManager::InitializeFromData(std::vector<unsigned char>& _data, uint32_t& _location, std::string _packetName, uint32_t _maximumFragmentSize)
+{
+	// Set the initial data
+	m_PacketObjectAttributes = PacketAttributes(_packetName, _maximumFragmentSize);
+
+	// Read the number of fragment infos
+	uint32_t numberFragmentInfos = PacketFileDataOperations::ReadFromData<uint32_t>(_data, _location);
+
+	// For each fragment info
+	for (unsigned int i = 0; i < numberFragmentInfos; i++)
+	{
+		// The new fragment info
+		FragmentInfo fragmentInfo;
+
+		// Save the fragment name
+		fragmentInfo.fragmentName = PacketFileDataOperations::ReadFromData(_data, _location);
+
+		// Inser the fragment info into our vector
+		m_FragmentInfos.push_back(fragmentInfo);
+
+		// Create the new packet fragment object
+		PacketFragment* newFragmentObject = new PacketFragment(fragmentInfo.fragmentName);
+
+		// Insert it into our list of fragment objects
+		m_Fragments.push_back(newFragmentObject);
+	}
+
+	return true;
+}
+
+std::vector<unsigned char> Packet::PacketObjectManager::Serialize()
+{
+	// The data
+	std::vector<unsigned char> data;
+	uint32_t location = 0;
+
+	// Write the number of fragment infos
+	PacketFileDataOperations::SaveToData<uint32_t>(data, location, m_FragmentInfos.size());
+
+	// For each fragment info
+	for (auto & fragmentInfo : m_FragmentInfos)
+	{
+		// Save the fragment name
+		PacketFileDataOperations::SaveToData(data, location, fragmentInfo.fragmentName);
+	}
+
+	// For each fragment
+	for (auto & fragment : m_Fragments)
+	{
+		// Save this fragment metadata (the data is saved automatically)
+		fragment->SaveMetadata();
+	}
+
+	return data;
 }
 
 bool Packet::PacketObjectManager::InsertFile(std::string _filePathOrigin, FileFragmentIdentifier& _hashidentifier)
@@ -63,11 +127,78 @@ bool Packet::PacketObjectManager::InsertData(unsigned char* _data, uint32_t _siz
 	}
 
 	// Set the file hash identifier
-	_hashidentifier.fragmentName = fragment->GetName();
+	// _hashidentifier.fragmentName = fragment->GetName();
 	_hashidentifier.fileIdentifier = fileIdentifier;
 	_hashidentifier.fragmentIndex = m_Fragments.size() - 1;
 
 	return true;
+}
+
+uint32_t Packet::PacketObjectManager::GetFileSize(FileFragmentIdentifier _hashidentifier)
+{
+	// Get the file fragment
+	PacketFragment* fragment = GetFragmentWithIndex(_hashidentifier.fragmentIndex);
+	if (fragment == nullptr)
+	{
+		return 0;
+	}
+
+	return fragment->GetDataSize(_hashidentifier.fileIdentifier);
+}
+
+bool Packet::PacketObjectManager::GetFile(std::string _filePathDestination, FileFragmentIdentifier _hashidentifier)
+{
+	// Get the data size and check if it is valid
+	uint32_t fileSize = GetFileSize(_hashidentifier);
+	if (fileSize == 0)
+	{
+		return false;
+	}
+
+	// Allocate the temporary data
+	unsigned char* temporaryData = new unsigned char[fileSize];
+
+	// Get the data and check if everything is correct
+	if (!GetData(temporaryData, _hashidentifier))
+	{
+		// Desalloc the temporary data
+		delete[] temporaryData;
+
+		return false;
+	}
+
+	// Create the file
+	std::ofstream file(_filePathDestination, std::ios::binary);
+
+	// Write the data into the file
+	file.write((char*)temporaryData, sizeof(unsigned char) * fileSize);
+	
+	// Close the file
+	file.close();
+
+	// Desalloc the temporary data
+	delete[] temporaryData;
+
+	return true;
+}
+
+bool Packet::PacketObjectManager::GetData(unsigned char* _data, FileFragmentIdentifier _hashidentifier)
+{
+	// Check if the data is valid
+	if (_data == nullptr)
+	{
+		return false;
+	}
+
+	// Get the file fragment
+	PacketFragment* fragment = GetFragmentWithIndex(_hashidentifier.fragmentIndex);
+	if (fragment == nullptr)
+	{
+		return false;
+	}
+
+	// Return the data
+	return fragment->GetData(_data, _hashidentifier.fileIdentifier);
 }
 
 bool Packet::PacketObjectManager::RemoveFile(FileFragmentIdentifier _hashIdentifier)
@@ -101,6 +232,17 @@ Packet::PacketFragment* Packet::PacketObjectManager::GetValidFragment()
 	}
 
 	return m_Fragments[m_Fragments.size() - 1];
+}
+
+Packet::PacketFragment* Packet::PacketObjectManager::GetFragmentWithIndex(uint32_t _index)
+{
+	// Check the index
+	if (_index < 0 || _index >= m_Fragments.size())
+	{
+		return nullptr;
+	}
+
+	return m_Fragments[_index];
 }
 
 Packet::PacketFragment* Packet::PacketObjectManager::CreateNewFragment()

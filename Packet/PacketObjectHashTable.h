@@ -7,7 +7,6 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketObjectStructure.h"
 #include "PacketObjectManager.h"
 
 #include <string>
@@ -48,18 +47,18 @@ PacketNamespaceBegin(Packet)
 */
 
 // Hash the given path (static)
-static constexpr uint32_t HashFilePathStatic(const char* _filePath)
+static constexpr uint64_t HashFilePathStatic(const char* _filePath)
 {
 	return *_filePath ?
-		static_cast<uint32_t>(*_filePath) + 33 * HashFilePathStatic(_filePath + 1) :
+		static_cast<uint64_t>(*_filePath) + 33 * HashFilePathStatic(_filePath + 1) :
 		5381;
 }
 
 // Hash the given path (non static)
-static uint32_t HashFilePathNonStatic(const char* _filePath)
+static uint64_t HashFilePathNonStatic(const char* _filePath)
 {
 	return *_filePath ?
-		static_cast<uint32_t>(*_filePath) + 33 * HashFilePathStatic(_filePath + 1) :
+		static_cast<uint64_t>(*_filePath) + 33 * HashFilePathStatic(_filePath + 1) :
 		5381;
 }
 
@@ -70,18 +69,10 @@ class PacketObjectHashTable
 {
 private:
 
-	// The hash internal representation
-	struct HashInternal
-	{
-		// The file fragment identifier
-		PacketObjectManager::FileFragmentIdentifier fragmentIdentifier;
-
-		// The path string
-		std::string fullPath;
-	};
-
-
 public:
+
+	// The packet object hash type
+	typedef uint64_t PacketObjectHash;
 
 //////////////////
 // CONSTRUCTORS //
@@ -105,26 +96,29 @@ public: //////////
 public: //////////
 
 	// Insert an entry <non static key>
-	uint32_t InsertEntry(std::string _path, PacketObjectManager::FileFragmentIdentifier& _internalIdentifier);
+	bool InsertEntry(std::string _path, PacketObjectManager::FileFragmentIdentifier& _internalIdentifier, PacketObjectHash& _hashOut);
 
 	// Insert an entry <static key>
-	uint32_t InsertEntry(uint32_t _key, std::string _path, PacketObjectManager::FileFragmentIdentifier& _internalIdentifier);
-
-	// Remove an entry
-	bool RemoveEntry(std::string _path);
+	bool InsertEntry(PacketObjectHash _key, PacketObjectManager::FileFragmentIdentifier& _internalIdentifier, PacketObjectHash& _hashOut);
 
 	// Return an entry
 	PacketObjectManager::FileFragmentIdentifier* GetEntry(std::string _path);
 
 	// Return an entry (static hash)
-	PacketObjectManager::FileFragmentIdentifier* GetEntry(const std::string _path, uint32_t _hash);
+	PacketObjectManager::FileFragmentIdentifier* GetEntry(PacketObjectHash _hash);
+
+	// Remove an entry
+	bool RemoveEntry(std::string _path);
+
+	// Check if an entry exist
+	bool EntryExist(std::string _path);
 
 ///////////////
 // VARIABLES //
 private: //////
 
 	// The hash table
-	std::map<uint32_t, std::vector<HashInternal>> m_HashTable;
+	std::map<PacketObjectHash, PacketObjectManager::FileFragmentIdentifier> m_HashTable;
 };
 
 // Packet data explorer

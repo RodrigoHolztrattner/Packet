@@ -9,6 +9,7 @@
 #include "PacketConfig.h"
 #include "PacketFragment.h"
 #include "PacketObjectManager.h"
+#include "PacketObjectHashTable.h"
 
 #include <string>
 #include <vector>
@@ -54,9 +55,6 @@ class PacketObjectStructure
 {
 private:
 
-	// The structure extension type
-	const std::string StructureExtensionType = ".structure";
-
 	// The file object type
 	struct FileObjectType
 	{
@@ -67,7 +65,7 @@ private:
 		std::string filePath;
 
 		// The file hash identifier
-		uint32_t fileHashIdentifier;
+		PacketObjectHashTable::PacketObjectHash fileHashIdentifier;
 	};
 
 	// The folder object type
@@ -93,8 +91,17 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketObjectStructure(std::string _packetName);
+	PacketObjectStructure();
 	~PacketObjectStructure();
+
+	// Initialize empty
+	bool InitializeEmpty(std::string _packetName);
+
+	// Initialize from data
+	bool InitializeFromData(std::vector<unsigned char>& _data, uint32_t& _location, std::string _packetName);
+
+	// Serialize
+	std::vector<unsigned char> Serialize();
 
 //////////////////
 // MAIN METHODS //
@@ -104,7 +111,7 @@ public: //////////
 	bool InsertFolder(std::string _folderName, std::vector<std::string>& _directoryPath);
 
 	// Insert a file inside the given directory
-	bool InsertFile(std::string _fileName, uint32_t _fileHashIdentifier, std::vector<std::string>& _directoryPath);
+	bool InsertFile(std::string _fileName, PacketObjectHashTable::PacketObjectHash _fileHashIdentifier, std::vector<std::string>& _directoryPath);
 
 	// Check if the given directory path is valid
 	bool DirectoryFromPathIsValid(std::vector<std::string>& _directoryPath);
@@ -137,16 +144,17 @@ private:
 public:
 
 	// Load this object structure
-	bool LoadObjectStructure();
-	bool LoadObjectStructureAux(FolderObjectType* _folder, std::ifstream& _ofstream);
+	void LoadObjectStructureAux(FolderObjectType* _folder, std::vector<unsigned char>& _data, uint32_t& _location);
 
 	// Save this object structure
-	bool SaveObjectStructure();
-	bool SaveObjectStructureAux(FolderObjectType* _folder, std::ofstream& _ofstream);
+	void SaveObjectStructureAux(FolderObjectType* _folder, std::vector<unsigned char>& _data, uint32_t& _location);
 
 ///////////////
 // VARIABLES //
 private: //////
+
+	// If this was initialized
+	bool m_Initialized;
 
 	// The root folder object
 	FolderObjectType* m_RootFolder;

@@ -79,10 +79,10 @@ public:
 private:
 
 	// The fragment metadata extension type
-	const std::string FragmentMetadataExtension = ".fragmeta";
+	const std::string FragmentMetadataExtension = ".meta";
 
 	// The fragment data extension type
-	const std::string FragmentDataExtension = ".fragdata";
+	const std::string FragmentDataExtension = ".data";
 
 	// The maximum allowed unused sections (this will be used to determine if this fragment is impure)
 	const uint32_t FragmentMaximumUnusedSections = 20;
@@ -144,13 +144,17 @@ private:
 
 private:
 
-	// Read/save metadata
-	bool ReadMetadata();
-	bool SaveMetadata();
-
 	// Open/close the data file
 	bool OpenDataFile();
 	void CloseDataFile();
+
+	// Read the metadata
+	bool ReadMetadata();
+
+public:
+
+	// Save the metadata
+	bool SaveMetadata();
 
 ///////////////
 // VARIABLES //

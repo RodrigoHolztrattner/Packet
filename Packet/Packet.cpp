@@ -25,14 +25,82 @@ std::vector<std::string> Split(const std::string &txt, char ch)
 	// Add the last one
 	result.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
 
+	// Remove blank strings
+	for (unsigned int i = 0; i < result.size(); i++)
+	{
+		// Compare
+		if (result[i].compare(" ") == 0)
+		{
+			// Remove this blank string
+			result.erase(result.begin() + i);
+			i--;
+		}
+	}
+
 	return result;
 }
 
+// Load a packet object from the command line input
+Packet::PacketObject* GetPacket()
+{
+	// Create the new packet object
+	Packet::PacketObject* newPackObject = new Packet::PacketObject();
+
+	// Load/create
+	while (true)
+	{
+		// Print the load/create message
+		std::cout << "cp <name> <size> - create a new pack with name <name> and maximum fragment size <size>" << std::endl;
+		std::cout << "lp <path> - load an existing pack at <path>" << std::endl;
+
+		// Jump the line
+		std::cout << std::endl;
+
+		// Print the command line icon
+		std::cout << '>';
+
+		// Capture each command
+		std::string command;
+		std::getline(std::cin, command);
+
+		// Jump the line
+		std::cout << std::endl;
+
+		// Break the command
+		std::vector<std::string> commands = Split(command, ' ');
+
+		// Check if we have at last one command
+		if (commands.size() == 0)
+		{
+			continue;
+		}
+
+		// Verify the command
+		if (commands[0] == "cp" && commands.size() == 3)
+		{
+			if (newPackObject->InitializeEmpty(commands[1], std::stoi(commands[2])))
+			{
+				break;
+			}
+		}
+		if (commands[0] == "lp" && commands.size() == 2)
+		{
+			if (newPackObject->InitializeFromFile(commands[1]))
+			{
+				break;
+			}
+		}
+	}
+
+	return newPackObject;
+}
 
 void Console()
 {
-	Packet::PacketObject packetObject("Wonderland", 8096);
+	// Our packet object
+	Packet::PacketObject& packetObject = *GetPacket();
 
+	// Get the packet iterator
 	auto iterator = packetObject.GetIterator();
 
 	while (true)
@@ -42,7 +110,7 @@ void Console()
 
 		// Capture each command
 		std::string command;
-		std::getline(std::cin, command);;
+		std::getline(std::cin, command);
 
 		// Jump the line
 		std::cout << std::endl;
@@ -97,7 +165,6 @@ void Console()
 		// Put
 		if (commands[0].compare("put") == 0 && commands.size() >= 2)
 		{
-			packetObject.Save();
 			if (commands.size() == 2)
 			{
 				iterator.Put(commands[1]);
@@ -107,8 +174,44 @@ void Console()
 				iterator.Put(commands[1], commands[2]);
 			}
 		}
+
+		// Get
+		if (commands[0].compare("get") == 0 && commands.size() >= 2)
+		{
+			if (commands.size() == 2)
+			{
+				iterator.Get(commands[1]);
+			}
+			else
+			{
+				iterator.Get(commands[1], commands[2]);
+			}
+		}
+
+		// Save
+		if (commands[0].compare("save") == 0)
+		{
+			if (commands.size() == 2)
+			{
+				packetObject.SavePacketData(commands[1]);
+			}
+			else
+			{
+				packetObject.SavePacketData();
+			}
+			
+		}
+
+		// Exit
+		if (commands[0].compare("exit") == 0)
+		{
+			packetObject.SavePacketData();
+			exit(0);
+		}
 	}
 }
+
+#include "PacketFileDataOperations.h"
 
 int main()
 {
@@ -119,10 +222,10 @@ int main()
 
 
 
-	Packet::PacketObject packetObject("Wonderland", 8096);
+	// Packet::PacketObject packetObject("Wonderland", 8096);
 
-	auto iterator = packetObject.GetIterator();
-	iterator.Put("Old\\Packet.h");
+	// auto iterator = packetObject.GetIterator();
+	// iterator.Put("Old\\Packet.h");
 
 
 	// preciso ver como vai ser a divisão dentro dos arquivos(em sections) e qual o tamanho delas(ou como organizar isso);

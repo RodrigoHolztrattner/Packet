@@ -2,28 +2,67 @@
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketObjectStructure.h"
+#include "PacketFileDataOperations.h"
 
-Packet::PacketObjectStructure::PacketObjectStructure(std::string _packetName)
+Packet::PacketObjectStructure::PacketObjectStructure()
 {
 	// Set the initial data
-	m_PacketObjectName = _packetName;
-
-	// Try to load the object structure
-	if (!LoadObjectStructure())
-	{
-		// Create the default root folder
-		m_RootFolder = new FolderObjectType;
-		m_RootFolder->folderName = _packetName;
-	}
+	m_Initialized = false;
 }
 
 Packet::PacketObjectStructure::~PacketObjectStructure()
 {
-	// Try to save the object structure
-	if (!SaveObjectStructure())
+
+}
+
+bool Packet::PacketObjectStructure::InitializeEmpty(std::string _packetName)
+{
+	// Set the packet name
+	m_PacketObjectName = _packetName;
+
+	// Create the default root folder
+	m_RootFolder = new FolderObjectType;
+	m_RootFolder->folderName = m_PacketObjectName;
+
+	// Set initialized
+	m_Initialized = true;
+
+	return true;
+}
+
+bool Packet::PacketObjectStructure::InitializeFromData(std::vector<unsigned char>& _data, uint32_t& _location, std::string _packetName)
+{
+	// Check if the data is valid
+	if (!_data.size())
 	{
-		
+		return false;
 	}
+
+	// Set the packet name
+	m_PacketObjectName = _packetName;
+
+	// Create the root folder
+	m_RootFolder = new FolderObjectType;
+
+	// Load the object structure
+	LoadObjectStructureAux(m_RootFolder, _data, _location);
+
+	// Set initialized
+	m_Initialized = true;
+
+	return true;
+}
+
+std::vector<unsigned char> Packet::PacketObjectStructure::Serialize()
+{
+	// The output data
+	std::vector<unsigned char> outData;
+	uint32_t location = 0;
+
+	// Save the object structure
+	SaveObjectStructureAux(m_RootFolder, outData, location);
+
+	return outData;
 }
 
 bool Packet::PacketObjectStructure::InsertFolder(std::string _folderName, std::vector<std::string>& _directoryPath)
@@ -52,7 +91,7 @@ bool Packet::PacketObjectStructure::InsertFolder(std::string _folderName, std::v
 	return true;
 }
 
-bool Packet::PacketObjectStructure::InsertFile(std::string _fileName, uint32_t _fileHashIdentifier, std::vector<std::string>& _directoryPath)
+bool Packet::PacketObjectStructure::InsertFile(std::string _fileName, PacketObjectHashTable::PacketObjectHash _fileHashIdentifier, std::vector<std::string>& _directoryPath)
 {
 	// Try to get the folder
 	FolderObjectType* folder = GetFolderFromDirectory(_directoryPath);
@@ -243,166 +282,84 @@ bool Packet::PacketObjectStructure::FolderHasFile(FolderObjectType* _folder, std
 	return false;
 }
 
-
-
-bool Packet::PacketObjectStructure::LoadObjectStructure()
+void Packet::PacketObjectStructure::LoadObjectStructureAux(FolderObjectType* _folder, std::vector<unsigned char>& _data, uint32_t& _location)
 {
-	// Compose the structure name
-	std::string structureName = m_PacketObjectName + StructureExtensionType;
+	// Save the folder name
+	_folder->folderName = PacketFileDataOperations::ReadFromData(_data, _location);
 
-	// Open the file
-	std::ifstream file;
-	file.open(structureName, std::ios::in | std::ios::binary);
-	
-	// Check if we are ok
-	if (!file.good())
-	{
-		return false;
-	}
-	
-	// Create the root folder
-	m_RootFolder = new FolderObjectType;
+	// Save the folder path
+	_folder->folderPath = PacketFileDataOperations::ReadFromData(_data, _location);
 
-	// Load the object structure
-	if (!LoadObjectStructureAux(m_RootFolder, file))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool Packet::PacketObjectStructure::LoadObjectStructureAux(FolderObjectType* _folder, std::ifstream& _ifstream)
-{
-	char name[64];
-
-	// Copy the folder name and load it
-	_ifstream.read(name, sizeof(char) * 64);
-	_folder->folderName = std::string(name);
-	
-	// Copy the folder path and load it
-	_ifstream.read(name, sizeof(char) * 64);
-	_folder->folderPath = std::string(name);
-
-	// Read the number of files
-	unsigned int numberFiles;
-	_ifstream.read((char*)&numberFiles, sizeof(unsigned int));
+	// Write the number of files
+	uint32_t numberFiles = PacketFileDataOperations::ReadFromData<uint32_t>(_data, _location);
 
 	// For each file
 	for (unsigned int i=0; i<numberFiles; i++)
 	{
-		// Create the new file
+		// The file
 		FileObjectType* newFile = new FileObjectType();
 
-		// Copy the name and load it
-		_ifstream.read(name, sizeof(char) * 64);
-		newFile->fileName = std::string(name);
+		// Save the name
+		newFile->fileName = PacketFileDataOperations::ReadFromData(_data, _location);
 
-		// Copy the file path and load it
-		_ifstream.read(name, sizeof(char) * 64);
-		newFile->filePath = std::string(name);
+		// Save the file path
+		newFile->filePath = PacketFileDataOperations::ReadFromData(_data, _location);
 
-		// Load the identifier
-		_ifstream.read((char*)&newFile->fileHashIdentifier, sizeof(unsigned int));
+		// Save the hash identifier
+		newFile->fileHashIdentifier = PacketFileDataOperations::ReadFromData<PacketObjectHashTable::PacketObjectHash>(_data, _location);
 
-		// Insert the new folder
+		// Insert the new file
 		_folder->files.push_back(newFile);
 	}
 
-	// Read the number of sub folders
-	unsigned int numberFolders;
-	_ifstream.read((char*)&numberFolders, sizeof(unsigned int));
+	// Write the number of sub folders
+	uint32_t numberFolders = PacketFileDataOperations::ReadFromData<uint32_t>(_data, _location);
 
 	// For each sub folder
 	for (unsigned int i=0; i<numberFolders; i++)
 	{
-		// Create a new folder
+		// The folder
 		FolderObjectType* newFolder = new FolderObjectType();
 
 		// Call this method
-		bool result = LoadObjectStructureAux(newFolder, _ifstream);
-		if (!result)
-		{
-			return false;
-		}
+		LoadObjectStructureAux(newFolder, _data, _location);
 
-		// Insert the new folder
+		// Insert the new subfolder
 		_folder->subFolders.push_back(newFolder);
 	}
-
-	return true;
 }
 
-bool Packet::PacketObjectStructure::SaveObjectStructure()
+void Packet::PacketObjectStructure::SaveObjectStructureAux(FolderObjectType* _folder, std::vector<unsigned char>& _data, uint32_t& _location)
 {
-	// Compose the structure name
-	std::string structureName = m_PacketObjectName + StructureExtensionType;
+	// Save the folder name
+	PacketFileDataOperations::SaveToData(_data, _location, _folder->folderName);
 
-	// Open the file
-	std::ofstream file;
-	file.open(structureName, std::ios::out | std::ios::binary);
-
-	// Check if we are ok
-	if (!file.good())
-	{
-		return false;
-	}
-
-	// Save the object structure
-	if (!SaveObjectStructureAux(m_RootFolder, file))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool Packet::PacketObjectStructure::SaveObjectStructureAux(FolderObjectType* _folder, std::ofstream& _ofstream)
-{
-	char name[64];
-
-	// Copy the folder name and save it
-	strcpy_s(name, _folder->folderName.c_str());
-	_ofstream.write(name, sizeof(char) * 64);
-
-	// Copy the folder path and save it
-	strcpy_s(name, _folder->folderPath.c_str());
-	_ofstream.write(name, sizeof(char) * 64);
+	// Save the folder path
+	PacketFileDataOperations::SaveToData(_data, _location, _folder->folderPath);
 
 	// Write the number of files
-	size_t numberFiles = _folder->files.size();
-	_ofstream.write((char*)&numberFiles, sizeof(unsigned int));
+	PacketFileDataOperations::SaveToData<uint32_t>(_data, _location, _folder->files.size());
 
 	// For each file
 	for (auto & file : _folder->files)
 	{
-		// Copy the name and save it
-		strcpy_s(name, file->fileName.c_str());
-		_ofstream.write(name, sizeof(char) * 64);
+		// Save the name
+		PacketFileDataOperations::SaveToData(_data, _location, file->fileName);
 
-		// Copy the file path and save it
-		strcpy_s(name, file->filePath.c_str());
-		_ofstream.write(name, sizeof(char) * 64);
+		// Save the file path
+		PacketFileDataOperations::SaveToData(_data, _location, file->filePath);
 
-		// Save the identifier
-		size_t identifier = file->fileHashIdentifier;
-		_ofstream.write((char*)&identifier, sizeof(unsigned int));
+		// Save the hash identifier
+		PacketFileDataOperations::SaveToData<PacketObjectHashTable::PacketObjectHash>(_data, _location, file->fileHashIdentifier);
 	}
 
 	// Write the number of sub folders
-	size_t numberFolders = _folder->subFolders.size();
-	_ofstream.write((char*)&numberFolders, sizeof(unsigned int));
+	PacketFileDataOperations::SaveToData<uint32_t>(_data, _location, _folder->subFolders.size());
 
 	// For each sub folder
 	for (auto & folder : _folder->subFolders)
 	{
 		// Call this method
-		bool result = SaveObjectStructureAux(folder, _ofstream);
-		if (!result)
-		{
-			return false;
-		}
+		 SaveObjectStructureAux(folder, _data, _location);
 	}
-
-	return true;
 }

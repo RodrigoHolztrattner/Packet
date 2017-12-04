@@ -61,8 +61,9 @@ public: //////////
 	template<typename ObjectType>
 	static ObjectType ReadFromData(std::vector<unsigned char>& _data, uint32_t& _position)
 	{
-		_position += sizeof(ObjectSize);
-		return ObjectType(_data[_position - sizeof(ObjectSize)]);
+		_position += sizeof(ObjectType);
+		unsigned char* data = &_data[_position - sizeof(ObjectType)];
+		return *(ObjectType*)(data);
 	}
 
 	// Read from data
@@ -75,35 +76,61 @@ public: //////////
 	}
 
 	// Read from data
-	static std::string ReadFromData(std::vector<unsigned char>& _data, uint32_t& _position, uint32_t _amount)
+	static std::string ReadFromData(std::vector<unsigned char>& _data, uint32_t& _position)
 	{
-		std::string result(_data.begin(), _data.end());
-		_position += sizeof(unsigned char) * _amount;
+		// Read the string size from the data
+		uint32_t stringSize = ReadFromData<uint32_t>(_data, _position);
+
+		// Read the result string
+		std::string result(_data.begin() + _position, _data.begin() + _position + stringSize);
+
+		// Update the position
+		_position += sizeof(unsigned char) * stringSize;
+
 		return result;
 	}
 
 	// Save to data
 	template<typename ObjectType>
-	static void SaveToData(unsigned char* _data, uint32_t& _position, ObjectType _object)
+	static void SaveToData(std::vector<unsigned char>& _data, uint32_t& _position, ObjectType _object)
 	{
-		memcpy(&_data[_position], &_object, sizeof(ObjectType));
+		InsertDataIntoVector(_data, &_object, 1);
 		_position += sizeof(ObjectType);
 	}
 
 	// Save to data
 	template<typename ObjectType>
-	static void SaveToData(unsigned char* _data, uint32_t& _position, ObjectType _object, uint32_t _amount)
+	static void SaveToData(unsigned char* _data, uint32_t& _position, ObjectType* _object, uint32_t _amount)
 	{
-		memcpy(&_data[_position], &_object, sizeof(ObjectType) * _amount);
+		InsertDataIntoVector(_data, _object, _amount);
 		_position += sizeof(ObjectType) * _amount;
 	}
 
 	// Save to data
 	static void SaveToData(std::vector<unsigned char>& _data, uint32_t& _position, std::string& _string)
 	{
+		// The string size
+		uint32_t stringSize = _string.size();
+
+		// Save the string size from the data
+		SaveToData<uint32_t>(_data, _position, stringSize);
+
+		// Copy the string data
 		std::vector<unsigned char> temp(_string.begin(), _string.end());
 		_data.insert(_data.end(), temp.begin(), temp.end());
 		_position += sizeof(unsigned char) * _string.size();
+	}
+
+private:
+
+	// Insert data into a vector
+	template<typename ObjectType>
+	static void InsertDataIntoVector(std::vector<unsigned char>& _vector, ObjectType* _object, uint32_t _amount)
+	{
+		unsigned char* values = (unsigned char*)_object;
+		unsigned char* end = values + sizeof(ObjectType) * _amount;
+
+		_vector.insert(_vector.end(), values, end);
 	}
 
 ///////////////

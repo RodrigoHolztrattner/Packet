@@ -49,6 +49,12 @@ std::vector<std::string> Packet::PacketStringOperations::SplitPath(std::string& 
 	std::vector<std::string> result;
 	std::set<char> delims{ FolderDelimiterType };
 
+	// Check if the string is just and empty one
+	if (str.compare("") == 0)
+	{
+		return result;
+	}
+
 	char const* pch = str.c_str();
 	char const* start = pch;
 	for (; *pch; ++pch)
@@ -70,7 +76,7 @@ std::vector<std::string> Packet::PacketStringOperations::SplitPath(std::string& 
 	result.push_back(start);
 
 	// For each string
-	for (int i = 0; i < result.size(); i++)
+	for (unsigned int i = 0; i < result.size(); i++)
 	{
 		// Check if this is an empty string
 		if (result[i].compare("") == 0)
@@ -90,7 +96,7 @@ std::string Packet::PacketStringOperations::ComposeDirectory(std::vector<std::st
 	std::string stringDir;
 	for (auto& folder : _dir)
 	{
-		stringDir += folder;
+		stringDir += folder + FolderDelimiterType;
 	}
 
 	return stringDir;
@@ -102,7 +108,7 @@ std::vector<std::string> Packet::PacketStringOperations::JoinDirectorySeek(std::
 	std::vector<std::string> dir = _dir;
 
 	// For each seek command
-	for (int i = 0; i < _seek.size(); i++)
+	for (unsigned int i = 0; i < _seek.size(); i++)
 	{
 		// Check if this is a "return" command
 		if (_seek[i].compare("..") == 0)

@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Packet.cpp" />
-    <ClCompile Include="PacketManager.cpp" />
     <ClCompile Include="PacketObject.cpp" />
     <ClCompile Include="PacketFragment.cpp" />
     <ClCompile Include="PacketObjectIterator.cpp" />
@@ -14,7 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
-    <ClInclude Include="PacketManager.h" />
     <ClInclude Include="PacketObject.h" />
     <ClInclude Include="PacketFragment.h" />
     <ClInclude Include="PacketObjectIterator.h" />

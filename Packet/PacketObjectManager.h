@@ -55,7 +55,7 @@ class PacketObjectManager
 private:
 
 	// The fragment complement name
-	const std::string FragmentComplementName = "frag";
+	const std::string FragmentComplementName = ".frag";
 
 	// The fragment info
 	struct FragmentInfo
@@ -69,9 +69,6 @@ public:
 	// The file fragment identifier type
 	struct FileFragmentIdentifier
 	{
-		// The fragment that have the file
-		std::string fragmentName;
-
 		// The fragment index
 		uint32_t fragmentIndex;
 
@@ -99,8 +96,17 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketObjectManager(PacketObjectManager::PacketAttributes _packetAttributes);
+	PacketObjectManager();
 	~PacketObjectManager();
+
+	// Initialize empty
+	bool InitializeEmpty(std::string _packetName, uint32_t _maximumFragmentSize);
+
+	// Initialize from data
+	bool InitializeFromData(std::vector<unsigned char>& _data, uint32_t& _location, std::string _packetName, uint32_t _maximumFragmentSize);
+
+	// Serialize
+	std::vector<unsigned char> Serialize();
 
 //////////////////
 // MAIN METHODS //
@@ -112,6 +118,15 @@ public: //////////
 	// Insert a chunk of data
 	bool InsertData(unsigned char* _data, uint32_t _size, FileFragmentIdentifier& _hashidentifier);
 
+	// Get a file size from the packet object
+	uint32_t GetFileSize(FileFragmentIdentifier _hashidentifier);
+
+	// Get a file from the packet object
+	bool GetFile(std::string _filePathDestination, FileFragmentIdentifier _hashidentifier);
+
+	// Get a chunk of data
+	bool GetData(unsigned char* _data, FileFragmentIdentifier _hashidentifier);
+
 	// Remove a file from this packet object
 	bool RemoveFile(FileFragmentIdentifier _hashIdentifier);
 
@@ -122,6 +137,9 @@ private:
 
 	// Return a valid fragment object (creating one if necessary)
 	PacketFragment* GetValidFragment();
+
+	// Get the fragment with the given index
+	PacketFragment* GetFragmentWithIndex(uint32_t _index);
 
 	// Create a new fragment object
 	PacketFragment* CreateNewFragment();
