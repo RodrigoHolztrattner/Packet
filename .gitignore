@@ -289,3 +289,5 @@ __pycache__/
 Packet/Teste/
 *.fragmeta
 *.fragdata
+doxygen/
+default.doxygen
