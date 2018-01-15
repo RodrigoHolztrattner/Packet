@@ -140,7 +140,6 @@ private:
 	// Check if a folder has a child file with the given name
 	bool FolderHasFile(FolderObjectType* _folder, std::string _fileName);
 
-private:
 public:
 
 	// Load this object structure

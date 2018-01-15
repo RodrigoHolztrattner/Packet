@@ -7,6 +7,23 @@
 
 #include <iostream>
 
+/*
+
+	- Criar um PacketFileBase que vai funcionar como um "file object", o mesmo será como espaço para receber dados.
+		# Ele pode ter seu espaço alocado, não alocado ou apontado, caso não alocado podemos usar um custom allocator ou alocar no modo default quando for preciso.
+		# Caso alocado (por um custom alocator ou não, tanto faz), colocaremos nele os dados lidos.
+		# Caso apontado, ele aponta para um espaço de memória supostamente válido, logo os dados serão colocados lá.
+
+		# O modo de recebimento dos dados pode ser sincrono ou assincrono, caso seja sincrono nós usaremos algum barrier para carregar assim que for possível (pelo fragment??)
+		# Caso o modo seja assincrono, adicionaremos ele em uma lista (com prioridade??) que fica dentro do fragment (??) que se encarregará de carregá-lo assim que possível
+		
+		# O carregamento de um objeto seta uma variável interna do mesmo como ready (dirty?) e pode realizar a chamada de um callback
+
+
+
+
+*/
+
 std::vector<std::string> Split(const std::string &txt, char ch)
 {
 	std::vector<std::string> result;

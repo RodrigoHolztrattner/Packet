@@ -135,3 +135,23 @@ Packet::PacketObjectIterator Packet::PacketObject::GetIterator()
 {
 	return PacketObjectIterator(m_ObjectManager, m_ObjectStructure, m_ObjectHashTable);
 }
+
+Packet::PacketFileLoader* Packet::PacketObject::GetFileLoader()
+{
+	return &m_FileLoader;
+}
+
+Packet::PacketObjectManager* Packet::PacketObject::GetObjectManagerReference()
+{
+	return &m_ObjectManager;
+}
+
+Packet::PacketObjectStructure* Packet::PacketObject::GetObjectStructureReference()
+{
+	return &m_ObjectStructure;
+}
+
+Packet::PacketObjectHashTable* Packet::PacketObject::GetObjectHashTableReference()
+{
+	return &m_ObjectHashTable;
+}

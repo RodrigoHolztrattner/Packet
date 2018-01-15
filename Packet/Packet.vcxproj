@@ -149,7 +149,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Packet.cpp" />
+    <ClCompile Include="PacketFile.cpp" />
     <ClCompile Include="PacketFileDataOperations.cpp" />
+    <ClCompile Include="PacketFileLoader.cpp" />
     <ClCompile Include="PacketFragment.cpp" />
     <ClCompile Include="PacketObject.cpp" />
     <ClCompile Include="PacketObjectHashTable.cpp" />
@@ -160,7 +162,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
+    <ClInclude Include="PacketFile.h" />
     <ClInclude Include="PacketFileDataOperations.h" />
+    <ClInclude Include="PacketFileLoader.h" />
     <ClInclude Include="PacketFragment.h" />
     <ClInclude Include="PacketObject.h" />
     <ClInclude Include="PacketObjectHashTable.h" />

@@ -10,6 +10,8 @@
     <ClCompile Include="PacketObjectStructure.cpp" />
     <ClCompile Include="PacketObjectHashTable.cpp" />
     <ClCompile Include="PacketFileDataOperations.cpp" />
+    <ClCompile Include="PacketFile.cpp" />
+    <ClCompile Include="PacketFileLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -21,5 +23,7 @@
     <ClInclude Include="PacketObjectStructure.h" />
     <ClInclude Include="PacketObjectHashTable.h" />
     <ClInclude Include="PacketFileDataOperations.h" />
+    <ClInclude Include="PacketFile.h" />
+    <ClInclude Include="PacketFileLoader.h" />
   </ItemGroup>
 </Project>

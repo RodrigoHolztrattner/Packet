@@ -12,6 +12,7 @@
 #include "PacketObjectStructure.h"
 #include "PacketObjectHashTable.h"
 #include "PacketObjectIterator.h"
+#include "PacketFileLoader.h"
 
 #include <string>
 
@@ -38,6 +39,10 @@ PacketNamespaceBegin(Packet)
 // FORWARDING //
 ////////////////
 
+// We know the PacketFileLoader and the PacketFile classes
+class PacketFileLoader;
+class PacketFile;
+
 ////////////////
 // STRUCTURES //
 ////////////////
@@ -48,6 +53,10 @@ PacketNamespaceBegin(Packet)
 class PacketObject
 {
 public:
+
+	// The PacketFileLoader and the PacketFile are friend classes
+	friend PacketFileLoader;
+	friend PacketFile;
 
 //////////////////
 // CONSTRUCTORS //
@@ -74,27 +83,36 @@ public: //////////
 	// Return this packet object iterator
 	PacketObjectIterator GetIterator();
 
+protected:
+
+	// Return the file loader
+	PacketFileLoader* GetFileLoader();
+
+private:
+
+	// Return our manager, structure and hash table reference
+	PacketObjectManager* GetObjectManagerReference();
+	PacketObjectStructure* GetObjectStructureReference();
+	PacketObjectHashTable* GetObjectHashTableReference();
+
 ///////////////
 // VARIABLES //
 private: //////
 
-	// The packet object name
+	// The packet object data
 	std::string m_PacketObjectName;
-
-	// The maximum fragment size
 	uint32_t m_MaximumFragmentSize;
+	uint32_t m_TotalNumberFragments;
+	uint32_t m_TotalNumberFiles;
 
 	// The oppened file path
 	std::string m_OppenedFilePath;
 
-	 // The number of fragments this object have
-	uint32_t m_TotalNumberFragments;
-
-	// The total number of files inside this packet
-	uint32_t m_TotalNumberFiles;
-
 	// The current internal identifier number
 	uint32_t m_CurrentInternalIdentifierNumber;
+
+	// Our file loader
+	PacketFileLoader m_FileLoader;
 
 	// Our object manager, structure and hash table
 	PacketObjectManager m_ObjectManager;
