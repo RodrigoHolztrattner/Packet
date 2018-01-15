@@ -9,6 +9,9 @@
 #include "PacketConfig.h"
 #include "PacketFragment.h"
 #include "PacketObjectManager.h"
+#include "PacketFileLoaderQueue.h"
+
+#include <thread>
 
 ///////////////
 // NAMESPACE //
@@ -40,6 +43,8 @@ class PacketFile;
 ////////////////
 // STRUCTURES //
 ////////////////
+
+// TODO: Adicionar uma forma de uma thread externa realizar a ThreadedLoadRoutine()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketFileLoader
@@ -73,6 +78,9 @@ private:
 
 	// Load a file (thread safe)
 	bool LoadFile(PacketFile* _file);
+	
+	// The threaded load routine
+	void ThreadedLoadRoutine();
 
 ///////////////
 // VARIABLES //
@@ -81,6 +89,12 @@ private: //////
 	// Our packet object reference
 	PacketObject* m_PacketObjectReference;
 
+	// The load queue
+	PacketFileLoaderQueue* m_LoadQueue;
+
+	// Or loading thread and mutex
+	std::thread m_LoadingThread;
+	std::mutex m_LoadingMutex;
 };
 
 // Packet data explorer

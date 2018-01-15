@@ -103,8 +103,14 @@ public: //////////
 
 protected:
 
+	// Allocate this file data
+	bool AllocateData();
+
 	// Return the file identifier
 	PacketFragment::FileIdentifier GetFileIdentifier();
+
+	// Return a ptr to the internal data
+	unsigned char* GetInternalDataPtr();
 
 private:
 
@@ -134,11 +140,12 @@ private: //////
 	// If the allocation should be delayed
 	bool m_DelayAllocation;
 
-	// The dispatch type
+	// The dispatch type and metadata info
 	DispatchType m_DispatchType;
-
-	// The file metadata info
 	Metadata m_Metadata;
+
+	// The file data
+	unsigned char* m_Data;
 };
 
 // Packet data explorer

@@ -13,10 +13,17 @@ Packet::PacketFile::PacketFile(PacketObject* _packetObject, DispatchType _dispat
 	m_DelayAllocation = _delayAllocation;
 	m_IsReady = false;
 	m_IsDirty = true;
+	m_Data = nullptr;
 }
 
 Packet::PacketFile::~PacketFile()
 {
+	// Check if we should deallocate our data
+	if(m_Data != nullptr)
+	{
+		DeallocateMemory(m_Data);
+		m_Data = nullptr;
+	}
 }
 
 bool Packet::PacketFile::LoadWithIdentifier(PacketFragment::FileIdentifier _fileIdentifier)
@@ -66,6 +73,11 @@ Packet::PacketFragment::FileIdentifier Packet::PacketFile::GetFileIdentifier()
 	return m_Metadata.fileIdentifier;
 }
 
+unsigned char* Packet::PacketFile::GetInternalDataPtr()
+{
+	return m_Data;
+}
+
 unsigned char* Packet::PacketFile::AllocateMemory(unsigned int _fileSize)
 {
 	return new unsigned char[_fileSize];
@@ -74,4 +86,18 @@ unsigned char* Packet::PacketFile::AllocateMemory(unsigned int _fileSize)
 void Packet::PacketFile::DeallocateMemory(unsigned char* _fileData)
 {
 	delete[] _fileData;
+}
+
+bool Packet::PacketFile::AllocateData()
+{
+	// Check if our ptr is valid
+	if(m_Data != nullptr)
+	{
+		return false;
+	}
+
+	// Call the virtual method for allocation
+	m_Data = AllocateMemory(m_Metadata.fileSize);
+
+	return true;
 }
