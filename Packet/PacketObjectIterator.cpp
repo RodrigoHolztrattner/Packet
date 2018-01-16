@@ -321,7 +321,11 @@ bool Packet::PacketObjectIterator::PutAux(std::string _outputFilePath, std::stri
 	}
 
 	// Insert into the hash table
-	PacketObjectHashTable::PacketObjectHash fileHashIdentifier = m_PacketHashTableReference.InsertEntry(iFolderLocation + _fileName, fileFragmentIdentifier, fileHashIdentifier);
+	PacketObjectHashTable::PacketObjectHash fileHashIdentifier;
+	if (!m_PacketHashTableReference.InsertEntry(iFolderLocation + _fileName, fileFragmentIdentifier, fileHashIdentifier))
+	{
+		return false;
+	}
 
 	// Insert the new file inside the current folder
 	if (!m_PacketStructureReference.InsertFile(_fileName, fileHashIdentifier, _dir))

@@ -4,6 +4,7 @@
 #include "PacketFragment.h"
 #include "PacketObject.h"
 #include "PacketStringOperations.h"
+#include "PacketFile.h"
 
 #include <iostream>
 
@@ -22,6 +23,23 @@
 
 
 
+*/
+
+TODO:
+/*
+	- Adicionar forma de verificar erros (retornar os erros de alguma forma)
+	- Log opcional de quando algo é feito usando o iterator (arquivo tal foi colocado em tal pasta, path: blabla.bla, arquivo tal foi deletado, etc)
+	- Ver uma forma precisa de descobrir se um path é um arquivo ou dir apenas (validar tal coisa no modo iterator)
+	- Ver uma forma precisa de pegar a extensão de um arquivo (adicionar unknow? caso desconhecido)
+	- Adicionar extenções dos arquivos como um field de metadado
+	- Adicionar alguma extensão para debug no modo PacketFile
+	- Verificar em quais casos um novo fragment é criado (e se esses casos estão ok)
+	- Criar um arquivo que contenha todos as strings usadas (extensões, nomes de arquivos, etc)
+	- Criar um .bla conhecido por esse formato, pode ser o proprio .packet
+	- Modificar a extensão dos nomes dos fragments
+	- Criar função delete no iterator
+	- Criar função move no iterator
+	- Criar função de otimização no manager
 */
 
 std::vector<std::string> Split(const std::string &txt, char ch)
@@ -108,6 +126,13 @@ Packet::PacketObject* GetPacket()
 			}
 		}
 	}
+
+	///
+	///
+	///
+
+	Packet::PacketFile* newFile = new Packet::PacketFile(newPackObject, Packet::PacketFile::DispatchType::Assync, true);
+	bool result = newFile->LoadWithName("Images\\gimp.png");
 
 	return newPackObject;
 }

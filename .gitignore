@@ -291,3 +291,6 @@ Packet/Teste/
 *.fragdata
 doxygen/
 default.doxygen
+*.png
+*.data
+*.files

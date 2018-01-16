@@ -61,7 +61,7 @@ class PacketFragment
 public:
 
 	// The fragment file type
-	typedef uint32_t FileIdentifier;
+	typedef uint64_t FileIdentifier;
 
 	// The section metadata type
 	struct SectionMetadata

@@ -109,6 +109,12 @@ bool Packet::PacketObjectManager::InsertData(unsigned char* _data, uint32_t _siz
 		return false;
 	}
 
+	// Check if the size is bigger then our maximum allowed size and we cant handle it
+	if (_size >= m_PacketObjectAttributes.maximumFragmentSize)
+	{
+		return false;
+	}
+
 	// Get a valid fragment object
 	PacketFragment* fragment = GetValidFragment();
 

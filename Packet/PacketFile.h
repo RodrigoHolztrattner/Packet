@@ -10,6 +10,8 @@
 #include "PacketFragment.h"
 #include "PacketObjectManager.h"
 
+#include <string>
+
 ///////////////
 // NAMESPACE //
 ///////////////
@@ -65,7 +67,7 @@ public:
 		PacketFragment::FileIdentifier fileIdentifier;
 
 		// The file fragment identifier
-		PacketObjectManager::FileFragmentIdentifier* fileFragmentIdentifier;
+		PacketObjectManager::FileFragmentIdentifier fileFragmentIdentifier;
 
 		// The file size
 		unsigned int fileSize;
@@ -83,17 +85,21 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
-	// Load the file with the given identifier
+	// Load the file with the given identifier/name
 	bool LoadWithIdentifier(PacketFragment::FileIdentifier _fileIdentifier);
+	bool LoadWithName(const char* _fileName);
 
 	// Set the load callback (the callback will be fired when the loading phase ends)
-	void SetLoadCallback();
+	void SetLoadCallback(std::function<void()> _loadCallback);
 
 	// Return this file metadata <only valid after the loading phase begin>
 	Metadata GetMetadata();
 
 	// Return the file dispatch type
 	DispatchType GetDispatchType();
+
+	// If the memory allocation should be delayed (only allocate when the loading starts)
+	bool AllocationIsDelayed();
 
 	// Return if this file is ready
 	bool IsReady();
@@ -111,6 +117,9 @@ protected:
 
 	// Return a ptr to the internal data
 	unsigned char* GetInternalDataPtr();
+
+	// Finish the loading for this file (called from the packet file loader object)
+	void FinishLoading();
 
 private:
 
@@ -143,6 +152,9 @@ private: //////
 	// The dispatch type and metadata info
 	DispatchType m_DispatchType;
 	Metadata m_Metadata;
+
+	// The load callback
+	std::function<void()> m_LoadCallback;
 
 	// The file data
 	unsigned char* m_Data;

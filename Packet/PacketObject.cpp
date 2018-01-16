@@ -5,7 +5,7 @@
 #include "PacketFileDataOperations.h"
 #include <fstream>
 
-Packet::PacketObject::PacketObject()
+Packet::PacketObject::PacketObject() : m_FileLoader(this)
 {
 }
 

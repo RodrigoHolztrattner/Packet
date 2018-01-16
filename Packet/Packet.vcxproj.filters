@@ -12,6 +12,7 @@
     <ClCompile Include="PacketFileDataOperations.cpp" />
     <ClCompile Include="PacketFile.cpp" />
     <ClCompile Include="PacketFileLoader.cpp" />
+    <ClCompile Include="PacketFileLoaderQueue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -25,5 +26,6 @@
     <ClInclude Include="PacketFileDataOperations.h" />
     <ClInclude Include="PacketFile.h" />
     <ClInclude Include="PacketFileLoader.h" />
+    <ClInclude Include="PacketFileLoaderQueue.h" />
   </ItemGroup>
 </Project>

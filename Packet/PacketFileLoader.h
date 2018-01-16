@@ -68,11 +68,8 @@ public: //////////
 	// Process a packet file using the packet object
 	bool ProcessPacketFile(PacketFile* _packetFile);
 
-	// Return a file size
-	unsigned int GetFileSize(PacketObjectManager::FileFragmentIdentifier* _fragmentFileIdentifier);
-
-	// Return the file fragment identifier
-	PacketObjectManager::FileFragmentIdentifier* GetFileFragmentIdentifier(PacketFragment::FileIdentifier _fileIdentifier);
+	// Set the file data
+	bool GetFileData(PacketFragment::FileIdentifier _fileIdentifier, uint32_t& _fileSize, PacketObjectManager::FileFragmentIdentifier& _fileFragmentIdentifier);
 
 private:
 
@@ -90,7 +87,7 @@ private: //////
 	PacketObject* m_PacketObjectReference;
 
 	// The load queue
-	PacketFileLoaderQueue* m_LoadQueue;
+	PacketFileLoaderQueue m_LoadQueue;
 
 	// Or loading thread and mutex
 	std::thread m_LoadingThread;
