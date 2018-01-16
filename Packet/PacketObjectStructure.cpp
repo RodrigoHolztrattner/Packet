@@ -3,6 +3,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketObjectStructure.h"
 #include "PacketFileDataOperations.h"
+#include "PacketStringOperations.h"
+
+#include <experimental/filesystem>
 
 Packet::PacketObjectStructure::PacketObjectStructure()
 {
@@ -105,12 +108,13 @@ bool Packet::PacketObjectStructure::InsertFile(std::string _fileName, PacketObje
 	{
 		return false;
 	}
-
+	
 	// Create the new file object
 	FileObjectType* newFile = new FileObjectType();
 	newFile->fileName = _fileName;
+	newFile->fileExtension = std::experimental::filesystem::path(_fileName).extension().string();
 	newFile->fileHashIdentifier = _fileHashIdentifier;
-	// newFile->filePath = 
+	newFile->filePath = PacketStringOperations::ComposeDirectory(_directoryPath);
 
 	// Insert the new file inside the current folder
 	folder->files.push_back(newFile);
@@ -302,6 +306,9 @@ void Packet::PacketObjectStructure::LoadObjectStructureAux(FolderObjectType* _fo
 		// Save the name
 		newFile->fileName = PacketFileDataOperations::ReadFromData(_data, _location);
 
+		// Save the extension
+		newFile->fileExtension = PacketFileDataOperations::ReadFromData(_data, _location);
+
 		// Save the file path
 		newFile->filePath = PacketFileDataOperations::ReadFromData(_data, _location);
 
@@ -345,6 +352,9 @@ void Packet::PacketObjectStructure::SaveObjectStructureAux(FolderObjectType* _fo
 	{
 		// Save the name
 		PacketFileDataOperations::SaveToData(_data, _location, file->fileName);
+
+		// Save the extension
+		PacketFileDataOperations::SaveToData(_data, _location, file->fileExtension);
 
 		// Save the file path
 		PacketFileDataOperations::SaveToData(_data, _location, file->filePath);

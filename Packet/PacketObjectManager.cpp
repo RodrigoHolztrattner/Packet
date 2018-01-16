@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketObjectManager.h"
 #include "PacketFileDataOperations.h"
+#include "PacketStrings.h"
 
 Packet::PacketObjectManager::PacketObjectManager()
 {
@@ -83,6 +84,12 @@ bool Packet::PacketObjectManager::InsertFile(std::string _filePathOrigin, FileFr
 	std::ifstream file(_filePathOrigin, std::ios::binary | std::ios::ate);
 	std::streamsize size = file.tellg();
 	file.seekg(0, std::ios::beg);
+
+	// Check if the size is valid
+	if (size == -1)
+	{
+		return false;
+	}
 
 	// Read the data
 	std::vector<unsigned char> buffer((unsigned int)size);
@@ -176,6 +183,15 @@ bool Packet::PacketObjectManager::GetFile(std::string _filePathDestination, File
 	// Create the file
 	std::ofstream file(_filePathDestination, std::ios::binary);
 
+	// Check if the file was created successfully
+	if (!file.is_open())
+	{
+		// Desalloc the temporary data
+		delete[] temporaryData;
+
+		return false;
+	}
+
 	// Write the data into the file
 	file.write((char*)temporaryData, sizeof(unsigned char) * fileSize);
 	
@@ -257,7 +273,7 @@ Packet::PacketFragment* Packet::PacketObjectManager::CreateNewFragment()
 	uint32_t totalFragments = m_Fragments.size();
 
 	// Compose the new fragment name
-	std::string fragmentName = m_PacketObjectAttributes.packetObjectName + FragmentComplementName + std::to_string(totalFragments);
+	std::string fragmentName = m_PacketObjectAttributes.packetObjectName + PacketStrings::FragmentComplementName + std::to_string(totalFragments);
 
 	// Create the new fragment info
 	FragmentInfo newFragmentInfo;

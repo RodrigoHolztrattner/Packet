@@ -61,6 +61,9 @@ private:
 		// This file name
 		std::string fileName;
 
+		// This file extension
+		std::string fileExtension;
+
 		// The file complete path
 		std::string filePath;
 

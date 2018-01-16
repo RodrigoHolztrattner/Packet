@@ -11,6 +11,7 @@
 #include "PacketObjectManager.h"
 #include "PacketObjectStructure.h"
 #include "PacketObjectHashTable.h"
+#include "PacketError.h"
 
 #include <string>
 #include <stack>
@@ -95,6 +96,9 @@ public: //////////
 	// Return the current path
 	std::string GetCurrentPath();
 
+	// Return the error object
+	PacketError GetError();
+
 private:
 
 	// Put a file <inside the given path> aux
@@ -123,6 +127,9 @@ private: //////
 
 	// The packet hash table reference
 	PacketObjectHashTable& m_PacketHashTableReference;
+
+	// The error object
+	PacketError m_ErrorObject;
 };
 
 // Packet data explorer

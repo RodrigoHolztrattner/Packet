@@ -3,7 +3,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketObject.h"
 #include "PacketFileDataOperations.h"
+#include "PacketStrings.h"
+
 #include <fstream>
+#include <experimental/filesystem>
 
 Packet::PacketObject::PacketObject() : m_FileLoader(this)
 {
@@ -15,6 +18,9 @@ Packet::PacketObject::~PacketObject()
 
 bool Packet::PacketObject::InitializeEmpty(std::string _packetName, uint32_t _maximumFragmentSize)
 {
+	// Verify the packet name extension?
+	// not necessary
+
 	// Set the pack name and the maximum fragment size
 	m_PacketObjectName = _packetName;
 	m_MaximumFragmentSize = _maximumFragmentSize;
@@ -23,6 +29,9 @@ bool Packet::PacketObject::InitializeEmpty(std::string _packetName, uint32_t _ma
 	m_ObjectStructure.InitializeEmpty(_packetName);
 	m_ObjectHashTable.InitializeEmpty();
 	m_ObjectManager.InitializeEmpty(_packetName, _maximumFragmentSize);
+
+	// Set the oppened file path
+	m_OppenedFilePath = _packetName + PacketStrings::PacketExtensionType;
 
 	return true;
 }
@@ -75,10 +84,11 @@ bool Packet::PacketObject::SavePacketData()
 		return false;
 	}
 
-	return SavePacketData(m_OppenedFilePath);
+	// Save using the packet extension
+	return SavePacketDataAux(m_OppenedFilePath);
 }
 
-bool Packet::PacketObject::SavePacketData(std::string _filePath)
+bool Packet::PacketObject::SavePacketDataAux(std::string _filePath)
 {
 	// Our result vector 
 	std::vector<unsigned char> resultVector;
@@ -90,8 +100,8 @@ bool Packet::PacketObject::SavePacketData(std::string _filePath)
 
 	// Process the data sizes
 	uint32_t structureLocation = 0;
-	uint32_t hashLocation = structureLocation + structureData.size();
-	uint32_t managerLocation = hashLocation + hashData.size();
+	uint32_t hashLocation = structureLocation + (uint32_t)structureData.size();
+	uint32_t managerLocation = hashLocation + (uint32_t)hashData.size();
 
 	// Our initial data location
 	uint32_t currentDataLocation = 0;
@@ -124,9 +134,6 @@ bool Packet::PacketObject::SavePacketData(std::string _filePath)
 
 	// Close the file
 	file.close();
-
-	// Set the oppened file path
-	m_OppenedFilePath = _filePath;
 
 	return true;
 }

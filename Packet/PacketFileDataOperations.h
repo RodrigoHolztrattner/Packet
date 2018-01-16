@@ -110,7 +110,7 @@ public: //////////
 	static void SaveToData(std::vector<unsigned char>& _data, uint32_t& _position, std::string& _string)
 	{
 		// The string size
-		uint32_t stringSize = _string.size();
+		uint32_t stringSize = (uint32_t)_string.size();
 
 		// Save the string size from the data
 		SaveToData<uint32_t>(_data, _position, stringSize);
@@ -118,7 +118,7 @@ public: //////////
 		// Copy the string data
 		std::vector<unsigned char> temp(_string.begin(), _string.end());
 		_data.insert(_data.end(), temp.begin(), temp.end());
-		_position += sizeof(unsigned char) * _string.size();
+		_position += sizeof(unsigned char) * (uint32_t)_string.size();
 	}
 
 private:

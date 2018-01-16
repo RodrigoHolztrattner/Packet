@@ -9,6 +9,7 @@
 #include "PacketConfig.h"
 #include "PacketFragment.h"
 #include "PacketObjectManager.h"
+#include "PacketError.h"
 
 #include <string>
 
@@ -125,7 +126,6 @@ private:
 
 	// Release?
 
-	// Criar flag dirty?
 
 private:
 
@@ -158,6 +158,9 @@ private: //////
 
 	// The file data
 	unsigned char* m_Data;
+
+	// The error object
+	PacketError m_ErrorObject;
 };
 
 // Packet data explorer

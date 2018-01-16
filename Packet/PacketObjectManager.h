@@ -54,9 +54,6 @@ class PacketObjectManager
 {
 private:
 
-	// The fragment complement name
-	const std::string FragmentComplementName = ".frag";
-
 	// The fragment info
 	struct FragmentInfo
 	{

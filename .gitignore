@@ -294,3 +294,4 @@ default.doxygen
 *.png
 *.data
 *.files
+*.packet

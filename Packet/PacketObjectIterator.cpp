@@ -24,6 +24,8 @@ bool Packet::PacketObjectIterator::Seek(std::string _path)
 	// Check if the path is a folder or a seek command
 	if (!PacketStringOperations::PathIsFolder(_path, false))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorPathNotDirectory);
 		return false;
 	}
 
@@ -33,6 +35,8 @@ bool Packet::PacketObjectIterator::Seek(std::string _path)
 	// Check if the folder path if valid
 	if (!m_PacketStructureReference.DirectoryFromPathIsValid(actionDirectory))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidDirectory);
 		return false;
 	}
 
@@ -55,6 +59,8 @@ bool Packet::PacketObjectIterator::Put(unsigned char* _data, uint32_t _size, std
 	// Check if the iFolderLocation is a folder
 	if (!PacketStringOperations::PathIsFolder(iFolderLocation))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorPathNotDirectory);
 		return false;
 	}
 
@@ -70,12 +76,16 @@ bool Packet::PacketObjectIterator::Put(unsigned char* _data, uint32_t _size, std
 	// Check if we can add this
 	if (m_PacketHashTableReference.EntryExist(iFolderLocation + fileName))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorHashDuplicate);
 		return false;
 	}
 
 	// Check if we already have a file on that location
 	if (m_PacketStructureReference.FileFromPathIsValid(actionDirectory, fileName))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorFileFromPathInvalid);
 		return false;
 	}
 
@@ -83,6 +93,8 @@ bool Packet::PacketObjectIterator::Put(unsigned char* _data, uint32_t _size, std
 	PacketObjectManager::FileFragmentIdentifier fileFragmentIdentifier;
 	if (!m_PacketManagerReference.InsertData(_data, _size, fileFragmentIdentifier))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidFileData);
 		return false;
 	}
 
@@ -92,6 +104,8 @@ bool Packet::PacketObjectIterator::Put(unsigned char* _data, uint32_t _size, std
 	// Insert the new file inside the current folder
 	if (!m_PacketStructureReference.InsertFile(fileName, fileHashIdentifier, actionDirectory))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorStructureInsert);
 		return false;
 	}
 
@@ -128,6 +142,8 @@ bool Packet::PacketObjectIterator::Get(std::string _iFileLocation, unsigned char
 	// Check if the iFileLocation is a file
 	if (!PacketStringOperations::PathIsFile(_iFileLocation))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorPathNotFile);
 		return false;
 	}
 
@@ -146,6 +162,8 @@ bool Packet::PacketObjectIterator::Get(std::string _iFileLocation, unsigned char
 	// Check if we have a file on that location
 	if (!m_PacketStructureReference.FileFromPathIsValid(actionDirectory, fileName))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorFileFromPathDuplicated);
 		return false;
 	}
 
@@ -153,12 +171,16 @@ bool Packet::PacketObjectIterator::Get(std::string _iFileLocation, unsigned char
 	PacketObjectManager::FileFragmentIdentifier* fileFragmentIdentifier = m_PacketHashTableReference.GetEntry(stringDir + fileName);
 	if (fileFragmentIdentifier == nullptr)
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorHashDuplicate);
 		return false;
 	}
 
 	// Get the file
 	if (!m_PacketManagerReference.GetData(_data, *fileFragmentIdentifier))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorRetrieveData);
 		return false;
 	}
 
@@ -170,6 +192,7 @@ bool Packet::PacketObjectIterator::Get(std::string _iFileLocation)
 	// Check if the iFileLocation is a file
 	if (!PacketStringOperations::PathIsFile(_iFileLocation))
 	{
+		m_ErrorObject.Set(PacketErrorPathNotFile);
 		return false;
 	}
 
@@ -184,6 +207,7 @@ bool Packet::PacketObjectIterator::Get(std::string _iFileLocation, std::string _
 	// Check if the iFileLocation is a file
 	if (!PacketStringOperations::PathIsFile(_iFileLocation))
 	{
+		m_ErrorObject.Set(PacketErrorPathNotFile);
 		return false;
 	}
 
@@ -207,6 +231,7 @@ bool Packet::PacketObjectIterator::MakeDir(std::string _dirPath)
 	// Check if the dir is a folder path
 	if (!PacketStringOperations::PathIsFolder(_dirPath))
 	{
+		m_ErrorObject.Set(PacketErrorPathNotDirectory);
 		return false;
 	}
 
@@ -233,9 +258,11 @@ bool Packet::PacketObjectIterator::MakeDir(std::string _dirPath)
 		// Check if we already have a file on that location
 		if (!m_PacketStructureReference.DirectoryFromPathIsValid(currentDirectory, folder))
 		{
-			// try to create the new folder
+			// Try to create the new folder
 			if (!m_PacketStructureReference.InsertFolder(folder, currentDirectory))
 			{
+				// Set the error
+				m_ErrorObject.Set(PacketErrorFolderCreationFailed);
 				return false;
 			}
 		}
@@ -291,6 +318,11 @@ std::string Packet::PacketObjectIterator::GetCurrentPath()
 	return result;
 }
 
+Packet::PacketError Packet::PacketObjectIterator::GetError()
+{
+	return m_ErrorObject;
+}
+
 bool Packet::PacketObjectIterator::PutAux(std::string _outputFilePath, std::string _fileName, std::vector<std::string> _dir, std::string iFolderLocation)
 {
 	/*
@@ -304,12 +336,16 @@ bool Packet::PacketObjectIterator::PutAux(std::string _outputFilePath, std::stri
 	// Check if we can add this
 	if (m_PacketHashTableReference.EntryExist(iFolderLocation + _fileName))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorHashDuplicate);
 		return false;
 	}
 
 	// Check if we already have a file on that location
 	if (m_PacketStructureReference.FileFromPathIsValid(_dir, _fileName))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorFileFromPathInvalid);
 		return false;
 	}
 
@@ -317,6 +353,8 @@ bool Packet::PacketObjectIterator::PutAux(std::string _outputFilePath, std::stri
 	PacketObjectManager::FileFragmentIdentifier fileFragmentIdentifier;
 	if (!m_PacketManagerReference.InsertFile(_outputFilePath, fileFragmentIdentifier))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidFileData);
 		return false;
 	}
 
@@ -324,12 +362,16 @@ bool Packet::PacketObjectIterator::PutAux(std::string _outputFilePath, std::stri
 	PacketObjectHashTable::PacketObjectHash fileHashIdentifier;
 	if (!m_PacketHashTableReference.InsertEntry(iFolderLocation + _fileName, fileFragmentIdentifier, fileHashIdentifier))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorHashDuplicate);
 		return false;
 	}
 
 	// Insert the new file inside the current folder
 	if (!m_PacketStructureReference.InsertFile(_fileName, fileHashIdentifier, _dir))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorStructureInsert);
 		return false;
 	}
 
@@ -343,6 +385,8 @@ bool Packet::PacketObjectIterator::GetAux(std::string _internalFilePath, std::st
 	// Check if we have a file on that location
 	if (!m_PacketStructureReference.FileFromPathIsValid(_dir, _fileName))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorFileFromPathDuplicated);
 		return false;
 	}
 
@@ -350,6 +394,8 @@ bool Packet::PacketObjectIterator::GetAux(std::string _internalFilePath, std::st
 	PacketObjectManager::FileFragmentIdentifier* fileFragmentIdentifier = m_PacketHashTableReference.GetEntry(_internalFilePath);
 	if (fileFragmentIdentifier == nullptr)
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidFile);
 		return false;
 	}
 
@@ -359,6 +405,8 @@ bool Packet::PacketObjectIterator::GetAux(std::string _internalFilePath, std::st
 	// Get the file
 	if (!m_PacketManagerReference.GetFile(outputDirectory, *fileFragmentIdentifier))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorRetrieveData);
 		return false;
 	}
 

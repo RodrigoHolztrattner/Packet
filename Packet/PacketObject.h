@@ -74,7 +74,6 @@ public: //////////
 
 	// Save this packet data
 	bool SavePacketData();
-	bool SavePacketData(std::string _filePath);
 
 //////////////////
 // MAIN METHODS //
@@ -89,6 +88,9 @@ protected:
 	PacketFileLoader* GetFileLoader();
 
 private:
+
+	// Save this packet data aux
+	bool SavePacketDataAux(std::string _filePath);
 
 	// Return our manager, structure and hash table reference
 	PacketObjectManager* GetObjectManagerReference();

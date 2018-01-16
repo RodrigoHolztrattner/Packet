@@ -2,6 +2,8 @@
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketFragment.h"
+#include "PacketStrings.h"
+
 #include <json.hpp>
 
 Packet::PacketFragment::PacketFragment(std::string _fragmentName)
@@ -291,7 +293,7 @@ bool Packet::PacketFragment::ReadDataFromFile(unsigned char* _data, uint32_t _po
 bool Packet::PacketFragment::ReadMetadata()
 {
 	std::ifstream file;
-	file.open(m_FragmentName + FragmentMetadataExtension);
+	file.open(m_FragmentName + PacketStrings::FragmentMetadataExtension);
 
 	// Check if the file is open
 	if (!file.is_open())
@@ -343,7 +345,7 @@ bool Packet::PacketFragment::SaveMetadata()
 
 	// Set the output file
 	std::ofstream file;
-	file.open(m_FragmentName + FragmentMetadataExtension);
+	file.open(m_FragmentName + PacketStrings::FragmentMetadataExtension);
 	file << json.dump(4);
 	file.close();
 
@@ -353,13 +355,13 @@ bool Packet::PacketFragment::SaveMetadata()
 bool Packet::PacketFragment::OpenDataFile()
 {
 	// Try to open the file
-	m_FragmentDataStream.open(m_FragmentName + FragmentDataExtension, std::ios::in | std::ios::out | std::ios::binary);
+	m_FragmentDataStream.open(m_FragmentName + PacketStrings::FragmentDataExtension, std::ios::in | std::ios::out | std::ios::binary);
 
 	// Check if the file is good
 	if (!m_FragmentDataStream.good()) 
 	{
 		// Try to create a new one
-		m_FragmentDataStream.open(m_FragmentName + FragmentDataExtension, std::ios::out | std::ios::binary);
+		m_FragmentDataStream.open(m_FragmentName + PacketStrings::FragmentDataExtension, std::ios::out | std::ios::binary);
 
 		// Check if the file is good
 		if (!m_FragmentDataStream.good())
@@ -383,7 +385,7 @@ bool Packet::PacketFragment::OpenDataFile()
 		delete[] temporaryBuffer;
 
 		// Try to open the file with the right mode
-		m_FragmentDataStream.open(m_FragmentName + FragmentDataExtension, std::ios::in | std::ios::out | std::ios::binary);
+		m_FragmentDataStream.open(m_FragmentName + PacketStrings::FragmentDataExtension, std::ios::in | std::ios::out | std::ios::binary);
 
 		// Check if the file is good
 		if (!m_FragmentDataStream.good())

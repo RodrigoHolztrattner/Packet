@@ -35,6 +35,8 @@ bool Packet::PacketFile::LoadWithIdentifier(PacketFragment::FileIdentifier _file
 	m_Metadata.fileIdentifier = _fileIdentifier;
 	if (!packetFileLoader->GetFileData(_fileIdentifier, m_Metadata.fileSize, m_Metadata.fileFragmentIdentifier))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidFileIdentifier);
 		return false;
 	}
 
@@ -118,6 +120,8 @@ bool Packet::PacketFile::AllocateData()
 	// Check if our ptr is valid
 	if(m_Data != nullptr)
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorFileDataAlreadyAllocated);
 		return false;
 	}
 
