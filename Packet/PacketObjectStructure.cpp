@@ -94,6 +94,58 @@ bool Packet::PacketObjectStructure::InsertFolder(std::string _folderName, std::v
 	return true;
 }
 
+bool Packet::PacketObjectStructure::RemoveFolder(std::string _folderName, std::vector<std::string>& _directoryPath)
+{
+	// Try to get the folder
+	FolderObjectType* folder = GetFolderFromDirectory(_directoryPath);
+	if (folder == nullptr)
+	{
+		return false;
+	}
+
+	// Try to get the parent folder
+	FolderObjectType* parentFolder = GetFolderFromDirectory(_directoryPath, true);
+	if (parentFolder == nullptr)
+	{
+		return false;
+	}
+
+	// Check if we are trying to delete the root folder
+	if (folder == parentFolder)
+	{
+		// We can't delete the root folder
+		return false;
+	}
+
+	// Check if there are any filder os sub-folders for the given folder
+	if (folder->subFolders.size() > 0 || folder->files.size() > 0)
+	{
+		// We can't delete this folder because it isn't empty
+		return false;
+	}
+
+	// For each subfolder inside the parent folder
+	for (int i = 0; i < parentFolder->subFolders.size(); i++)
+	{
+		// Get the current folder
+		FolderObjectType* currentFolder = parentFolder->subFolders[i];
+
+		// Compare the names
+		if (_folderName.compare(currentFolder->folderName) == 0)
+		{
+			// Delete this folder
+			delete currentFolder;
+
+			// Remove this folder from the parent one
+			parentFolder->subFolders.erase(parentFolder->subFolders.begin() + i);
+
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 bool Packet::PacketObjectStructure::InsertFile(std::string _fileName, PacketObjectHashTable::PacketObjectHash _fileHashIdentifier, std::vector<std::string>& _directoryPath)
 {
 	// Try to get the folder
@@ -120,6 +172,38 @@ bool Packet::PacketObjectStructure::InsertFile(std::string _fileName, PacketObje
 	folder->files.push_back(newFile);
 
 	return true;
+}
+
+bool Packet::PacketObjectStructure::RemoveFile(std::string _fileName, std::vector<std::string>& _directoryPath)
+{
+	// Try to get the folder
+	FolderObjectType* folder = GetFolderFromDirectory(_directoryPath);
+	if (folder == nullptr)
+	{
+		return false;
+	}
+
+	// For each file inside this folder
+	for (int i=0; i<folder->files.size(); i++)
+	{
+		// Get the current file
+		FileObjectType* file = folder->files[i];
+
+		// Compare the names
+		if (_fileName.compare(file->fileName) == 0)
+		{
+			// Delete this file
+			delete file;
+
+			// Remove this file
+			folder->files.erase(folder->files.begin() + i);
+
+			return true;
+		}
+	}
+
+	// There is no file with the given filename here
+	return false;
 }
 
 bool Packet::PacketObjectStructure::DirectoryFromPathIsValid(std::vector<std::string>& _directoryPath)
@@ -198,10 +282,11 @@ std::string Packet::PacketObjectStructure::GetRootName()
 	return m_RootFolder->folderName;
 }
 
-Packet::PacketObjectStructure::FolderObjectType* Packet::PacketObjectStructure::GetFolderFromDirectory(std::vector<std::string>& _directoryPath)
+Packet::PacketObjectStructure::FolderObjectType* Packet::PacketObjectStructure::GetFolderFromDirectory(std::vector<std::string>& _directoryPath, bool _returnParentFolder)
 {
 	// For each folder inside the path
 	FolderObjectType* currentFolder = m_RootFolder;
+	FolderObjectType* lastFolder = currentFolder;
 	for (auto& directoryName : _directoryPath)
 	{
 		// If we found the directory
@@ -214,6 +299,7 @@ Packet::PacketObjectStructure::FolderObjectType* Packet::PacketObjectStructure::
 			if (directoryName.compare(folder->folderName) == 0)
 			{
 				// Set the new current folder
+				lastFolder = currentFolder;
 				currentFolder = folder;
 
 				// Set found to true
@@ -229,6 +315,12 @@ Packet::PacketObjectStructure::FolderObjectType* Packet::PacketObjectStructure::
 			// Invalid path
 			return nullptr;
 		}
+	}
+
+	// Check if we should return the parent folder
+	if (_returnParentFolder)
+	{
+		return lastFolder;
 	}
 
 	return currentFolder;

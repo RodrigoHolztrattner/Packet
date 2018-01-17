@@ -72,14 +72,14 @@ public: //////////
 	// Seek to the given path
 	bool Seek(std::string _path);
 
+	// Create a dir <inside the current path>
+	bool MakeDir(std::string _dirPath);
+
 	// Put a file/data <inside the current path>
 	bool Put(unsigned char* _data, uint32_t _size);
 	bool Put(unsigned char* _data, uint32_t _size, std::string iFolderLocation);
 	bool Put(std::string _filePath, std::string iFolderLocation);
 	bool Put(std::string _filePath);
-
-	// Create a dir <inside the current path>
-	bool MakeDir(std::string _dirPath);
 
 	// Get a file/data <from the current path>
 	bool Get(std::string _iFileLocation, unsigned char* _data, uint32_t _size);
@@ -87,7 +87,7 @@ public: //////////
 	bool Get(std::string _iFileLocation, std::string _oFileLocation);
 
 	// Delete the current path <file>
-	bool Delete(std::string _path);
+	bool Delete(std::string _iLocation);
 
 	// Get a list of each folder and file from the given path
 	std::vector<std::string> List();
@@ -106,6 +106,10 @@ private:
 
 	// Get a file <from the given path> aux
 	bool GetAux(std::string _internalFilePath, std::string _fileName, std::vector<std::string> _dir, std::string _outputFilePath);
+
+	// Delete a file/folder recursivelly
+	bool DeleteFile(std::string _iFileLocation);
+	bool DeleteFolder(std::string _iFolderLocation);
 
 private:
 

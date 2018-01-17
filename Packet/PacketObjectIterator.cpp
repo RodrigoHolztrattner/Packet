@@ -274,9 +274,84 @@ bool Packet::PacketObjectIterator::MakeDir(std::string _dirPath)
 	return true;
 }
 
-bool Packet::PacketObjectIterator::Delete(std::string _path)
+bool Packet::PacketObjectIterator::Delete(std::string _iLocation)
 {
+	// Check if the _iLocation is a file
+	if (PacketStringOperations::PathIsFile(_iLocation))
+	{
+		return DeleteFile(_iLocation);
+	}
+
+	// Check if the _iLocation is a folder
+	if (PacketStringOperations::PathIsFolder(_iLocation))
+	{
+		return DeleteFolder(_iLocation);
+	}
+
+	// Invalid input path
+	return false;
+
+	// TODO: CHECK IF THE PATH IS A FILE OR FOLDER
+	return false;
+
+	// Get the file name from the path
+	std::string fileName = PacketStringOperations::GetFilenameFromPath(_iLocation);
+
+	// Get the file directory only
+	std::string fileDirectory = PacketStringOperations::GetDirectoryFromPath(_iLocation);
+
+	// Compose the action directory
+	std::vector<std::string> actionDirectory = ComposeActionDirectory(fileDirectory, true);
+
+	// Compose the string directory
+	std::string stringDir = PacketStringOperations::ComposeDirectory(actionDirectory);
+
+	// Check if we have a file on that location
+	if (!m_PacketStructureReference.FileFromPathIsValid(actionDirectory, fileName))
+	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorFileFromPathDuplicated);
+		return false;
+	}
+
+	// Get the file fragment identifier and check if it is valid
+	PacketObjectManager::FileFragmentIdentifier* fileFragmentIdentifier = m_PacketHashTableReference.GetEntry(stringDir + fileName);
+	if (fileFragmentIdentifier == nullptr)
+	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidFile);
+		return false;
+	}
+
+	// Remove the file
+	if (!m_PacketManagerReference.RemoveFile(*fileFragmentIdentifier))
+	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorDeleteFile);
+		return false;
+	}
+
+	// Remove the hash reference
+	if (!m_PacketHashTableReference.RemoveEntry(stringDir + fileName))
+	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorDeleteHashEntry);
+		return false;
+	}
+
+	// Remove the structure reference
+	// if(!m_PacketStructureReference.Remove)
 	return true;
+}
+
+bool Packet::PacketObjectIterator::DeleteFile(std::string _iFileLocation)
+{
+
+}
+
+bool Packet::PacketObjectIterator::DeleteFolder(std::string _iFolderLocation)
+{
+
 }
 
 std::vector<std::string> Packet::PacketObjectIterator::List()
@@ -325,14 +400,6 @@ Packet::PacketError Packet::PacketObjectIterator::GetError()
 
 bool Packet::PacketObjectIterator::PutAux(std::string _outputFilePath, std::string _fileName, std::vector<std::string> _dir, std::string iFolderLocation)
 {
-	/*
-	// Check if the given path is valid
-	if (!std::experimental::filesystem::is_regular_file(_filePath))
-	{
-		return false;
-	}
-	*/
-
 	// Check if we can add this
 	if (m_PacketHashTableReference.EntryExist(iFolderLocation + _fileName))
 	{

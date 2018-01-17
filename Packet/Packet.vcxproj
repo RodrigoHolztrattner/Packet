@@ -149,6 +149,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Packet.cpp" />
+    <ClCompile Include="PacketError.cpp" />
     <ClCompile Include="PacketFile.cpp" />
     <ClCompile Include="PacketFileDataOperations.cpp" />
     <ClCompile Include="PacketFileLoader.cpp" />
@@ -160,9 +161,11 @@
     <ClCompile Include="PacketObjectManager.cpp" />
     <ClCompile Include="PacketObjectStructure.cpp" />
     <ClCompile Include="PacketStringOperations.cpp" />
+    <ClCompile Include="PacketStrings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
+    <ClInclude Include="PacketError.h" />
     <ClInclude Include="PacketFile.h" />
     <ClInclude Include="PacketFileDataOperations.h" />
     <ClInclude Include="PacketFileLoader.h" />
@@ -174,6 +177,7 @@
     <ClInclude Include="PacketObjectManager.h" />
     <ClInclude Include="PacketObjectStructure.h" />
     <ClInclude Include="PacketStringOperations.h" />
+    <ClInclude Include="PacketStrings.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

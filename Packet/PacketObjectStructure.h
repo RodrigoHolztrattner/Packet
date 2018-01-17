@@ -110,11 +110,13 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
-	// Insert a new folder inside the given directory
+	// Insert/remove a new folder inside the given directory
 	bool InsertFolder(std::string _folderName, std::vector<std::string>& _directoryPath);
+	bool RemoveFolder(std::string _folderName, std::vector<std::string>& _directoryPath);
 
-	// Insert a file inside the given directory
+	// Insert/remove a file inside the given directory
 	bool InsertFile(std::string _fileName, PacketObjectHashTable::PacketObjectHash _fileHashIdentifier, std::vector<std::string>& _directoryPath);
+	bool RemoveFile(std::string _fileName, std::vector<std::string>& _directoryPath);
 
 	// Check if the given directory path is valid
 	bool DirectoryFromPathIsValid(std::vector<std::string>& _directoryPath);
@@ -132,7 +134,7 @@ public: //////////
 private:
 
 	// Return a folder from the given path
-	FolderObjectType* GetFolderFromDirectory(std::vector<std::string>& _directoryPath);
+	FolderObjectType* GetFolderFromDirectory(std::vector<std::string>& _directoryPath, bool _returnParentFolder = false);
 
 	// Return a file from the given path and filename
 	FileObjectType* GetFileFromDirectory(std::vector<std::string>& _directoryPath, std::string _fileName);

@@ -53,6 +53,9 @@ PacketNamespaceBegin(Packet)
 #define PacketErrorStructureInsert			509
 #define PacketErrorRetrieveData				510
 #define PacketErrorFolderCreationFailed		511
+#define PacketErrorDeleteFile				512
+#define PacketErrorDeleteHashEntry			513
+#define PacketErrorDeleteStructureEntry		514
 
 // PacketFile errors
 #define PacketErrorInvalidFileIdentifier	1101

@@ -42,6 +42,9 @@ void Packet::PacketError::Set(uint32_t _errorIdentifier)
 		case PacketErrorStructureInsert:		{m_ErrorMessage = "Problem when adding the file into our internal strcture system"; break; }
 		case PacketErrorRetrieveData:			{m_ErrorMessage = "Problem when retrieving the file data"; break; }
 		case PacketErrorFolderCreationFailed:	{m_ErrorMessage = "Folder creation wasn't successful"; break; }		
+		case PacketErrorDeleteFile:				{m_ErrorMessage = "Error deleting the file"; break; }
+		case PacketErrorDeleteHashEntry:		{m_ErrorMessage = "Error removing the file hash entry"; break; }
+		case PacketErrorDeleteStructureEntry:	{m_ErrorMessage = "Error removing the file structure entry"; break; }							
 
 		// PacketFile errors
 		case PacketErrorInvalidFileIdentifier:		{m_ErrorMessage = "The given file identifier seems to be invalid, we can't retrieve the metadata with it"; break; }

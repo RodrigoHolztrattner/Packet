@@ -25,18 +25,18 @@
 
 */
 
-TODO:
+// TODO:
 /*
-	- Adicionar forma de verificar erros (retornar os erros de alguma forma)
-	- Log opcional de quando algo é feito usando o iterator (arquivo tal foi colocado em tal pasta, path: blabla.bla, arquivo tal foi deletado, etc)
-	- Ver uma forma precisa de descobrir se um path é um arquivo ou dir apenas (validar tal coisa no modo iterator)
-	- Ver uma forma precisa de pegar a extensão de um arquivo (adicionar unknow? caso desconhecido)
-	- Adicionar extenções dos arquivos como um field de metadado
+	- (DONE) Adicionar forma de verificar erros (retornar os erros de alguma forma)
+	- (NÃO NECESSÁRIO, CASO ALGO DE ERRADO EXISTE A OPÇÃO VERBOSE DE ERROS) Log opcional de quando algo é feito usando o iterator (arquivo tal foi colocado em tal pasta, path: blabla.bla, arquivo tal foi deletado, etc)
+	- (NOT DONE: POSSÍVEL MAS MEIO INÚTIL) Ver uma forma precisa de descobrir se um path é um arquivo ou dir apenas (validar tal coisa no modo iterator)
+	- (DONE) Ver uma forma precisa de pegar a extensão de um arquivo (adicionar unknow? caso desconhecido)
+	- (DONE) Adicionar extenções dos arquivos como um field de metadado
 	- Adicionar alguma extensão para debug no modo PacketFile
 	- Verificar em quais casos um novo fragment é criado (e se esses casos estão ok)
-	- Criar um arquivo que contenha todos as strings usadas (extensões, nomes de arquivos, etc)
-	- Criar um .bla conhecido por esse formato, pode ser o proprio .packet
-	- Modificar a extensão dos nomes dos fragments
+	- (DONE) Criar um arquivo que contenha todos as strings usadas (extensões, nomes de arquivos, etc)
+	- (DONE) Criar um .bla conhecido por esse formato, pode ser o proprio .packet
+	- (DONE?) Modificar a extensão dos nomes dos fragments
 	- Criar função delete no iterator
 	- Criar função move no iterator
 	- Criar função de otimização no manager
@@ -233,15 +233,7 @@ void Console()
 		// Save
 		if (commands[0].compare("save") == 0)
 		{
-			if (commands.size() == 2)
-			{
-				packetObject.SavePacketData(commands[1]);
-			}
-			else
-			{
-				packetObject.SavePacketData();
-			}
-			
+			packetObject.SavePacketData();
 		}
 
 		// Exit

@@ -69,7 +69,7 @@ Packet::PacketFile::DispatchType Packet::PacketFile::GetDispatchType()
 
 bool Packet::PacketFile::IsReady()
 {
-	return m_IsReady;
+	return m_IsReady && !m_ErrorObject.IsSet();
 }
 
 bool Packet::PacketFile::AllocationIsDelayed()
@@ -80,6 +80,11 @@ bool Packet::PacketFile::AllocationIsDelayed()
 bool Packet::PacketFile::IsDirty()
 {
 	return m_IsDirty;
+}
+
+bool Packet::PacketFile::HasError()
+{
+	return m_ErrorObject.IsSet();
 }
 
 Packet::PacketFragment::FileIdentifier Packet::PacketFile::GetFileIdentifier()

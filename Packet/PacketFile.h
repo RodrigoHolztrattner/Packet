@@ -108,6 +108,9 @@ public: //////////
 	// Return if this file is dirty
 	bool IsDirty();
 
+	// Return if there is an error on this file
+	bool HasError();
+
 protected:
 
 	// Allocate this file data
