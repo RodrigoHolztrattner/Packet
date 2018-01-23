@@ -11,6 +11,8 @@
 #include "PacketObjectManager.h"
 #include "PacketObjectStructure.h"
 #include "PacketObjectHashTable.h"
+#include "PacketObjectIteratorPath.h"
+#include "PacketObjectTemporaryPath.h"
 #include "PacketError.h"
 
 #include <string>
@@ -78,13 +80,13 @@ public: //////////
 	// Put a file/data <inside the current path>
 	bool Put(unsigned char* _data, uint32_t _size);
 	bool Put(unsigned char* _data, uint32_t _size, std::string iFolderLocation);
-	bool Put(std::string _filePath, std::string iFolderLocation);
-	bool Put(std::string _filePath);
+	bool Put(std::string _filePath, std::string iFolderLocation);		// External location to get / internal path to put
+	bool Put(std::string _filePath);									// External location to get
 
 	// Get a file/data <from the current path>
 	bool Get(std::string _iFileLocation, unsigned char* _data, uint32_t _size);
-	bool Get(std::string _iFileLocation);
-	bool Get(std::string _iFileLocation, std::string _oFileLocation);
+	bool Get(std::string _iFileLocation);								// Internal location to get
+	bool Get(std::string _iFileLocation, std::string _oFileLocation);	// Internal location to get / external location to put 
 
 	// Delete the current path <file>
 	bool Delete(std::string _iLocation);
@@ -102,10 +104,10 @@ public: //////////
 private:
 
 	// Put a file <inside the given path> aux
-	bool PutAux(std::string _filePath, std::string _fileName, std::vector<std::string> _dir, std::string _stringDir);
+	bool PutAux(PacketObjectTemporaryPath& _temporaryPath);
 
 	// Get a file <from the given path> aux
-	bool GetAux(std::string _internalFilePath, std::string _fileName, std::vector<std::string> _dir, std::string _outputFilePath);
+	bool GetAux(PacketObjectTemporaryPath& _temporaryPath);
 
 	// Delete a file/folder recursivelly
 	bool DeleteFile(std::string _iFileLocation);
@@ -113,15 +115,12 @@ private:
 
 private:
 
-	// Compose the action directory from the given path
-	std::vector<std::string> ComposeActionDirectory(std::string& _path, bool _seeking = false);
-
 ///////////////
 // VARIABLES //
 private: //////
 
-	// The current directory path
-	std::vector<std::string> m_CurrentDirectoryPath;
+	// The iterator path
+	PacketObjectIteratorPath m_IteratorPath;
 
 	// The packet object manager reference
 	PacketObjectManager& m_PacketManagerReference;

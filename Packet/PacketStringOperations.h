@@ -80,16 +80,18 @@ public: //////////
 	static std::vector<std::string> SplitPath(std::string& str);
 
 	// Compose a string dir from the given dir
-	static std::string ComposeDirectory(std::vector<std::string>& _dir);
+	static std::string ComposeDirectory(std::vector<std::string>& _dir, bool _isFile = false);
 
 	// Join a directory with a seek operation
 	static std::vector<std::string> JoinDirectorySeek(std::vector<std::string>& _dir, std::vector<std::string>& _seek);
 
 	// Check if the given path is a file path
 	static bool PathIsFile(std::string _path);
+	static bool PathIsFile(std::vector<std::string> _path);
 
 	// Check if the given path is a folder path
 	static bool PathIsFolder(std::string& _path, bool _ignoreBackDelimiter = true);
+	static bool PathIsFolder(std::vector<std::string>& _path, bool _ignoreBackDelimiter = true);
 
 ///////////////
 // VARIABLES //
