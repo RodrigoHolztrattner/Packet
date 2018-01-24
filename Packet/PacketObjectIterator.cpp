@@ -329,7 +329,10 @@ bool Packet::PacketObjectIterator::DeleteFolder(std::string _iFolderLocation)
 
 std::vector<std::string> Packet::PacketObjectIterator::List()
 {
-	return m_PacketStructureReference.GetFolderList(m_IteratorPath.GetCurrentActionPath());
+	std::vector<std::string> folderList = m_PacketStructureReference.GetFolderList(m_IteratorPath.GetCurrentActionPath());
+	std::vector<std::string> fileList = m_PacketStructureReference.GetFileList(m_IteratorPath.GetCurrentActionPath());
+	folderList.insert(std::end(folderList), std::begin(fileList), std::end(fileList));
+	return folderList;
 }
 
 std::vector<std::string> Packet::PacketObjectIterator::List(std::string _path)
@@ -348,7 +351,10 @@ std::vector<std::string> Packet::PacketObjectIterator::List(std::string _path)
 		}
 	}
 
-	return m_PacketStructureReference.GetFolderList(splitPath);
+	std::vector<std::string> folderList = m_PacketStructureReference.GetFolderList(splitPath);
+	std::vector<std::string> fileList = m_PacketStructureReference.GetFileList(splitPath);
+	folderList.insert(std::end(folderList), std::begin(fileList), std::end(fileList));
+	return folderList;
 }
 
 std::string Packet::PacketObjectIterator::GetCurrentPath()

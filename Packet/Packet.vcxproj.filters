@@ -15,6 +15,8 @@
     <ClCompile Include="PacketFileLoaderQueue.cpp" />
     <ClCompile Include="PacketError.cpp" />
     <ClCompile Include="PacketStrings.cpp" />
+    <ClCompile Include="PacketObjectTemporaryPath.cpp" />
+    <ClCompile Include="PacketObjectIteratorPath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -31,5 +33,7 @@
     <ClInclude Include="PacketFileLoaderQueue.h" />
     <ClInclude Include="PacketError.h" />
     <ClInclude Include="PacketStrings.h" />
+    <ClInclude Include="PacketObjectTemporaryPath.h" />
+    <ClInclude Include="PacketObjectIteratorPath.h" />
   </ItemGroup>
 </Project>

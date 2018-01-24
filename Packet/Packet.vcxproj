@@ -158,8 +158,10 @@
     <ClCompile Include="PacketObject.cpp" />
     <ClCompile Include="PacketObjectHashTable.cpp" />
     <ClCompile Include="PacketObjectIterator.cpp" />
+    <ClCompile Include="PacketObjectIteratorPath.cpp" />
     <ClCompile Include="PacketObjectManager.cpp" />
     <ClCompile Include="PacketObjectStructure.cpp" />
+    <ClCompile Include="PacketObjectTemporaryPath.cpp" />
     <ClCompile Include="PacketStringOperations.cpp" />
     <ClCompile Include="PacketStrings.cpp" />
   </ItemGroup>
@@ -174,8 +176,10 @@
     <ClInclude Include="PacketObject.h" />
     <ClInclude Include="PacketObjectHashTable.h" />
     <ClInclude Include="PacketObjectIterator.h" />
+    <ClInclude Include="PacketObjectIteratorPath.h" />
     <ClInclude Include="PacketObjectManager.h" />
     <ClInclude Include="PacketObjectStructure.h" />
+    <ClInclude Include="PacketObjectTemporaryPath.h" />
     <ClInclude Include="PacketStringOperations.h" />
     <ClInclude Include="PacketStrings.h" />
   </ItemGroup>

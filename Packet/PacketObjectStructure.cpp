@@ -268,6 +268,21 @@ std::vector<std::string> Packet::PacketObjectStructure::GetFolderList(std::vecto
 		result.push_back(childFolder->folderName);
 	}
 
+	return result;
+}
+
+std::vector<std::string> Packet::PacketObjectStructure::GetFileList(std::vector<std::string>& _directoryPath)
+{
+	std::vector<std::string> result;
+
+	// Try to get the folder
+	FolderObjectType* folder = GetFolderFromDirectory(_directoryPath);
+	if (folder == nullptr)
+	{
+		return result;
+
+	}
+
 	// For each child file
 	for (auto* childFile : folder->files)
 	{
