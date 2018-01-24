@@ -230,6 +230,19 @@ void Console()
 			}
 		}
 
+		// Delete
+		if (commands[0].compare("delete") == 0 && commands.size() >= 2)
+		{
+			if (commands.size() == 2)
+			{
+				iterator.Delete(commands[1]);
+			}
+			else
+			{
+				// iterator.Get(commands[1], commands[2]);
+			}
+		}
+
 		// Save
 		if (commands[0].compare("save") == 0)
 		{

@@ -122,6 +122,9 @@ public: //////////
 	// Return this fragment name
 	std::string GetName();
 
+	// Check if this fragment has an unused section of (at last) the given size
+	bool HasUnusedSectionWithAtLast(uint32_t _size);
+
 private:
 
 	// Allocate a section for the given size

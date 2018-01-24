@@ -176,7 +176,7 @@ bool Packet::PacketStringOperations::PathIsFile(std::string _path)
 	return PathIsFile(splitPath);
 }
 
-bool Packet::PacketStringOperations::PathIsFolder(std::vector<std::string>& _path, bool _ignoreBackDelimiter)
+bool Packet::PacketStringOperations::PathIsFolder(std::vector<std::string>& _path, bool _ignoreBackDelimiter, bool _considerRootFolder)
 {
 	// Compose the directory
 	std::string directory = ComposeDirectory(_path);
@@ -184,6 +184,13 @@ bool Packet::PacketStringOperations::PathIsFolder(std::vector<std::string>& _pat
 	// Check if we have at last one string
 	if (_path.size() == 0)
 	{
+		// This can be the root folder, check if we should consider it
+		if (_considerRootFolder)
+		{
+			// Ok, this is probably the root folder, we will consider it as a valid folder
+			return true;
+		}
+
 		return false;
 	}
 

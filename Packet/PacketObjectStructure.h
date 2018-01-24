@@ -122,8 +122,9 @@ public: //////////
 	bool DirectoryFromPathIsValid(std::vector<std::string>& _directoryPath);
 	bool DirectoryFromPathIsValid(std::vector<std::string>& _directoryPath, std::string _directoryName);
 
-	// Check a file from the given path exist
+	// Check if a folder/file from the given path exist
 	bool FileFromPathIsValid(std::vector<std::string>& _directoryPath, std::string _fileName);
+	bool FolderFromPathIsValid(std::vector<std::string>& _directoryPath);
 
 	// Return a list with all folders/files from the given directory
 	std::vector<std::string> GetFolderList(std::vector<std::string>& _directoryPath);

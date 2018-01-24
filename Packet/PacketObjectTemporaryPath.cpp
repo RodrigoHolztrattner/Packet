@@ -178,7 +178,7 @@ bool Packet::PacketObjectTemporaryPath::ComposeTemporaryPathAux(std::vector<std:
 		m_FileExtension = std::experimental::filesystem::path(temporaryStringPath).extension().string();
 	}
 	// Check if the _appendPath is a folder
-	else if (PacketStringOperations::PathIsFolder(_appendPath))
+	else if (PacketStringOperations::PathIsFolder(_appendPath, true, true))
 	{
 		// Set that we are a folder
 		m_IsFile = false;

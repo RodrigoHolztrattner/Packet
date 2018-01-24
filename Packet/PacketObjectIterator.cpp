@@ -249,46 +249,53 @@ bool Packet::PacketObjectIterator::MakeDir(std::string _dirPath)
 
 bool Packet::PacketObjectIterator::Delete(std::string _iLocation)
 {
-	// Check if the _iLocation is a file
-	if (PacketStringOperations::PathIsFile(_iLocation))
+	// Compose the temporary path
+	PacketObjectTemporaryPath temporaryPath(m_PacketStructureReference, m_IteratorPath);
+	if (!temporaryPath.ComposeTemporaryPath(_iLocation))
 	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidDirectory);
+		return false;
+	}
+
+	// Check if the input path is a folder
+	if (temporaryPath.IsFolder() && temporaryPath.IsValid())
+	{
+		// Call the auxiliar folder deletion method
+		return DeleteFolder(_iLocation);
+	}
+	// Check if the input path is a file
+	else if (temporaryPath.IsFile() && temporaryPath.IsValid())
+	{
+		// Call the auxiliar file deletion method
 		return DeleteFile(_iLocation);
 	}
 
-	// Check if the _iLocation is a folder
-	if (PacketStringOperations::PathIsFolder(_iLocation))
-	{
-		return DeleteFolder(_iLocation);
-	}
-
-	// Invalid input path
+	// Ops, we have a problem, we can't determine the input path type
 	return false;
+}
 
-	// TODO: CHECK IF THE PATH IS A FILE OR FOLDER
-	return false;
-
-	// Get the file name from the path
-	std::string fileName = PacketStringOperations::GetFilenameFromPath(_iLocation);
-
-	// Get the file directory only
-	std::string fileDirectory = PacketStringOperations::GetDirectoryFromPath(_iLocation);
-
-	// Compose the action directory
-	std::vector<std::string> actionDirectory = m_IteratorPath.ComposeActionDirectory(fileDirectory, true);
-
-	// Compose the string directory
-	std::string stringDir = PacketStringOperations::ComposeDirectory(actionDirectory);
-
-	// Check if we have a file on that location
-	if (!m_PacketStructureReference.FileFromPathIsValid(actionDirectory, fileName))
+bool Packet::PacketObjectIterator::DeleteFile(std::string _iFileLocation)
+{
+	// Compose the temporary path
+	PacketObjectTemporaryPath temporaryPath(m_PacketStructureReference, m_IteratorPath);
+	if (!temporaryPath.ComposeTemporaryPath(_iFileLocation))
 	{
 		// Set the error
-		m_ErrorObject.Set(PacketErrorFileFromPathDuplicated);
+		m_ErrorObject.Set(PacketErrorInvalidFile);
+		return false;
+	}
+
+	// Ok, we probably are free to delete this file, proceed the remove checking if the path is valid
+	if (!m_PacketStructureReference.FileFromPathIsValid(temporaryPath.GetFolderSplitPath(), temporaryPath.GetFilename()))
+	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidFile);
 		return false;
 	}
 
 	// Get the file fragment identifier and check if it is valid
-	PacketObjectManager::FileFragmentIdentifier* fileFragmentIdentifier = m_PacketHashTableReference.GetEntry(stringDir + fileName);
+	PacketObjectManager::FileFragmentIdentifier* fileFragmentIdentifier = m_PacketHashTableReference.GetEntry(temporaryPath.GetFullPath());
 	if (fileFragmentIdentifier == nullptr)
 	{
 		// Set the error
@@ -305,25 +312,96 @@ bool Packet::PacketObjectIterator::Delete(std::string _iLocation)
 	}
 
 	// Remove the hash reference
-	if (!m_PacketHashTableReference.RemoveEntry(stringDir + fileName))
+	if (!m_PacketHashTableReference.RemoveEntry(temporaryPath.GetFullPath()))
 	{
 		// Set the error
 		m_ErrorObject.Set(PacketErrorDeleteHashEntry);
 		return false;
 	}
 
-	// Remove the structure reference
-	// if(!m_PacketStructureReference.Remove)
-	return true;
-}
+	// Get the current folder split path
+	std::vector<std::string> currentFolderSplitPath = temporaryPath.GetFolderSplitPath();
 
-bool Packet::PacketObjectIterator::DeleteFile(std::string _iFileLocation)
-{
+	// Remove the structure reference
+	if (!m_PacketStructureReference.RemoveFile(temporaryPath.GetFilename(), currentFolderSplitPath))
+	{
+		// Ops, problem when deleting this file from the structure reference
+		return false;
+	}
+
 	return true;
 }
 
 bool Packet::PacketObjectIterator::DeleteFolder(std::string _iFolderLocation)
 {
+	// Compose the temporary path
+	PacketObjectTemporaryPath temporaryPath(m_PacketStructureReference, m_IteratorPath);
+	if (!temporaryPath.ComposeTemporaryPath(_iFolderLocation))
+	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidDirectory);
+		return false;
+	}
+	
+	// Get from the current path the folder list and the file list
+	std::vector<std::string> folderList = m_PacketStructureReference.GetFolderList(temporaryPath.GetFolderSplitPath());
+	std::vector<std::string> fileList = m_PacketStructureReference.GetFileList(temporaryPath.GetFolderSplitPath());
+
+	// For each folder in the folder list
+	for (auto& folderName : folderList)
+	{
+		// Get the current folder split path
+		std::vector<std::string> currentFolderSplitPath = temporaryPath.GetFolderSplitPath();
+
+		// Append the folder name
+		currentFolderSplitPath.push_back(folderName);
+
+		// Call the deletion method for this folder
+		if (!DeleteFolder(PacketStringOperations::ComposeDirectory(currentFolderSplitPath)))
+		{
+			// Ops, we have a problem!
+			return false;
+		}
+	}
+
+	// For each file in the file list
+	for (auto& fileName : fileList)
+	{
+		// Get the current folder split path
+		std::vector<std::string> currentFolderSplitPath = temporaryPath.GetFolderSplitPath();
+
+		// Append the file name
+		currentFolderSplitPath.push_back(fileName);
+
+		// Call the deletion method for this file
+		if (!DeleteFile(PacketStringOperations::ComposeDirectory(currentFolderSplitPath)))
+		{
+			// Ops, we have a problem!
+			return false;
+		}
+	}
+
+	// Ok, we probably are free to delete this folder, proceed the remove checking if the path is valid
+	if (!m_PacketStructureReference.FolderFromPathIsValid(temporaryPath.GetFolderSplitPath()))
+	{
+		// Set the error
+		m_ErrorObject.Set(PacketErrorInvalidDirectory);
+		return false;
+	}
+
+	// Get the current folder split path
+	std::vector<std::string> currentFolderSplitPath = temporaryPath.GetFolderSplitPath();
+
+	// Determine the folder name (use the last entry on the split path)
+	std::string folderName = currentFolderSplitPath[currentFolderSplitPath.size() - 1];
+
+	// Remove the structure reference
+	if (!m_PacketStructureReference.RemoveFolder(folderName, currentFolderSplitPath))
+	{
+		// Ops, problem when deleting this folder from the structure reference
+		return false;
+	}
+
 	return true;
 }
 

@@ -91,7 +91,7 @@ public: //////////
 
 	// Check if the given path is a folder path
 	static bool PathIsFolder(std::string& _path, bool _ignoreBackDelimiter = true);
-	static bool PathIsFolder(std::vector<std::string>& _path, bool _ignoreBackDelimiter = true);
+	static bool PathIsFolder(std::vector<std::string>& _path, bool _ignoreBackDelimiter = true, bool _considerRootFolder = false);
 
 ///////////////
 // VARIABLES //

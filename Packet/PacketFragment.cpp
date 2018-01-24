@@ -256,6 +256,22 @@ std::string Packet::PacketFragment::GetName()
 	return m_FragmentName;
 }
 
+bool Packet::PacketFragment::HasUnusedSectionWithAtLast(uint32_t _size)
+{
+	// For each section
+	for (auto& unusedSection : m_FragmentUnusedSections)
+	{
+		// Check the size
+		if (unusedSection.sectionSize >= _size)
+		{
+			// Ok we found an unused section with at last the input size
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool Packet::PacketFragment::WriteDataToFile(unsigned char* _data, uint32_t _position, uint32_t _size)
 {
 	// Check if the stream file is open

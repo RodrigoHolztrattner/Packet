@@ -123,7 +123,8 @@ bool Packet::PacketObjectManager::InsertData(unsigned char* _data, uint32_t _siz
 	}
 
 	// Get a valid fragment object
-	PacketFragment* fragment = GetValidFragment();
+	// PacketFragment* fragment = GetValidFragment();
+	PacketFragment* fragment = GetValidFragmentForSize(_size);
 
 	// Try to insert the data into this fragment
 	PacketFragment::FileIdentifier fileIdentifier;
@@ -254,6 +255,22 @@ Packet::PacketFragment* Packet::PacketObjectManager::GetValidFragment()
 	}
 
 	return m_Fragments[m_Fragments.size() - 1];
+}
+
+Packet::PacketFragment* Packet::PacketObjectManager::GetValidFragmentForSize(uint32_t _size)
+{
+	// For each fragment
+	for (auto& fragment : m_Fragments)
+	{
+		// Check if this fragment has an unused section with at last the input size
+		if (fragment->HasUnusedSectionWithAtLast(_size))
+		{
+			return fragment;
+		}
+	}
+
+	// Create a new fragment
+	return CreateNewFragment();
 }
 
 Packet::PacketFragment* Packet::PacketObjectManager::GetFragmentWithIndex(uint32_t _index)

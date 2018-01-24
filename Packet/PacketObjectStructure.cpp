@@ -241,8 +241,19 @@ bool Packet::PacketObjectStructure::DirectoryFromPathIsValid(std::vector<std::st
 
 bool Packet::PacketObjectStructure::FileFromPathIsValid(std::vector<std::string>& _directoryPath, std::string _fileName)
 {
-	// Try to get the folder
+	// Try to get the file
 	if (GetFileFromDirectory(_directoryPath, _fileName) == nullptr)
+	{
+		return false;
+	}
+	
+	return true;
+}
+
+bool Packet::PacketObjectStructure::FolderFromPathIsValid(std::vector<std::string>& _directoryPath)
+{
+	// Try to get the folder
+	if (GetFolderFromDirectory(_directoryPath) == nullptr)
 	{
 		return false;
 	}

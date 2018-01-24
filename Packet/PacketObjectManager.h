@@ -134,6 +134,7 @@ private:
 
 	// Return a valid fragment object (creating one if necessary)
 	PacketFragment* GetValidFragment();
+	PacketFragment* GetValidFragmentForSize(uint32_t _size);
 
 	// Get the fragment with the given index
 	PacketFragment* GetFragmentWithIndex(uint32_t _index);
