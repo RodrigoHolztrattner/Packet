@@ -42,6 +42,18 @@
 	- Criar função de otimização no manager
 */
 
+/*
+	- Devemos utilizar a hash pois ela contem todos os fragment identifiers (m_PacketHashTableReference).
+	- Teoricamente podemos mudar apenas o fragment identifier (na hash) quando for feita a otimização.
+	- Devemos usar o PacketObjectManager e o PacketObjectHashTable para a otimização.
+	- Preciso colocar uma função de pegar informações do file (pelo menos size).
+
+	- A otimização deve ser dividida em 2 partes:
+		1: Devemos verificar em cada fragmento se existe alguma sessão que pode ser juntada com outra (desde que elas não estejam em uso e uma termine onde a outra comece).
+		2: Do ultimo fragmento até o primeiro (sem contar o primeiro), pegamos cada arquivo e tentamos inserir ele no menor espaço possível que existe entre o primeiro e o 
+		fragmento anterior que começamos a busca. Repete...
+*/
+
 std::vector<std::string> Split(const std::string &txt, char ch)
 {
 	std::vector<std::string> result;

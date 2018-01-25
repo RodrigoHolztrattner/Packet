@@ -123,27 +123,20 @@ bool Packet::PacketObjectManager::InsertData(unsigned char* _data, uint32_t _siz
 	}
 
 	// Get a valid fragment object
-	// PacketFragment* fragment = GetValidFragment();
-	PacketFragment* fragment = GetValidFragmentForSize(_size);
+	uint32_t fragmentIndex;
+	PacketFragment* fragment = GetValidFragmentForSize(_size, fragmentIndex); // PacketFragment* fragment = GetValidFragment();
 
 	// Try to insert the data into this fragment
 	PacketFragment::FileIdentifier fileIdentifier;
 	if (!fragment->InsertData(_data, _size, fileIdentifier))
 	{
-		// Create a new fragment
-		fragment = CreateNewFragment();
-
-		// Try to insert the data now into the new fragment
-		if (!fragment->InsertData(_data, _size, fileIdentifier))
-		{
-			return false;
-		}
+		return false;
 	}
 
 	// Set the file hash identifier
 	// _hashidentifier.fragmentName = fragment->GetName();
 	_hashidentifier.fileIdentifier = fileIdentifier;
-	_hashidentifier.fragmentIndex = m_Fragments.size() - 1;
+	_hashidentifier.fragmentIndex = fragmentIndex;
 
 	return true;
 }
@@ -245,31 +238,38 @@ bool Packet::PacketObjectManager::RemoveFile(FileFragmentIdentifier _hashIdentif
 	return true;
 }
 
-Packet::PacketFragment* Packet::PacketObjectManager::GetValidFragment()
+Packet::PacketFragment* Packet::PacketObjectManager::GetValidFragment(uint32_t& _fragmentIndex)
 {
 	// Check if we have at last one fragment
 	if (m_Fragments.size() == 0)
 	{
 		// Create a new fragment
+		_fragmentIndex = 0;
 		return CreateNewFragment();
 	}
 
+	_fragmentIndex = m_Fragments.size() - 1;
 	return m_Fragments[m_Fragments.size() - 1];
 }
 
-Packet::PacketFragment* Packet::PacketObjectManager::GetValidFragmentForSize(uint32_t _size)
+Packet::PacketFragment* Packet::PacketObjectManager::GetValidFragmentForSize(uint32_t _size, uint32_t& _fragmentIndex)
 {
 	// For each fragment
-	for (auto& fragment : m_Fragments)
+	for (int i=0; i<m_Fragments.size(); i++)
 	{
+		// Get the current fragment
+		auto& fragment = m_Fragments[i];
+
 		// Check if this fragment has an unused section with at last the input size
 		if (fragment->HasUnusedSectionWithAtLast(_size))
 		{
+			_fragmentIndex = i;
 			return fragment;
 		}
 	}
 
 	// Create a new fragment
+	_fragmentIndex = m_Fragments.size();
 	return CreateNewFragment();
 }
 
