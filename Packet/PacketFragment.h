@@ -125,6 +125,9 @@ public: //////////
 	// Check if this fragment has an unused section of (at last) the given size
 	bool HasUnusedSectionWithAtLast(uint32_t _size);
 
+	// Rename this fragment
+	bool Rename(std::string _fragmentName, std::string _extension = PacketStrings::FragmentComplementName);
+
 private:
 
 	// Allocate a section for the given size

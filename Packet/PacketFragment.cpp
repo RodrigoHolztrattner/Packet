@@ -272,6 +272,12 @@ bool Packet::PacketFragment::HasUnusedSectionWithAtLast(uint32_t _size)
 	return false;
 }
 
+bool Packet::PacketFragment::Rename(std::string _fragmentName, std::string _extension)
+{
+	// FragmentTemporaryName
+	return false;
+}
+
 bool Packet::PacketFragment::WriteDataToFile(unsigned char* _data, uint32_t _position, uint32_t _size)
 {
 	// Check if the stream file is open

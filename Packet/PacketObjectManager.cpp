@@ -307,3 +307,50 @@ Packet::PacketFragment* Packet::PacketObjectManager::CreateNewFragment()
 
 	return newFragment;
 }
+
+/*
+	- Cada fragmento deve ter uma funcao de finalizacao para ser otimizado, onde ele renomeia o arquivo aberto para 
+	um nome de backup.
+	- O ObjectManager deve pegar todos os fragmentos antigos e coloca-los em um vector temporario de backup, zerando o 
+	vetor original.
+	- Devemos calcular a melhor forma de insercao, dividindo os arquivos em buckets (do tamanho maximo possivel para um 
+	fragmento).
+	- Apos determinar a ordem, realizar a insercao dos arquivos antigos (lista de backup) normalmente como se fosse um 
+	dado novo, atualizando na hash o identificador.
+
+*/
+bool Packet::PacketObjectManager::Otimize()
+{
+	// Save the old fragments and their infos
+	std::vector<FragmentInfo> fragmentInfos = m_FragmentInfos;
+	std::vector<PacketFragment*> fragments = m_Fragments;
+
+	// Clear the fragment data
+	m_FragmentInfos.clear();
+	m_Fragments.clear();
+
+	// For each old fragment
+	for (auto& fragment : fragments)
+	{
+		// Rename this fragment (to a temporary name)
+		fragment->Rename(fragment->GetName(), PacketStrings::FragmentTemporaryName)
+	}
+
+	aqui
+	/*
+		- Calcular forma de insersao
+		- Inserir
+	*/
+
+	// Delete each old fragment
+	for (auto& fragment : fragments)
+	{
+		// Shitdown the fragment
+		// ...
+
+		// Delete the fragment
+		delete fragment;
+	}
+
+	return false; // TODO
+}

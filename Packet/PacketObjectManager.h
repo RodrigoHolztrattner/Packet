@@ -142,6 +142,9 @@ private:
 	// Create a new fragment object
 	PacketFragment* CreateNewFragment();
 
+	// Otimize all objects
+	bool Otimize();
+
 ///////////////
 // VARIABLES //
 private: //////

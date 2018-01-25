@@ -57,6 +57,9 @@ public: /////
 
 	// The fragment complement name
 	static const std::string FragmentComplementName;
+
+	// The fragment temporary otimization name
+	static const std::string FragmentTemporaryComplementName;
 };
 
 // Packet data explorer

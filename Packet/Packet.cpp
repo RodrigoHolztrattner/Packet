@@ -52,6 +52,8 @@
 		1: Devemos verificar em cada fragmento se existe alguma sessão que pode ser juntada com outra (desde que elas não estejam em uso e uma termine onde a outra comece).
 		2: Do ultimo fragmento até o primeiro (sem contar o primeiro), pegamos cada arquivo e tentamos inserir ele no menor espaço possível que existe entre o primeiro e o 
 		fragmento anterior que começamos a busca. Repete...
+
+
 */
 
 std::vector<std::string> Split(const std::string &txt, char ch)
@@ -220,6 +222,7 @@ void Console()
 		if (commands[0].compare("put") == 0 && commands.size() >= 2)
 		{
 			if (commands.size() == 2)
+
 			{
 				iterator.Put(commands[1]);
 			}
