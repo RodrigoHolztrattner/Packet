@@ -99,7 +99,7 @@ Packet::PacketObject* GetPacket()
 	while (true)
 	{
 		// Print the load/create message
-		std::cout << "cp <name> <size> - create a new pack with name <name> and maximum fragment size <size>" << std::endl;
+		std::cout << "cp <name> <size> - create a new pack with name <name>.packet and maximum fragment size <size>" << std::endl;
 		std::cout << "lp <path> - load an existing pack at <path>" << std::endl;
 
 		// Jump the line
@@ -145,8 +145,11 @@ Packet::PacketObject* GetPacket()
 	///
 	///
 
+
+	/*
 	Packet::PacketFile* newFile = new Packet::PacketFile(newPackObject, Packet::PacketFile::DispatchType::Assync, true);
 	bool result = newFile->LoadWithName("Images\\gimp.png");
+	*/
 
 	return newPackObject;
 }
@@ -183,6 +186,20 @@ void Console()
 		//////////////
 		// COMMANDS //
 		//////////////
+
+		// Info
+		if (commands[0].compare("info") == 0 && commands.size() == 1)
+		{
+			std::cout << "  - cd <path>: Seek to the given <path>" << std::endl;
+			std::cout << "  - mkdir <path>: Create a new folder into the given <path>" << std::endl;
+			std::cout << "  - ls <path(optional)>: List all files and folders in the current directory or in the given <path>" << std::endl;
+			std::cout << "  - put <ext:filepath> <path(optional)>: Put the <ext:filepath> file in the current directory or in the given <path>" << std::endl;
+			std::cout << "  - get <filepath> <ext:path(optional)>: Get the <filepath> file and put it in the current operation system directry or in the <ext:path> location" << std::endl;
+			std::cout << "  - delete <path>: Delete the file or folder on <path>" << std::endl;
+			std::cout << "  - save: This MUST be called before finishing the execution to save all the data" << std::endl;
+
+			std::cout << std::endl;
+		}
 
 		// Seek
 		if (commands[0].compare("cd") == 0 && commands.size() == 2)
