@@ -143,7 +143,7 @@ private:
 	PacketFragment* CreateNewFragment();
 
 	// Otimize all objects
-	bool Otimize();
+	bool Otimize(std::vector<FileFragmentIdentifier> _allFileFragmentIdentifiers, std::vector<FileFragmentIdentifier>& _outputFileFragmentIdentifiers);
 
 ///////////////
 // VARIABLES //

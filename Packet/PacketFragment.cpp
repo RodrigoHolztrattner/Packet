@@ -274,8 +274,31 @@ bool Packet::PacketFragment::HasUnusedSectionWithAtLast(uint32_t _size)
 
 bool Packet::PacketFragment::Rename(std::string _fragmentName, std::string _extension)
 {
-	// FragmentTemporaryName
-	return false;
+	// If the current file is open
+	if (m_FragmentDataStream.is_open())
+	{
+		// Close it
+		m_FragmentDataStream.close();
+	}
+	
+	// Set the new name
+	std::string oldFragmentNameWithExtension = m_FragmentName + PacketStrings::FragmentDataExtension;
+	std::string newFragmentNameWithExtension = m_FragmentName + _extension + PacketStrings::FragmentDataExtension;
+
+	// Rename our fragment
+	std::rename(oldFragmentNameWithExtension.c_str(), newFragmentNameWithExtension.c_str());
+
+	// Append (to the end) the new fragment extension
+	m_FragmentName = m_FragmentName + _extension;
+	
+	// Open the file data
+	bool result = OpenDataFile();
+	if (!result)
+	{
+		return false;
+	}
+	
+	return true;
 }
 
 bool Packet::PacketFragment::WriteDataToFile(unsigned char* _data, uint32_t _position, uint32_t _size)

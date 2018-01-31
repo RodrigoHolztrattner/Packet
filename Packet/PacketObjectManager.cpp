@@ -319,38 +319,84 @@ Packet::PacketFragment* Packet::PacketObjectManager::CreateNewFragment()
 	dado novo, atualizando na hash o identificador.
 
 */
-bool Packet::PacketObjectManager::Otimize()
+bool Packet::PacketObjectManager::Otimize(std::vector<FileFragmentIdentifier> _allFileFragmentIdentifiers, std::vector<FileFragmentIdentifier>& _outputFileFragmentIdentifiers)
 {
 	// Save the old fragments and their infos
-	std::vector<FragmentInfo> fragmentInfos = m_FragmentInfos;
-	std::vector<PacketFragment*> fragments = m_Fragments;
+	std::vector<FragmentInfo> oldFragmentInfos = m_FragmentInfos;
+	std::vector<PacketFragment*> oldFragments = m_Fragments;
 
 	// Clear the fragment data
 	m_FragmentInfos.clear();
 	m_Fragments.clear();
 
 	// For each old fragment
-	for (auto& fragment : fragments)
+	for (auto& fragment : oldFragments)
 	{
 		// Rename this fragment (to a temporary name)
-		fragment->Rename(fragment->GetName(), PacketStrings::FragmentTemporaryName)
+		fragment->Rename(fragment->GetName(), PacketStrings::FragmentTemporaryComplementName);
 	}
 
-	aqui
-	/*
-		- Calcular forma de insersao
-		- Inserir
-	*/
+	// For each file fragment identifier
+	std::map<int, FileFragmentIdentifier, std::greater<int>> insertionMap;
+	for (auto& fileFragmentIdentifier : _allFileFragmentIdentifiers)
+	{
+		// Check the fragment index
+		if (fileFragmentIdentifier.fragmentIndex < 0 || fileFragmentIdentifier.fragmentIndex >= oldFragments.size())
+		{
+			// Invalid fragment index
+			return false;
+		}
+
+		// Get the fragment object
+		PacketFragment* fragment = oldFragments[fileFragmentIdentifier.fragmentIndex];
+		
+		// Get the file size
+		uint32_t fileSize = fragment->GetDataSize(fileFragmentIdentifier.fileIdentifier);
+
+		// Insert the identifier into our ordering map
+		insertionMap.insert(std::pair<int, FileFragmentIdentifier>(fileSize, fileFragmentIdentifier));
+	}
+
+	// Allocate enough data that we will need for moving the files
+	unsigned char* temporaryData = new unsigned char[m_PacketObjectAttributes.maximumFragmentSize * sizeof(unsigned char)];
+
+	// For each file identifier inside our insertion map
+	for (auto& mapEntry : insertionMap)
+	{
+		// Get the file fragment identifier
+		FileFragmentIdentifier& fileFragmentIdentifier = mapEntry.second;
+
+		// Our fragment index should be valid here (we already checked it above) so just get the fragment object
+		PacketFragment* fragment = oldFragments[fileFragmentIdentifier.fragmentIndex];
+
+		// Get the file data
+		fragment->GetData(temporaryData, mapEntry.first);
+
+		// Insert the data into our new fragments
+		FileFragmentIdentifier newFileFragmentIdentifier;
+		bool result = InsertData(temporaryData, mapEntry.first, newFileFragmentIdentifier);
+		if (!result)
+		{
+			// Problem inserting the data
+			return false;
+		}
+
+		// Insert the new file fragment identifier into the output vector
+		_outputFileFragmentIdentifiers.push_back(newFileFragmentIdentifier);
+	}
+
+	// Delete the temporary data
+	delete[] temporaryData;
 
 	// Delete each old fragment
-	for (auto& fragment : fragments)
+	for (auto& fragment : oldFragments)
 	{
-		// Shitdown the fragment
-		// ...
+		// Shutdown the fragment
+		// ... TODO
 
 		// Delete the fragment
 		delete fragment;
 	}
 
-	return false; // TODO
+	return true;
 }

@@ -7,6 +7,7 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
+#include "PacketStrings.h"
 
 #include <json.hpp>
 #include <string>
