@@ -87,8 +87,8 @@ public: //////////
 public: //////////
 
 	// Load the file with the given identifier/name
-	bool LoadWithIdentifier(PacketFragment::FileIdentifier _fileIdentifier);
-	bool LoadWithName(const char* _fileName);
+	bool Load(PacketFragment::FileIdentifier _fileIdentifier);
+	bool Load(const char* _fileName);
 
 	// Set the load callback (the callback will be fired when the loading phase ends)
 	void SetLoadCallback(std::function<void()> _loadCallback);

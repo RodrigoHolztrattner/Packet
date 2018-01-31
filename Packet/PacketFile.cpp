@@ -26,7 +26,7 @@ Packet::PacketFile::~PacketFile()
 	}
 }
 
-bool Packet::PacketFile::LoadWithIdentifier(PacketFragment::FileIdentifier _fileIdentifier)
+bool Packet::PacketFile::Load(PacketFragment::FileIdentifier _fileIdentifier)
 {
 	// Get the packet file loader instance
 	PacketFileLoader* packetFileLoader = m_PacketObjectReference->GetFileLoader();
@@ -47,9 +47,9 @@ bool Packet::PacketFile::LoadWithIdentifier(PacketFragment::FileIdentifier _file
 	return packetFileLoader->ProcessPacketFile(this);
 }
 
-bool Packet::PacketFile::LoadWithName(const char* _fileName)
+bool Packet::PacketFile::Load(const char* _fileName)
 {
-	return LoadWithIdentifier(HashFilePathStatic(_fileName));
+	return Load(HashFilePathStatic(_fileName));
 }
 
 void Packet::PacketFile::SetLoadCallback(std::function<void()> _loadCallback)
