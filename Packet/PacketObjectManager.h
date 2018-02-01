@@ -138,8 +138,8 @@ public: //////////
 
 protected:
 
-	// Otimize all objects
-	bool OtimizeFragmentsUsingIdentifiers(std::vector<FileFragmentIdentifier> _allFileFragmentIdentifiers, std::vector<FileFragmentIdentifier>& _outputFileFragmentIdentifiers);
+	// Optimize all objects
+	bool OptimizeFragmentsUsingIdentifiers(std::vector<FileFragmentIdentifier> _allFileFragmentIdentifiers, std::vector<FileFragmentIdentifier>& _outputFileFragmentIdentifiers);
 
 private:
 

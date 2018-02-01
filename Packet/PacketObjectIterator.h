@@ -91,8 +91,8 @@ public: //////////
 	// Delete the current path <file>
 	bool Delete(std::string _iLocation);
 
-	// Otimize the internal fragments
-	bool Otimize();
+	// Optimize the internal fragments
+	bool Optimize();
 
 	// Get a list of each folder and file from the given path
 	std::vector<std::string> List();

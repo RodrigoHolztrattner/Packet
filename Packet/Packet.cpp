@@ -288,10 +288,10 @@ void Console()
 			exit(0);
 		}
 
-		// Otimize
-		if (commands[0].compare("otimize") == 0)
+		// Optimize
+		if (commands[0].compare("optimize") == 0)
 		{
-			// iterator.Otimize();
+			// iterator.Optimize();
 		}
 	}
 }
