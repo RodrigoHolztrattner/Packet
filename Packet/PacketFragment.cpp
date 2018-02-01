@@ -63,16 +63,16 @@ Packet::PacketFragment::PacketFragment(std::string _fragmentName, uint32_t _maxi
 
 Packet::PacketFragment::~PacketFragment()
 {
-	// Save the metadata
-	bool result = SaveMetadata();
-	if (!result)
-	{
-		// Error saving the metadata!
-	}
-
 	// Check if the stream file is open
 	if (m_FragmentDataStream.is_open())
 	{
+		// Save the metadata
+		bool result = SaveMetadata();
+		if (!result)
+		{
+			// Error saving the metadata!
+		}
+
 		// Close the stream file
 		m_FragmentDataStream.close();
 	}
@@ -282,11 +282,24 @@ bool Packet::PacketFragment::Rename(std::string _fragmentName, std::string _exte
 	}
 	
 	// Set the new name
-	std::string oldFragmentNameWithExtension = m_FragmentName + PacketStrings::FragmentDataExtension;
-	std::string newFragmentNameWithExtension = m_FragmentName + _extension + PacketStrings::FragmentDataExtension;
+	std::string oldDataFragmentNameWithExtension = m_FragmentName + PacketStrings::FragmentDataExtension;
+	std::string newDataFragmentNameWithExtension = m_FragmentName + _extension + PacketStrings::FragmentDataExtension;
+	std::string oldMetaDataFragmentNameWithExtension = m_FragmentName + PacketStrings::FragmentMetadataExtension;
+	std::string newMetaDataFragmentNameWithExtension = m_FragmentName + _extension + PacketStrings::FragmentMetadataExtension;
 
-	// Rename our fragment
-	std::rename(oldFragmentNameWithExtension.c_str(), newFragmentNameWithExtension.c_str());
+	// Rename our data fragment
+	if (std::rename(oldDataFragmentNameWithExtension.c_str(), newDataFragmentNameWithExtension.c_str()) != 0)
+	{
+		// Fail to rename
+		return false;
+	}
+
+	// Rename our meta data fragment
+	if (std::rename(oldMetaDataFragmentNameWithExtension.c_str(), newMetaDataFragmentNameWithExtension.c_str()) != 0)
+	{
+		// Fail to rename
+		return false;
+	}
 
 	// Append (to the end) the new fragment extension
 	m_FragmentName = m_FragmentName + _extension;
@@ -393,6 +406,34 @@ bool Packet::PacketFragment::SaveMetadata()
 	file.open(m_FragmentName + PacketStrings::FragmentMetadataExtension);
 	file << json.dump(4);
 	file.close();
+
+	return true;
+}
+
+bool Packet::PacketFragment::DeleteLocalFileData()
+{
+	// Set the filenames
+	std::string metadataFilename = m_FragmentName + PacketStrings::FragmentMetadataExtension;
+	std::string dataFilename = m_FragmentName + PacketStrings::FragmentDataExtension;
+
+	// Check if the fragment stream is open
+	if (m_FragmentDataStream.is_open())
+	{
+		// Close it
+		m_FragmentDataStream.close();
+	}
+
+	// Delete the metadata file
+	if (std::remove(metadataFilename.c_str()) != 0)
+	{
+		return false;
+	}
+
+	// Delete the data file
+	if (std::remove(dataFilename.c_str()) != 0)
+	{
+		return false;
+	}
 
 	return true;
 }

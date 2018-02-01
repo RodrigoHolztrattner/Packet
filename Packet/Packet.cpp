@@ -291,7 +291,7 @@ void Console()
 		// Optimize
 		if (commands[0].compare("optimize") == 0)
 		{
-			// iterator.Optimize();
+			iterator.Optimize();
 		}
 	}
 }

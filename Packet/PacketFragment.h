@@ -157,6 +157,9 @@ public:
 	// Save the metadata
 	bool SaveMetadata();
 
+	// Delete the local data
+	bool DeleteLocalFileData();
+
 ///////////////
 // VARIABLES //
 private: //////

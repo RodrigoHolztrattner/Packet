@@ -312,7 +312,7 @@ bool Packet::PacketObjectManager::OptimizeFragmentsUsingIdentifiers(std::vector<
 {
 	// TODO:
 	// This method isn't working right now, there is a problem with the filenames when updating the hash values, for now we are returning false
-	return false;
+	// return false;
 
 	///////////////////////////
 	// PREPARE OLD FRAGMENTS //
@@ -333,13 +333,16 @@ bool Packet::PacketObjectManager::OptimizeFragmentsUsingIdentifiers(std::vector<
 		fragment->Rename(fragment->GetName(), PacketStrings::FragmentTemporaryComplementName);
 	}
 
+	// Copy the input data to the output vector
+	_outputFileFragmentIdentifiers = _allFileFragmentIdentifiers;
+
 	//////////////////////////////////////
 	// FILE IDENTIFIER ORDERING BY SIZE //
 	//////////////////////////////////////
 
 	// For each file fragment identifier
-	std::multimap<int, FileFragmentIdentifier, std::greater<int>> insertionMap;
-	for (auto& fileFragmentIdentifier : _allFileFragmentIdentifiers)
+	std::multimap<int, FileFragmentIdentifier&, std::greater<int>> insertionMap;
+	for (auto& fileFragmentIdentifier : _outputFileFragmentIdentifiers)
 	{
 		// Check the fragment index
 		if (fileFragmentIdentifier.fragmentIndex < 0 || fileFragmentIdentifier.fragmentIndex >= oldFragments.size())
@@ -355,7 +358,7 @@ bool Packet::PacketObjectManager::OptimizeFragmentsUsingIdentifiers(std::vector<
 		uint32_t fileSize = fragment->GetDataSize(fileFragmentIdentifier.fileIdentifier);
 
 		// Insert the identifier into our ordering map
-		insertionMap.insert(std::pair<int, FileFragmentIdentifier>(fileSize, fileFragmentIdentifier));
+		insertionMap.insert(std::pair<int, FileFragmentIdentifier&>(fileSize, fileFragmentIdentifier));
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -375,7 +378,11 @@ bool Packet::PacketObjectManager::OptimizeFragmentsUsingIdentifiers(std::vector<
 		PacketFragment* fragment = oldFragments[fileFragmentIdentifier.fragmentIndex];
 
 		// Get the file data
-		fragment->GetData(temporaryData, mapEntry.first);
+		if (!fragment->GetData(temporaryData, fileFragmentIdentifier.fileIdentifier))
+		{
+			// Probem retrieving the data
+			return false;
+		}
 
 		// Insert the data into our new fragments
 		FileFragmentIdentifier newFileFragmentIdentifier;
@@ -386,8 +393,8 @@ bool Packet::PacketObjectManager::OptimizeFragmentsUsingIdentifiers(std::vector<
 			return false;
 		}
 
-		// Insert the new file fragment identifier into the output vector
-		_outputFileFragmentIdentifiers.push_back(newFileFragmentIdentifier);
+		// Update the old file fragment identifier reference
+		fileFragmentIdentifier = newFileFragmentIdentifier; // Both here are references, this will update the output vector
 	}
 
 	/////////////////////////
@@ -400,6 +407,13 @@ bool Packet::PacketObjectManager::OptimizeFragmentsUsingIdentifiers(std::vector<
 	// Delete each old fragment
 	for (auto& fragment : oldFragments)
 	{
+		// Delete the fragment local files
+		if (!fragment->DeleteLocalFileData())
+		{
+			// Error when deleting the local files
+			return false;
+		}
+
 		// Delete the fragment
 		delete fragment;
 	}
