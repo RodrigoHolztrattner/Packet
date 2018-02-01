@@ -35,6 +35,9 @@ PacketNamespaceBegin(Packet)
 // FORWARDING //
 ////////////////
 
+// We know the PacketObjectIterator class (just for accesing a protected method)
+class PacketObjectIterator;
+
 ////////////////
 // STRUCTURES //
 ////////////////
@@ -68,6 +71,9 @@ static uint64_t HashFilePathNonStatic(const char* _filePath)
 class PacketObjectHashTable
 {
 private:
+
+	// The PacketObjectIterator class is a friend (just for accesing a protected method)
+	friend PacketObjectIterator;
 
 public:
 
@@ -112,6 +118,14 @@ public: //////////
 
 	// Check if an entry exist
 	bool EntryExist(std::string _path);
+
+protected:
+
+	// Return our hash table as a vector
+	std::vector<PacketObjectManager::FileFragmentIdentifier> GetHashAsVector();
+
+	// Update the current hash table using a hash vector
+	bool UpdateHashWithVector(std::vector<PacketObjectManager::FileFragmentIdentifier> _hashVector);
 
 ///////////////
 // VARIABLES //

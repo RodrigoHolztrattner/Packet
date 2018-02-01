@@ -135,6 +135,41 @@ bool Packet::PacketObjectHashTable::EntryExist(std::string _path)
 	return true;
 }
 
+std::vector<Packet::PacketObjectManager::FileFragmentIdentifier> Packet::PacketObjectHashTable::GetHashAsVector()
+{
+	std::vector<Packet::PacketObjectManager::FileFragmentIdentifier> result;
+
+	// Move each entry to the vector
+	for (auto it = m_HashTable.begin(); it != m_HashTable.end(); ++it) 
+	{
+		result.push_back(it->second);
+	}
+
+	return result;
+}
+
+bool Packet::PacketObjectHashTable::UpdateHashWithVector(std::vector<PacketObjectManager::FileFragmentIdentifier> _hashVector)
+{
+	// Check if the size match
+	if (m_HashTable.size() != _hashVector.size())
+	{
+		return false;
+	}
+
+	// For each actual entry
+	int index = 0;
+	for (auto& it = m_HashTable.begin(); it != m_HashTable.end(); ++it)
+	{
+		// Update the entry
+		it->second = _hashVector[index];
+
+		// Increment the index
+		index++;
+	}
+
+	return true;
+}
+
 Packet::PacketObjectManager::FileFragmentIdentifier* Packet::PacketObjectHashTable::GetEntry(std::string _path)
 {
 	// Hash the path

@@ -275,6 +275,29 @@ bool Packet::PacketObjectIterator::Delete(std::string _iLocation)
 	return false;
 }
 
+bool Packet::PacketObjectIterator::Otimize()
+{
+	// Get the hash vector from the hash table reference
+	std::vector<Packet::PacketObjectManager::FileFragmentIdentifier> hashVectorOriginal = m_PacketHashTableReference.GetHashAsVector();
+
+	// Set the output vector
+	std::vector<Packet::PacketObjectManager::FileFragmentIdentifier> hashVectorNew;
+
+	// Call the otimize method from the Object Manager
+	if (!m_PacketManagerReference.OtimizeFragmentsUsingIdentifiers(hashVectorOriginal, hashVectorNew))
+	{
+		return false;
+	}
+
+	// Update the hash table with the new data
+	if (!m_PacketHashTableReference.UpdateHashWithVector(hashVectorNew))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool Packet::PacketObjectIterator::DeleteFile(std::string _iFileLocation)
 {
 	// Compose the temporary path

@@ -308,19 +308,16 @@ Packet::PacketFragment* Packet::PacketObjectManager::CreateNewFragment()
 	return newFragment;
 }
 
-/*
-	- Cada fragmento deve ter uma funcao de finalizacao para ser otimizado, onde ele renomeia o arquivo aberto para 
-	um nome de backup.
-	- O ObjectManager deve pegar todos os fragmentos antigos e coloca-los em um vector temporario de backup, zerando o 
-	vetor original.
-	- Devemos calcular a melhor forma de insercao, dividindo os arquivos em buckets (do tamanho maximo possivel para um 
-	fragmento).
-	- Apos determinar a ordem, realizar a insercao dos arquivos antigos (lista de backup) normalmente como se fosse um 
-	dado novo, atualizando na hash o identificador.
-
-*/
-bool Packet::PacketObjectManager::Otimize(std::vector<FileFragmentIdentifier> _allFileFragmentIdentifiers, std::vector<FileFragmentIdentifier>& _outputFileFragmentIdentifiers)
+bool Packet::PacketObjectManager::OtimizeFragmentsUsingIdentifiers(std::vector<FileFragmentIdentifier> _allFileFragmentIdentifiers, std::vector<FileFragmentIdentifier>& _outputFileFragmentIdentifiers)
 {
+	// TODO:
+	// This method isn't working right now, there is a problem with the filenames when updating the hash values, for now we are returning false
+	return false;
+
+	///////////////////////////
+	// PREPARE OLD FRAGMENTS //
+	///////////////////////////
+
 	// Save the old fragments and their infos
 	std::vector<FragmentInfo> oldFragmentInfos = m_FragmentInfos;
 	std::vector<PacketFragment*> oldFragments = m_Fragments;
@@ -336,8 +333,12 @@ bool Packet::PacketObjectManager::Otimize(std::vector<FileFragmentIdentifier> _a
 		fragment->Rename(fragment->GetName(), PacketStrings::FragmentTemporaryComplementName);
 	}
 
+	//////////////////////////////////////
+	// FILE IDENTIFIER ORDERING BY SIZE //
+	//////////////////////////////////////
+
 	// For each file fragment identifier
-	std::map<int, FileFragmentIdentifier, std::greater<int>> insertionMap;
+	std::multimap<int, FileFragmentIdentifier, std::greater<int>> insertionMap;
 	for (auto& fileFragmentIdentifier : _allFileFragmentIdentifiers)
 	{
 		// Check the fragment index
@@ -356,6 +357,10 @@ bool Packet::PacketObjectManager::Otimize(std::vector<FileFragmentIdentifier> _a
 		// Insert the identifier into our ordering map
 		insertionMap.insert(std::pair<int, FileFragmentIdentifier>(fileSize, fileFragmentIdentifier));
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// ALLOCATE TEMPORARY DATA, GET THE OLD DATA AND INSERT IT INTO THE NEW FRAGMENTS //
+	////////////////////////////////////////////////////////////////////////////////////
 
 	// Allocate enough data that we will need for moving the files
 	unsigned char* temporaryData = new unsigned char[m_PacketObjectAttributes.maximumFragmentSize * sizeof(unsigned char)];
@@ -385,15 +390,16 @@ bool Packet::PacketObjectManager::Otimize(std::vector<FileFragmentIdentifier> _a
 		_outputFileFragmentIdentifiers.push_back(newFileFragmentIdentifier);
 	}
 
+	/////////////////////////
+	// FINISH AND SHUTDOWN //
+	/////////////////////////
+
 	// Delete the temporary data
 	delete[] temporaryData;
 
 	// Delete each old fragment
 	for (auto& fragment : oldFragments)
 	{
-		// Shutdown the fragment
-		// ... TODO
-
 		// Delete the fragment
 		delete fragment;
 	}

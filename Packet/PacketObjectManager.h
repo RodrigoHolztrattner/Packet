@@ -47,12 +47,18 @@ PacketNamespaceBegin(Packet)
 	- Deve permitir fazer um agrupamento de itens selecionados (para que os mesmos se encontrem proximos localmente e de rápida leitura).
 */
 
+// We know the PacketObjectIterator class
+class PacketObjectIterator;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketObjectManager
 ////////////////////////////////////////////////////////////////////////////////
 class PacketObjectManager
 {
 private:
+
+	// The PacketObjectIterator is a friend class
+	friend PacketObjectIterator;
 
 	// The fragment info
 	struct FragmentInfo
@@ -130,6 +136,11 @@ public: //////////
 	// Criar uma função que recebe uma função lambda de parâmetro que usaremos quando na otmização um hash identifier trocar de estado
 	// ... TODO
 
+protected:
+
+	// Otimize all objects
+	bool OtimizeFragmentsUsingIdentifiers(std::vector<FileFragmentIdentifier> _allFileFragmentIdentifiers, std::vector<FileFragmentIdentifier>& _outputFileFragmentIdentifiers);
+
 private:
 
 	// Return a valid fragment object (creating one if necessary)
@@ -141,9 +152,6 @@ private:
 
 	// Create a new fragment object
 	PacketFragment* CreateNewFragment();
-
-	// Otimize all objects
-	bool Otimize(std::vector<FileFragmentIdentifier> _allFileFragmentIdentifiers, std::vector<FileFragmentIdentifier>& _outputFileFragmentIdentifiers);
 
 ///////////////
 // VARIABLES //

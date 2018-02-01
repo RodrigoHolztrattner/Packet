@@ -287,6 +287,12 @@ void Console()
 			packetObject.SavePacketData();
 			exit(0);
 		}
+
+		// Otimize
+		if (commands[0].compare("otimize") == 0)
+		{
+			// iterator.Otimize();
+		}
 	}
 }
 
