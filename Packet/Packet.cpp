@@ -8,23 +8,6 @@
 
 #include <iostream>
 
-/*
-
-	- Criar um PacketFileBase que vai funcionar como um "file object", o mesmo será como espaço para receber dados.
-		# Ele pode ter seu espaço alocado, não alocado ou apontado, caso não alocado podemos usar um custom allocator ou alocar no modo default quando for preciso.
-		# Caso alocado (por um custom alocator ou não, tanto faz), colocaremos nele os dados lidos.
-		# Caso apontado, ele aponta para um espaço de memória supostamente válido, logo os dados serão colocados lá.
-
-		# O modo de recebimento dos dados pode ser sincrono ou assincrono, caso seja sincrono nós usaremos algum barrier para carregar assim que for possível (pelo fragment??)
-		# Caso o modo seja assincrono, adicionaremos ele em uma lista (com prioridade??) que fica dentro do fragment (??) que se encarregará de carregá-lo assim que possível
-		
-		# O carregamento de um objeto seta uma variável interna do mesmo como ready (dirty?) e pode realizar a chamada de um callback
-
-
-
-
-*/
-
 // TODO:
 /*
 	- (DONE) Adicionar forma de verificar erros (retornar os erros de alguma forma)
@@ -33,27 +16,17 @@
 	- (DONE) Ver uma forma precisa de pegar a extensão de um arquivo (adicionar unknow? caso desconhecido)
 	- (DONE) Adicionar extenções dos arquivos como um field de metadado
 	- Adicionar alguma extensão para debug no modo PacketFile
-	- Verificar em quais casos um novo fragment é criado (e se esses casos estão ok)
+	- (DONE) Verificar em quais casos um novo fragment é criado (e se esses casos estão ok)
 	- (DONE) Criar um arquivo que contenha todos as strings usadas (extensões, nomes de arquivos, etc)
 	- (DONE) Criar um .bla conhecido por esse formato, pode ser o proprio .packet
 	- (DONE?) Modificar a extensão dos nomes dos fragments
-	- Criar função delete no iterator
+	- (DONE) Criar função delete no iterator
 	- Criar função move no iterator
-	- Criar função de otimização no manager
-*/
-
-/*
-	- Devemos utilizar a hash pois ela contem todos os fragment identifiers (m_PacketHashTableReference).
-	- Teoricamente podemos mudar apenas o fragment identifier (na hash) quando for feita a otimização.
-	- Devemos usar o PacketObjectManager e o PacketObjectHashTable para a otimização.
-	- Preciso colocar uma função de pegar informações do file (pelo menos size).
-
-	- A otimização deve ser dividida em 2 partes:
-		1: Devemos verificar em cada fragmento se existe alguma sessão que pode ser juntada com outra (desde que elas não estejam em uso e uma termine onde a outra comece).
-		2: Do ultimo fragmento até o primeiro (sem contar o primeiro), pegamos cada arquivo e tentamos inserir ele no menor espaço possível que existe entre o primeiro e o 
-		fragmento anterior que começamos a busca. Repete...
-
-
+	- (DONE) Criar função de otimização no manager
+	- Criar uma nova classes (PacketFileHash) que vai funcionar caso o sistema queira ter apenas uma referencia de cada recurso
+	em uso, dessa forma um ponteiro para o mesmo deve ser mantido registrado com a Key de entrada. Deve ser adicionado um contador
+	de referencia (esse possivelmente deve ficar no proprio file por causa do shutdown mas ele precisa comunicar o hash e
+	a storage classes)
 */
 
 std::vector<std::string> Split(const std::string &txt, char ch)
@@ -140,16 +113,6 @@ Packet::PacketObject* GetPacket()
 			}
 		}
 	}
-
-	///
-	///
-	///
-
-
-	/*
-	Packet::PacketFile* newFile = new Packet::PacketFile(newPackObject, Packet::PacketFile::DispatchType::Assync, true);
-	bool result = newFile->LoadWithName("Images\\gimp.png");
-	*/
 
 	return newPackObject;
 }
@@ -265,14 +228,7 @@ void Console()
 		// Delete
 		if (commands[0].compare("delete") == 0 && commands.size() >= 2)
 		{
-			if (commands.size() == 2)
-			{
-				iterator.Delete(commands[1]);
-			}
-			else
-			{
-				// iterator.Get(commands[1], commands[2]);
-			}
+			iterator.Delete(commands[1]);
 		}
 
 		// Save
@@ -301,20 +257,6 @@ void Console()
 int main()
 {
 	Console();
-
-
-
-
-
-
-	// Packet::PacketObject packetObject("Wonderland", 8096);
-
-	// auto iterator = packetObject.GetIterator();
-	// iterator.Put("Old\\Packet.h");
-
-
-	// preciso ver como vai ser a divisão dentro dos arquivos(em sections) e qual o tamanho delas(ou como organizar isso);
-
     return 0;
 }
 
