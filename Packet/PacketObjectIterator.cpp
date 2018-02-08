@@ -122,7 +122,7 @@ bool Packet::PacketObjectIterator::Put(std::string _externalFilePath, std::strin
 	return PutAux(temporaryPath);
 }
 
-bool Packet::PacketObjectIterator::Get(std::string _iFileLocation, unsigned char* _data, uint32_t _size)
+bool Packet::PacketObjectIterator::Get(std::string _iFileLocation, unsigned char* _data)
 {
 	// Compose the temporary path
 	PacketObjectTemporaryPath temporaryPath(m_PacketStructureReference, m_IteratorPath);

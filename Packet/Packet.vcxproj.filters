@@ -36,4 +36,7 @@
     <ClInclude Include="PacketObjectTemporaryPath.h" />
     <ClInclude Include="PacketObjectIteratorPath.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
 </Project>
