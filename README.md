@@ -26,7 +26,6 @@ The entire solution was made using pure C++ so if you want you can just copy-pas
 # Getting Started
 
 Let's start by creating our packet object. First we will need to provide the name and the maximum fragment size we are going to use.
-
 For this guide/examples the packet name will be *"wonderland"* and *67108864* (64mb) will be used as our maximum fragment size.
 
 ### Creating the Packet Object
