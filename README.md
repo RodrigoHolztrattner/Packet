@@ -16,7 +16,7 @@ Packet is a C++ virtual file system library built primary for games, it allows a
 - The packet object has an internal iterator object, you are going to use it for any virtual-system related methods like `MakeDir`, `Seek`, `Put`, `Get`, `Delete`, etc.
 - As files are being added, the packet file will create fragments, those fragments are used to distribute the internal resource data into several pieces, so you will never have a huge one-only file with 20GB or more.
 - When there is no need for modifying the virtual system structure anymore, all resources can be accessed using a read-only way that is optmized for speed (compile-time hashing and less map lookups) that accepts the filepath as input, like *"\images\test.png"*. 
-- There is an `optimize` method that will (hopefully) reduces the total of fragmented data inside the fragments.
+- There is an `Optimize` method that will (hopefully) reduces the total of fragmented data inside the fragments.
 
 # Install
 
