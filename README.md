@@ -129,8 +129,8 @@ This should only be used when the packet object is not being modified.
 > that could be noticeable for real time applications (games for example), the method that is described here
 > uses **compiler-time hashing** and only do **two std::map lookups**.
 
-To initialize the packet object we need to provide our packet object and the load operating mode (**sync** or **assync**).
-It`s possible to determine if the memory allocation for the loading phase should be delayed until the real loading starts (more noticeable when the loading is assync), by default this is set to false.
+To initialize the packet file we need to provide our main packet object and the load operating mode (**sync** or **assync**).
+It's possible to determine if the memory allocation for the loading phase should be delayed until the real loading starts (more noticeable when the loading is assync), by default this is set to false.
 
 ```c++
 Packet::PacketFile* packetFile = new Packet::PacketFile(&packetObject, Packet::PacketFile::DispatchType::Sync);
@@ -138,7 +138,7 @@ Packet::PacketFile* packetFile = new Packet::PacketFile(&packetObject, Packet::P
 ```
 
 To begin loading we call the `Load` method with the file path, this path will (hopefully) be hashed at compile-time.
-This method is thread-safe.
+This method is **thread-safe**.
  
 ```c++
 packetFile->Load("resources/images/icon.jpg");
