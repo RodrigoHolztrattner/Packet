@@ -48,7 +48,7 @@ class PacketStringOperations
 private:
 
 	// The slash type
-	static const char FolderDelimiterType = '\\';
+	static const char FolderDelimiterType = '/';
 
 	// The dot type
 	static const char FileDelimiterType = '.';

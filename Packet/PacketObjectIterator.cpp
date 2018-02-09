@@ -460,7 +460,7 @@ std::vector<std::string> Packet::PacketObjectIterator::List(std::string _path)
 
 std::string Packet::PacketObjectIterator::GetCurrentPath()
 {
-	std::string result = m_PacketStructureReference.GetRootName() + ":\\";
+	std::string result = m_PacketStructureReference.GetRootName() + ":/";
 	std::vector<std::string> currentActionDirectory = m_IteratorPath.GetCurrentActionPath();
 
 	// For each folder
@@ -468,7 +468,7 @@ std::string Packet::PacketObjectIterator::GetCurrentPath()
 	{
 		// Add it to the result
 		result += currentActionDirectory[i];
-		if (i != currentActionDirectory.size() - 1) result += '\\';
+		if (i != currentActionDirectory.size() - 1) result += '/';
 	}
 	
 	return result;
