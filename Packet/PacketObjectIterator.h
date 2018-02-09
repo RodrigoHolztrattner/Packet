@@ -64,143 +64,37 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
-	/**
-	 * @fn	bool PacketObjectIterator::Seek(std::string _path);
-	 *
-	 * @summary	Seeks the given path.
-	 *
-	 * @author	Zapdos
-	 * @date	2/8/2018
-	 *
-	 * @param	_path	Full pathname of the file.
-	 *
-	 * @return	True if it succeeds, false if it fails.
-	 *
-	 * ### remarks	Zapdos, 2/8/2018.
-	 */
+	// Seeks to the given path
 	bool Seek(std::string _path);
 
-	/**
-	 * @fn	bool PacketObjectIterator::MakeDir(std::string _dirPath);
-	 *
-	 * @summary	Makes a dir.
-	 *
-	 * @author	Zapdos
-	 * @date	2/8/2018
-	 *
-	 * @param	_dirPath	Pathname of the directory.
-	 *
-	 * @return	True if it succeeds, false if it fails.
-	 *
-	 * ### remarks	Zapdos, 2/8/2018.
-	 */
+	// Create a directory
 	bool MakeDir(std::string _dirPath);
 
-	/**
-	 * @fn	bool PacketObjectIterator::Put(unsigned char* _data, uint32_t _size);
-	 *
-	 * @summary	Put a file/data <inside the current path>.
-	 *
-	 * @author	Zapdos
-	 * @date	2/8/2018
-	 *
-	 * @param			_data	If non-null, the data.
-	 * @param 		  	_size	The size.
-	 * @param 		 	_iFolderLocation	Where the data should be located internally.
-	 * @param 		 	_filePath			External file location.
-	 * 																			
-	 * @return	True if it succeeds, false if it fails.
-	 *
-	 * ### remarks	Zapdos, 2/8/2018.
-	 */
+	// Put a file/data <inside the current path>
 	bool Put(unsigned char* _data, uint32_t _size);
 	bool Put(unsigned char* _data, uint32_t _size, std::string _iFolderLocation);
 	bool Put(std::string _filePath, std::string _iFolderLocation);
 	bool Put(std::string _filePath);
 
-	/**
-	 * @fn	bool PacketObjectIterator::Get(std::string _iFileLocation, unsigned char* _data);
-	 *
-	 * @summary	Get a file/data -from the current path-.
-	 *
-	 * @author	Zapdos
-	 * @date	2/8/2018
-	 *
-	 * @param 	   	_iFileLocation	The internal file location.
-	 * @param [out]	_data		  	If non-null, the data.
-	 * @param		_oFileLocation	Where (externally) the data should be located (file).				
-	 *
-	 * @return	True if it succeeds, false if it fails.
-	 *
-	 * ### remarks	Zapdos, 2/8/2018.
-	 */
+	// Get a file/data <from the current path>
 	bool Get(std::string _iFileLocation, unsigned char* _data);
 	bool Get(std::string _iFileLocation);								
 	bool Get(std::string _iFileLocation, std::string _oFileLocation);	
 
-	/**
-	 * @fn	bool PacketObjectIterator::Delete(std::string _iLocation);
-	 *
-	 * @brief	Deletes the current path <_iLocation>.
-	 *
-	 * @author	Zapdos
-	 * @date	2/8/2018
-	 *
-	 * @param	_iLocation	The location to delete.
-	 *
-	 * @return	True if it succeeds, false if it fails.
-	 */
+	// Deletes the current path <the input path>
 	bool Delete(std::string _iLocation);
 
-	/**
-	 * @fn	bool PacketObjectIterator::Optimize();
-	 *
-	 * @brief	Optimizes the internal fragments.
-	 *
-	 * @author	Zapdos
-	 * @date	2/8/2018
-	 *
-	 * @return	True if it succeeds, false if it fails.
-	 */
+	// Optimizes the internal fragments
 	bool Optimize();
 
-	/**
-	 * @fn	std::vector<std::string> PacketObjectIterator::List();
-	 *
-	 * @brief	Get a list of each folder and file from the current path or from the input path. 
-	 *
-	 * @author	Zapdos
-	 * @date	2/8/2018
-	 * 			
-	 * @param	_path	The location.
-	 *
-	 * @return	A std::vector&lt;std::string&gt;
-	 */
+	// Get a list of each folder and file from the current path or from the input path
 	std::vector<std::string> List();
 	std::vector<std::string> List(std::string _path);
 
-	/**
-	 * @fn	std::string PacketObjectIterator::GetCurrentPath();
-	 *
-	 * @brief	Return the current path. 
-	 *
-	 * @author	Zapdos
-	 * @date	2/8/2018
-	 *
-	 * @return	The current path.
-	 */
+	// Return the current path
 	std::string GetCurrentPath();
 
-	/**
-	 * @fn	PacketError PacketObjectIterator::GetError();
-	 *
-	 * @brief	Return the error object. 
-	 *
-	 * @author	Zapdos
-	 * @date	2/8/2018
-	 *
-	 * @return	The error.
-	 */
+	// Return the error object
 	PacketError GetError();
 
 private:

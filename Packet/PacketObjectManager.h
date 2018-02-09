@@ -39,14 +39,6 @@ PacketNamespaceBegin(Packet)
 // STRUCTURES //
 ////////////////
 
-/*
-	- Responsável por gerenciar diretamente os arquivos.
-	- Faz uso dos fragments para gravação.
-	- Deve prover funcionalidades de inserção e retirada de arquivos, assim como localização dos mesmos por uma hash.
-	- Deve permitir otimizar localmente os espaços dos fragments.
-	- Deve permitir fazer um agrupamento de itens selecionados (para que os mesmos se encontrem proximos localmente e de rápida leitura).
-*/
-
 // We know the PacketObjectIterator class
 class PacketObjectIterator;
 

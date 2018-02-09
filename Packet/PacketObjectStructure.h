@@ -41,13 +41,6 @@ PacketNamespaceBegin(Packet)
 // STRUCTURES //
 ////////////////
 
-/*
-	- Responsável por manter a estrutura fictícia de pastas e arquivos dentro do nosso sistema.
-	- Deve permitir funções do tipo: Put, Get, Delete, Insert, List, etc. Todas recebendo um path de entrada.
-	- Os arquivos aqui devem ter uma hash que permita que os mesmos sejam localizados pelo Object Manager.
-	- Pode ser um JSON.
-*/
-
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketObjectStructure
 ////////////////////////////////////////////////////////////////////////////////

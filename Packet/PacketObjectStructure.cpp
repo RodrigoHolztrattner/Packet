@@ -86,7 +86,7 @@ bool Packet::PacketObjectStructure::InsertFolder(std::string _folderName, std::v
 	// Create the new folder object
 	FolderObjectType* newFolder = new FolderObjectType();
 	newFolder->folderName = _folderName;
-	// newFolder->folderPath = 
+	// newFolder->folderPath = TODO
 
 	// Insert the new folder inside the base one
 	folder->subFolders.push_back(newFolder);

@@ -71,7 +71,7 @@ std::vector<std::string> Packet::PacketObjectIteratorPath::ComposeActionDirector
 			splitPath.erase(splitPath.begin());
 
 			// Its the path itself
-			return splitPath; // {};
+			return splitPath;
 		}
 	}
 

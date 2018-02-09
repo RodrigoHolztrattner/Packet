@@ -15,7 +15,7 @@ Packet::PacketFragment::PacketFragment(std::string _fragmentName)
 	bool result = ReadMetadata();
 	if (!result)
 	{
-		// Error!!
+		// Error!! (throw?) TODO
 		return;
 	}
 

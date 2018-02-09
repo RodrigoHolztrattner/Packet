@@ -42,18 +42,6 @@ PacketNamespaceBegin(Packet)
 // STRUCTURES //
 ////////////////
 
-/*
-	? Tenho que colocar um espaço aqui que são os dados, só que ele deve ser dividido em sessões (declarar essse tipo aqui!?).
-	- Como estamos tratando de um arquivo em disco, dependendo das adições e retiradas, ficaremos com buracos, esses buracos devem ficar
-	em um vetor (local de inicio e tamanho do buraco) preferencialmente separado por um map ou algo que permita facilmente descobrir se
-	um item de X tamanho caiba em algum dos nossos buracos (como vamos dividir em sessões basta ver se algum dos buracos tem a quantidade
-	de sessões que precisamos? mas isso é um look linear, usar map?).
-	- Devemos aceitar uma quantidade máxima de buracos, após isso devemos marcar esse fragment como "impuro" e ele só poderá ser usado para
-	adicionar novos itens depois de ser "purificado" (rodar o algoritmo de otimização de espaço).
-	- Essa classe deve prover funcionalidades do tipo: InsertData (direto com o arquivo, chamando a ReserveData, ou com o objeto retornado
-	pela função de reservar dados/espaço?), DeleteData, GetData (from hash or direct location?), ReserveData, IsPure, Otimize, etc.
-*/
-
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketFragment
 ////////////////////////////////////////////////////////////////////////////////
