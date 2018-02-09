@@ -13,7 +13,7 @@ Packet is a C++ virtual file system library built primary for games, it allows a
 # How It Works
 
 - You will start creating a main packet object (and its respective file).
-- The packet object has an internal iterator object, you are going to use it for any virtual-system related methods like `mkdir`, `seek`, `put`, `get`, `delete`, etc.
+- The packet object has an internal iterator object, you are going to use it for any virtual-system related methods like `MakeDir`, `Seek`, `Put`, `Get`, `Delete`, etc.
 - As files are being added, the packet file will create fragments, those fragments are used to distribute the internal resource data into several pieces, so you will never have a huge one-only file with 20GB or more.
 - When there is no need for modifying the virtual system structure anymore, all resources can be accessed using a read-only way that is optmized for speed (compile-time hashing and less map lookups) that accepts the filepath as input, like *"\images\test.png"*. 
 - There is an `optimize` method that will (hopefully) reduces the total of fragmented data inside the fragments.
@@ -30,7 +30,7 @@ For this guide/examples the packet name will be *"wonderland"* and *67108864* (6
 
 ### Creating the Packet Object
 
-To create our packet object we will just allocate memory for it and initialize using the `initializeEmpty` method:
+To create our packet object we will just allocate memory for it and initialize using the `InitializeEmpty` method:
 ```c++
 Packet::PacketObject* packetObject = new Packet::PacketObject();
 if (!packetObject->InitializeEmpty("Wonderland", 67108864))
@@ -60,7 +60,7 @@ packetIterator.MakeDir("resources\\images");
 
 ### Seeking
 
-Now we need a way to move inside the virtual file system, just use the `seek` method for it.
+Now we need a way to move inside the virtual file system, just use the `Seek` method for it.
 
 ```c++
 packetIterator.Seek("resources");
@@ -79,7 +79,7 @@ packetIterator.List();
 packetIterator.List("resources\\images");
 ```
 
-### Inserting Files
+### Inserting Files and Data
 
 You can insert any external file using the `Put` method, the first argument is always the *filepath* and the second (optional) is the *internal path* (with name) the file will be put.
 This method can be used with a data ptr (you need to inform the size too)
