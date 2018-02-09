@@ -1,26 +1,14 @@
-# Packet
+Packet
+[![Website](https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=my-website)](https://sites.google.com/view/rodrigoholztrattner)
+[![Linkedin](https://img.shields.io/badge/linkedin-updated-blue.svg)](https://www.linkedin.com/in/rodrigoholztrattner/)
+=====
 
-[![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)](https://nodesource.com/products/nsolid)
-
-[![forthebadge](http://forthebadge.com/images/badges/made-with-ruby.svg)](http://forthebadge.com)
-[![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)
-
-[![Gem Version](https://badge.fury.io/rb/colorls.svg)](https://badge.fury.io/rb/colorls)
-[![Build Status](https://travis-ci.org/athityakumar/colorls.svg?branch=master)](https://travis-ci.org/athityakumar/colorls)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=shields)](http://makeapullrequest.com)
-[![Stories in Ready](https://badge.waffle.io/athityakumar/colorls.png?label=next)](https://waffle.io/athityakumar/colorls?utm_source=badge)
 
 Packet is a C++ virtual file system library built primary for games, it allows any application to generate and use a *bundle* to store and access resources efficiently. The main characteristics are:
 
  * Simple, every important functionality is located in 3 classes only.
  * Fast, it has 2 ways of interaction, the first one allows the user to view and edit the *bundle* as a virtual system (create directories, files, delete, move, etc). the second one operates as a read-only mode but it is optimized for fast file fetching.
  * Customizable, all the loading features can be modified, you can use your favourite memory allocation system or threaded job loaders.
-
-
-> The overriding design goal for Markdown's
-> formatting syntax is to make it as readable
-
- *actually*
 
 # How It Works
 
@@ -88,26 +76,31 @@ packetIterator.Seek("resources\\images");
 To get a list of all folders and files you can use the `List` method, it will return all folders and files from the current location (or from the given one).
 
 ```c++
-iterator.List();
-iterator.List("resources\\images");
+packetIterator.List();
+packetIterator.List("resources\\images");
 ```
 
 ### Inserting Files
 
 You can insert any external file using the `Put` method, the first argument is always the *filepath* and the second (optional) is the *internal path* (with name) the file will be put.
+This method can be used with a data ptr (you need to inform the size too)
 
 ```c++
-iterator.Put("assets\\textures\\icon.jpg");
-iterator.Put("assets\\textures\\icon.jpg", "resources\\images\\iconInput.jpg");
+packetIterator.Put("assets\\textures\\icon.jpg");
+packetIterator.Put("assets\\textures\\icon.jpg", "resources\\images\\iconInput.jpg");
+packetIterator.Put(validUnsignedCharData, dataSize);
+packetIterator.Put(validUnsignedCharData, dataSize, "resources\\images\\iconInput.jpg");
 ```
 
-### Getting Files
+### Getting Files and Data
 
-To get a file from the virtual system, there is the `Get` method that received the *path to the file* you want as the first argument and (optionally) the *output path* (including the name) where it will be located.
+To get a file from the virtual system, there is the `Get` method that receives the *path to the file* you want as the first argument and (optionally) the *output path* (including the name) where it will be located.
+This same method can be used with a valid data ptr.
 
 ```c++
-iterator.Get("resources\\images\\icon.jpg");
-iterator.Get("resources\\images\\icon.jpg", "assets\\icons\\iconOutput.jpg"); 
+packetIterator.Get("resources\\images\\icon.jpg");
+packetIterator.Get("resources\\images\\icon.jpg", "assets\\icons\\iconOutput.jpg"); 
+packetIterator.Get("resources\\images\\icon.jpg", validUnsignedCharDataPtr); 
 ```
 
 ### Deleting Files and Folders
@@ -115,9 +108,28 @@ iterator.Get("resources\\images\\icon.jpg", "assets\\icons\\iconOutput.jpg");
 To delete a file or a folder, just use the `Delete` method.
 
 ```c++
-iterator.Delete("resources");
-iterator.Delete("resources\\images");
-iterator.Delete("resources\\images\\icon.jpg");
+packetIterator.Delete("resources");
+packetIterator.Delete("resources\\images");
+packetIterator.Delete("resources\\images\\icon.jpg");
 ```
 
-# MORE TEXT IN THE FUTURE
+### Other
+
+You can retrieve the current internal path (after using `Seek`) using the `GetCurrentPath` method like this:
+
+```c++
+std::string currentPath = packetIterator.GetCurrentPath();
+```
+
+If something wrong occurs you can retrieve an error object that contains the current operation status and any error code:
+
+```c++
+Packet::PacketError errorObject = packetIterator.GetError();
+```
+
+
+-----
+-----
+-----
+
+### Oops, a wild dinosaur appeared and stole the rest of this introduction, we will try to update this as soon as possible.
