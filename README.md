@@ -127,7 +127,7 @@ This should only be used when the packet object is not being modified.
 
 > When using the iterator, each string is parsed and hashed multiple times, causing a considerable overhead
 > that could be noticeable for real time applications (games for example), the method that is described here
-> use **compiler-time hashing** and only do **two std::map lookups**.
+> uses **compiler-time hashing** and only do **two std::map lookups**.
 
 To initialize the packet object we need to provide our packet object and the load operating mode (**sync** or **assync**).
 It`s possible to determine if the memory allocation for the loading phase should be delayed until the real loading starts (more noticeable when the loading is assync), by default this is set to false.
