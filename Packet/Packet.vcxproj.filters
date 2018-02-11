@@ -17,6 +17,7 @@
     <ClCompile Include="PacketStrings.cpp" />
     <ClCompile Include="PacketObjectTemporaryPath.cpp" />
     <ClCompile Include="PacketObjectIteratorPath.cpp" />
+    <ClCompile Include="PacketFileRequester.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -35,6 +36,7 @@
     <ClInclude Include="PacketStrings.h" />
     <ClInclude Include="PacketObjectTemporaryPath.h" />
     <ClInclude Include="PacketObjectIteratorPath.h" />
+    <ClInclude Include="PacketFileRequester.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

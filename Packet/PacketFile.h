@@ -143,6 +143,9 @@ private: //////
 	// Our PacketObject reference
 	PacketObject* m_PacketObjectReference;
 
+	// The total number of references <only used by the file requester>
+	uint32_t m_TotalNumberReferences;
+
 	// If this file is ready (if it was filled with data)
 	bool m_IsReady;
 
@@ -163,7 +166,7 @@ private: //////
 	unsigned char* m_Data;
 
 	// The error object
-	PacketError m_ErrorObject;
+	PacketError m_ErrorObject; // TODO check if this is necessary
 };
 
 // Packet data explorer
