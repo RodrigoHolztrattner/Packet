@@ -87,6 +87,7 @@ public: //////////
 
 	// Request a file
 	bool RequestFile(FutureReference<PacketFile>& _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
+	bool RequestFile(FutureReference<PacketFile>& _futureObject, const char* _fileName, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
 
 	// Process all file queues (this requires synchronization and isn't thread safe)
 	bool ProcessFileQueues();

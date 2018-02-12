@@ -29,6 +29,9 @@ bool Packet::PacketFileStorage::InserFileWithIdentifier(PacketFragment::FileIden
 	// Insert the file with the given identifier
 	m_FileStorage.insert(std::pair<PacketFragment::FileIdentifier, PacketFile*>(_fileIdentifier, _file));
 
+	// Increment the reference count
+	_file->IncrementReferenceCount();
+
 	return true;
 }
 

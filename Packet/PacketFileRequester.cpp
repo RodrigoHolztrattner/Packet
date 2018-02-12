@@ -53,7 +53,7 @@ bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>& _futu
 	requestData.fileDispatchType = _dispatchType;
 	requestData.delayAllocation = _delayAllocation;
 
-	// Check if the dispatch type is on request
+	// Check if the dispatch type is on request and we should process the request right now
 	if (_dispatchType == PacketFile::DispatchType::OnRequest)
 	{
 		// Load this file right now
@@ -91,6 +91,11 @@ bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>& _futu
 	}
 
 	return true;
+}
+
+bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>& _futureObject, const char* _fileName, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
+{
+	return RequestFile(_futureObject, HashFilePathStatic(_fileName), _dispatchType, _delayAllocation);
 }
 
 bool Packet::PacketFileRequester::ProcessFileQueues()
