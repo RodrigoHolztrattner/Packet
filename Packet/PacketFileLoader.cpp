@@ -23,18 +23,23 @@ Packet::PacketFileLoader::~PacketFileLoader()
 
 bool Packet::PacketFileLoader::ProcessPacketFile(PacketFile* _packetFile)
 {
-	// Get the file manager reference from our packet object
-	PacketObjectManager* objectManagerReference = m_PacketObjectReference->GetObjectManagerReference();
-
 	// Check the allocation type
 	if (!_packetFile->AllocationIsDelayed())
 	{
+		// Get the file metadata
+		uint32_t fileSize;
+		PacketObjectManager::FileFragmentIdentifier fileFragmentIdentifier;
+		if (!GetFileData(_packetFile->GetFileIdentifier(), fileSize, fileFragmentIdentifier))
+		{
+			return false;
+		}
+
 		// Allocate the file data
-		_packetFile->AllocateData();
+		_packetFile->AllocateData(fileSize);
 	}
 
-	// Check the file dispatch type
-	if (_packetFile->GetDispatchType() == PacketFile::DispatchType::Sync)
+	// Check if the file dispatch is not assync (if it is OnRequest or OnProcess)
+	if (_packetFile->GetDispatchType() != PacketFile::DispatchType::Assync)
 	{
 		// Load this file
 		return LoadFile(_packetFile);
@@ -81,20 +86,25 @@ bool Packet::PacketFileLoader::LoadFile(PacketFile* _file)
 	PacketObjectManager* objectManagerReference = m_PacketObjectReference->GetObjectManagerReference();
 
 	// Get the file metadata
-	PacketFile::Metadata fileMetadata = _file->GetMetadata();
+	uint32_t fileSize;
+	PacketObjectManager::FileFragmentIdentifier fileFragmentIdentifier;
+	if (!GetFileData(_file->GetFileIdentifier(), fileSize, fileFragmentIdentifier))
+	{
+		return false;
+	}
 
 	// Check the allocation type
 	if (_file->AllocationIsDelayed())
 	{
 		// Allocate the file data
-		_file->AllocateData();
+		_file->AllocateData(fileSize);
 	}
 
 	// Lock the mutex
 	std::lock_guard<std::mutex> guard(m_LoadingMutex);
 
 	// Load the file
-	bool result = objectManagerReference->GetData(_file->GetInternalDataPtr(), fileMetadata.fileFragmentIdentifier);
+	bool result = objectManagerReference->GetData(_file->GetInternalDataPtr(), fileFragmentIdentifier);
 	if(!result)
 	{
 		return false;

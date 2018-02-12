@@ -57,21 +57,9 @@ public:
 	// The dispatch type
 	enum class DispatchType
 	{
-		Sync,
+		OnRequest,
+		OnProcess,
 		Assync
-	};
-
-	// The metadata type
-	struct Metadata
-	{
-		// The file identifier
-		PacketFragment::FileIdentifier fileIdentifier;
-
-		// The file fragment identifier
-		PacketObjectManager::FileFragmentIdentifier fileFragmentIdentifier;
-
-		// The file size
-		unsigned int fileSize;
 	};
 
 //////////////////
@@ -79,7 +67,7 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketFile(PacketObject* _packetObject, DispatchType _dispatchType = DispatchType::Sync, bool _delayAllocation = false);
+	PacketFile(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation = false);
 	~PacketFile();
 
 //////////////////
@@ -87,14 +75,11 @@ public: //////////
 public: //////////
 
 	// Load the file with the given identifier/name
-	bool Load(PacketFragment::FileIdentifier _fileIdentifier);
-	bool Load(const char* _fileName);
+	// bool Load(PacketFragment::FileIdentifier _fileIdentifier);
+	// bool Load(const char* _fileName);
 
 	// Set the load callback (the callback will be fired when the loading phase ends)
 	void SetLoadCallback(std::function<void()> _loadCallback);
-
-	// Return this file metadata <only valid after the loading phase begin>
-	Metadata GetMetadata();
 
 	// Return the file dispatch type
 	DispatchType GetDispatchType();
@@ -111,13 +96,16 @@ public: //////////
 	// Return if there is an error on this file
 	bool HasError();
 
+	// Return the file identifier
+	PacketFragment::FileIdentifier GetFileIdentifier();
+
 protected:
 
 	// Allocate this file data
-	bool AllocateData();
+	bool AllocateData(uint32_t _fileSize);
 
 	// Return the file identifier
-	PacketFragment::FileIdentifier GetFileIdentifier();
+	// PacketFragment::FileIdentifier GetFileIdentifier();
 
 	// Return a ptr to the internal data
 	unsigned char* GetInternalDataPtr();
@@ -133,15 +121,12 @@ private:
 private:
 
 	// Virtual method for memory allocation and deallocation
-	virtual unsigned char* AllocateMemory(unsigned int _fileSize);
+	virtual unsigned char* AllocateMemory(uint32_t _fileSize);
 	virtual void DeallocateMemory(unsigned char* _fileData);
 
 ///////////////
 // VARIABLES //
 private: //////
-
-	// Our PacketObject reference
-	PacketObject* m_PacketObjectReference;
 
 	// The total number of references <only used by the file requester>
 	uint32_t m_TotalNumberReferences;
@@ -155,9 +140,11 @@ private: //////
 	// If the allocation should be delayed
 	bool m_DelayAllocation;
 
-	// The dispatch type and metadata info
+	// The file identifier
+	PacketFragment::FileIdentifier m_FileIdentifier;
+
+	// The dispatch type
 	DispatchType m_DispatchType;
-	Metadata m_Metadata;
 
 	// The load callback
 	std::function<void()> m_LoadCallback;

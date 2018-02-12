@@ -8,7 +8,7 @@
 #include <fstream>
 #include <experimental/filesystem>
 
-Packet::PacketObject::PacketObject() : m_FileLoader(this)
+Packet::PacketObject::PacketObject()
 {
 }
 
@@ -141,11 +141,6 @@ bool Packet::PacketObject::SavePacketDataAux(std::string _filePath)
 Packet::PacketObjectIterator Packet::PacketObject::GetIterator()
 {
 	return PacketObjectIterator(m_ObjectManager, m_ObjectStructure, m_ObjectHashTable);
-}
-
-Packet::PacketFileLoader* Packet::PacketObject::GetFileLoader()
-{
-	return &m_FileLoader;
 }
 
 Packet::PacketObjectManager* Packet::PacketObject::GetObjectManagerReference()

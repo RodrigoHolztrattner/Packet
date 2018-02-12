@@ -8,8 +8,11 @@
 //////////////
 #include "PacketConfig.h"
 #include "PacketError.h"
+#include "PacketFileLoader.h"
+#include "PacketFile.h"
 
 #include <string>
+#include <functional>
 
 ///////////////
 // NAMESPACE //
@@ -45,6 +48,18 @@ class PacketFileRequester
 {
 public:
 
+private:
+
+	// Our file request type
+	struct FileRequestData
+	{
+		// The file reference
+		PacketFile* fileReference;
+
+		// The file identifier
+		PacketFragment::FileIdentifier fileIdentifier;
+	};
+
 //////////////////
 // CONSTRUCTORS //
 public: //////////
@@ -57,24 +72,44 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
-	// Initialize this file requester
-	bool Initialize();
+	// Set to use multiple thread queues
+	bool UseThreadedQueue(uint32_t _totalNumberMaximumThreads, std::function<uint32_t()> _threadIndexMethod);
 
-	// Set to use multiple thread structures
-	bool UseThreadStructures(uint32_t _totalNumberMaximumThreads, std::function<uint32_t> _threadIndexMethod);
+	// Request a file
+	PacketFile* RequestFile(PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
 
-protected:
+	// Process all loading queues (this requires synchronization and isn't thread safe)
+	bool ProcessLoadingQueues();
+
+private:
+
+	// The process request method
+	bool ProcessRequest(FileRequestData _requestData);
 
 ///////////////
 // VARIABLES //
 private: //////
 
-	// If we are using the thread loading structure mode (we will use multiples arrays
+	// If we are using the thread queue mode (we will use multiples arrays
 	// (one for each thread) to allow multiple simultaneous access without mutex uses)
-	bool m_UseThreadStructures;
+	bool m_UseThreadQueue;
 
-	// Our PacketObject reference
-	PacketObject* m_PacketObjectReference;
+	// The maximum of total threaded queues
+	uint32_t m_MaximumTotalThreadedQueues;
+
+	// Our packet file loader
+	PacketFileLoader m_PacketFileLoader;
+
+	// The threaded index method <used to retrieve the current running thread index>
+	std::function<uint32_t()> m_ThreadIndexMethod;
+
+	//
+	
+	// The base file request queue
+	std::vector<FileRequestData> m_BaseRequestQueue; // TODO usar algum vetor com memory allocation diferente? Setar size inicial? Fazer com que ele nunca recue no size?
+
+	// The threaded queues
+	std::vector<FileRequestData>* m_ThreadedRequestQueues; // TODO usar algum vetor com memory allocation diferente? Setar size inicial? Fazer com que ele nunca recue no size?
 };
 
 // Packet data explorer

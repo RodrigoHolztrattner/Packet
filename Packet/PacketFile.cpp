@@ -5,10 +5,10 @@
 #include "PacketObject.h"
 #include "PacketFileLoader.h"
 
-Packet::PacketFile::PacketFile(PacketObject* _packetObject, DispatchType _dispatchType, bool _delayAllocation)
+Packet::PacketFile::PacketFile(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType, bool _delayAllocation)
 {
 	// Set our initial data
-	m_PacketObjectReference = _packetObject;
+	m_FileIdentifier = _fileIdentifier;
 	m_DispatchType = _dispatchType;
 	m_DelayAllocation = _delayAllocation;
 	m_IsReady = false;
@@ -26,40 +26,9 @@ Packet::PacketFile::~PacketFile()
 	}
 }
 
-bool Packet::PacketFile::Load(PacketFragment::FileIdentifier _fileIdentifier)
-{
-	// Get the packet file loader instance
-	PacketFileLoader* packetFileLoader = m_PacketObjectReference->GetFileLoader();
-
-	// Set the metadata
-	m_Metadata.fileIdentifier = _fileIdentifier;
-	if (!packetFileLoader->GetFileData(_fileIdentifier, m_Metadata.fileSize, m_Metadata.fileFragmentIdentifier))
-	{
-		// Set the error
-		m_ErrorObject.Set(PacketErrorInvalidFileIdentifier);
-		return false;
-	}
-
-	// Set dirty to false (we should use a barrier here to prevent random ordering?)
-	m_IsDirty = false;
-
-	// Process this packet file
-	return packetFileLoader->ProcessPacketFile(this);
-}
-
-bool Packet::PacketFile::Load(const char* _fileName)
-{
-	return Load(HashFilePathStatic(_fileName));
-}
-
 void Packet::PacketFile::SetLoadCallback(std::function<void()> _loadCallback)
 {
 	m_LoadCallback = _loadCallback;
-}
-
-Packet::PacketFile::Metadata Packet::PacketFile::GetMetadata()
-{
-	return m_Metadata;
 }
 
 Packet::PacketFile::DispatchType Packet::PacketFile::GetDispatchType()
@@ -89,7 +58,7 @@ bool Packet::PacketFile::HasError()
 
 Packet::PacketFragment::FileIdentifier Packet::PacketFile::GetFileIdentifier()
 {
-	return m_Metadata.fileIdentifier;
+	return m_FileIdentifier;
 }
 
 unsigned char* Packet::PacketFile::GetInternalDataPtr()
@@ -110,7 +79,7 @@ void Packet::PacketFile::FinishLoading()
 	}
 }
 
-unsigned char* Packet::PacketFile::AllocateMemory(unsigned int _fileSize)
+unsigned char* Packet::PacketFile::AllocateMemory(uint32_t _fileSize)
 {
 	return new unsigned char[_fileSize];
 }
@@ -120,7 +89,7 @@ void Packet::PacketFile::DeallocateMemory(unsigned char* _fileData)
 	delete[] _fileData;
 }
 
-bool Packet::PacketFile::AllocateData()
+bool Packet::PacketFile::AllocateData(uint32_t _fileSize)
 {
 	// Check if our ptr is valid
 	if(m_Data != nullptr)
@@ -131,7 +100,7 @@ bool Packet::PacketFile::AllocateData()
 	}
 
 	// Call the virtual method for allocation
-	m_Data = AllocateMemory(m_Metadata.fileSize);
+	m_Data = AllocateMemory(_fileSize);
 
 	return true;
 }

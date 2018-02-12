@@ -82,11 +82,6 @@ public: //////////
 	// Return this packet object iterator
 	PacketObjectIterator GetIterator();
 
-protected:
-
-	// Return the file loader
-	PacketFileLoader* GetFileLoader();
-
 private:
 
 	// Save this packet data aux
@@ -112,9 +107,6 @@ private: //////
 
 	// The current internal identifier number
 	uint32_t m_CurrentInternalIdentifierNumber;
-
-	// Our file loader
-	PacketFileLoader m_FileLoader;
 
 	// Our object manager, structure and hash table
 	PacketObjectManager m_ObjectManager;
