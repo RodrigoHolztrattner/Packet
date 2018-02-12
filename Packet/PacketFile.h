@@ -74,10 +74,6 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
-	// Load the file with the given identifier/name
-	// bool Load(PacketFragment::FileIdentifier _fileIdentifier);
-	// bool Load(const char* _fileName);
-
 	// Set the load callback (the callback will be fired when the loading phase ends)
 	void SetLoadCallback(std::function<void()> _loadCallback);
 
@@ -103,9 +99,6 @@ protected:
 
 	// Allocate this file data
 	bool AllocateData(uint32_t _fileSize);
-
-	// Return the file identifier
-	// PacketFragment::FileIdentifier GetFileIdentifier();
 
 	// Return a ptr to the internal data
 	unsigned char* GetInternalDataPtr();

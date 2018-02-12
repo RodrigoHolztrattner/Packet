@@ -57,9 +57,6 @@ Packet::PacketFile* Packet::PacketFileRequester::RequestFile(PacketFragment::Fil
 		return newFileObject;
 	}
 
-	// This is the request queue we will use, for now, set it to be the base one
-	std::vector<FileRequestData>& selectedRequestQueue = m_BaseRequestQueue;
-
 	// Check if we should use a thread queue and if the thread index method was set
 	if (m_UseThreadQueue && m_ThreadIndexMethod)
 	{
@@ -69,13 +66,20 @@ Packet::PacketFile* Packet::PacketFileRequester::RequestFile(PacketFragment::Fil
 		// Check if the thread index is valid
 		if (threadIndex >= 0 && threadIndex < m_MaximumTotalThreadedQueues)
 		{
-			// Select the new request queue
-			selectedRequestQueue = m_ThreadedRequestQueues[threadIndex];
+			// Insert this file into the selected queue (no need to use mutex because each thread will access only
+			// their respective queue
+			m_ThreadedRequestQueues[threadIndex].push_back(requestData);
 		}
 	}
+	// Use the base queue
+	else
+	{
+		// Lock our mutex (only one thread allowed from there)
+		std::lock_guard<std::mutex> guard(m_Mutex);
 
-	// Insert this file into the selected queue
-	selectedRequestQueue.push_back(requestData); // TODO isso nao eh thread safe, devo usar mutex se for no base request queue
+		// Insert this file into the base queue
+		m_BaseRequestQueue.push_back(requestData);
+	}
 
 	return newFileObject;
 }
@@ -128,9 +132,6 @@ bool Packet::PacketFileRequester::ProcessLoadingQueues()
 
 bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)
 {
-	// TODO usar mutex
-	// 
-
 	// Check if we already have this file on our hash (mudar esse nome)
 	// TODO
 	

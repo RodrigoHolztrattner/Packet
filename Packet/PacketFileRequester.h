@@ -13,6 +13,7 @@
 
 #include <string>
 #include <functional>
+#include <mutex>
 
 ///////////////
 // NAMESPACE //
@@ -46,7 +47,6 @@ PacketNamespaceBegin(Packet)
 ////////////////////////////////////////////////////////////////////////////////
 class PacketFileRequester
 {
-public:
 
 private:
 
@@ -103,7 +103,8 @@ private: //////
 	// The threaded index method <used to retrieve the current running thread index>
 	std::function<uint32_t()> m_ThreadIndexMethod;
 
-	//
+	// The mutex we will use to secure thread safe
+	std::mutex m_Mutex;
 	
 	// The base file request queue
 	std::vector<FileRequestData> m_BaseRequestQueue; // TODO usar algum vetor com memory allocation diferente? Setar size inicial? Fazer com que ele nunca recue no size?
