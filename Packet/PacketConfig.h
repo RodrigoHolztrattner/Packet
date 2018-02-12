@@ -79,6 +79,49 @@ private:
 };
 
 template <typename ObjectType>
+class FutureReference
+{
+public:
+
+	FutureObject()
+	{
+		// Set the initial data
+		m_IsReady = false;
+		m_InternalObject = nullptr;
+	}
+
+	// Set the internal object
+	void SetInternalObject(ObjectType* _object)
+	{
+		// Set the object
+		m_InternalObject = _object;
+
+		// Set the boolean variable
+		m_IsReady = true;
+	}
+
+	// Return if the internal object is ready
+	bool IsRead()
+	{
+		return m_IsReady;
+	}
+
+	// Access the internal object
+	ObjectType* operator->() const
+	{
+		return m_InternalObject;
+	}
+
+private:
+
+	// If the internal object is ready
+	bool m_IsReady;
+
+	// The internal object
+	ObjectType* m_InternalObject;
+};
+
+template <typename ObjectType>
 ObjectType* GlobalInstance<ObjectType>::m_InternalObject = nullptr;
 
 PacketNamespaceEnd(Packet)

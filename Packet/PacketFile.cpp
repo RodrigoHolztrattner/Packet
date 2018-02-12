@@ -4,10 +4,12 @@
 #include "PacketFile.h"
 #include "PacketObject.h"
 #include "PacketFileLoader.h"
+#include "PacketFileRemover.h"
 
-Packet::PacketFile::PacketFile(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType, bool _delayAllocation)
+Packet::PacketFile::PacketFile(PacketFileRemover* _fileRemoverReference, PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType, bool _delayAllocation)
 {
 	// Set our initial data
+	m_FileRemoverRefernce = _fileRemoverReference;
 	m_FileIdentifier = _fileIdentifier;
 	m_DispatchType = _dispatchType;
 	m_DelayAllocation = _delayAllocation;
@@ -34,6 +36,27 @@ void Packet::PacketFile::SetLoadCallback(std::function<void()> _loadCallback)
 Packet::PacketFile::DispatchType Packet::PacketFile::GetDispatchType()
 {
 	return m_DispatchType;
+}
+
+void Packet::PacketFile::Release()
+{
+	// Release this file using the file remover
+	m_FileRemoverRefernce->TryRemoveFile(m_FileIdentifier);
+}
+
+uint32_t Packet::PacketFile::GetReferenceCount()
+{
+	return m_TotalNumberReferences;
+}
+
+void Packet::PacketFile::IncrementReferenceCount()
+{
+	m_TotalNumberReferences++;
+}
+
+void Packet::PacketFile::DecrementReferenceCount()
+{
+	m_TotalNumberReferences--;
 }
 
 bool Packet::PacketFile::IsReady()

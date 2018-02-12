@@ -155,7 +155,9 @@
     <ClCompile Include="PacketFileDataOperations.cpp" />
     <ClCompile Include="PacketFileLoader.cpp" />
     <ClCompile Include="PacketFileLoaderQueue.cpp" />
+    <ClCompile Include="PacketFileRemover.cpp" />
     <ClCompile Include="PacketFileRequester.cpp" />
+    <ClCompile Include="PacketFileStorage.cpp" />
     <ClCompile Include="PacketFragment.cpp" />
     <ClCompile Include="PacketObject.cpp" />
     <ClCompile Include="PacketObjectHashTable.cpp" />
@@ -174,7 +176,9 @@
     <ClInclude Include="PacketFileDataOperations.h" />
     <ClInclude Include="PacketFileLoader.h" />
     <ClInclude Include="PacketFileLoaderQueue.h" />
+    <ClInclude Include="PacketFileRemover.h" />
     <ClInclude Include="PacketFileRequester.h" />
+    <ClInclude Include="PacketFileStorage.h" />
     <ClInclude Include="PacketFragment.h" />
     <ClInclude Include="PacketObject.h" />
     <ClInclude Include="PacketObjectHashTable.h" />

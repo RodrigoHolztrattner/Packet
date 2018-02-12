@@ -10,6 +10,8 @@
 #include "PacketError.h"
 #include "PacketFileLoader.h"
 #include "PacketFile.h"
+#include "PacketFileStorage.h"
+#include "PacketFileRemover.h"
 
 #include <string>
 #include <functional>
@@ -54,10 +56,16 @@ private:
 	struct FileRequestData
 	{
 		// The file reference
-		PacketFile* fileReference;
+		FutureReference<PacketFile>& fileReference;
 
 		// The file identifier
 		PacketFragment::FileIdentifier fileIdentifier;
+
+		// The dispatch type
+		PacketFile::DispatchType fileDispatchType;
+
+		// If the memory allocation should be delayed
+		bool delayAllocation;
 	};
 
 //////////////////
@@ -76,10 +84,10 @@ public: //////////
 	bool UseThreadedQueue(uint32_t _totalNumberMaximumThreads, std::function<uint32_t()> _threadIndexMethod);
 
 	// Request a file
-	PacketFile* RequestFile(PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
+	bool RequestFile(FutureReference<PacketFile>& _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
 
-	// Process all loading queues (this requires synchronization and isn't thread safe)
-	bool ProcessLoadingQueues();
+	// Process all file queues (this requires synchronization and isn't thread safe)
+	bool ProcessFileQueues();
 
 private:
 
@@ -97,8 +105,10 @@ private: //////
 	// The maximum of total threaded queues
 	uint32_t m_MaximumTotalThreadedQueues;
 
-	// Our packet file loader
+	// Our packet file loader, storage and remover
 	PacketFileLoader m_PacketFileLoader;
+	PacketFileStorage m_PacketFileStorage;
+	PacketFileRemover m_PacketFileRemover;
 
 	// The threaded index method <used to retrieve the current running thread index>
 	std::function<uint32_t()> m_ThreadIndexMethod;

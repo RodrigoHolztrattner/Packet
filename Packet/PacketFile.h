@@ -36,9 +36,11 @@ PacketNamespaceBegin(Packet)
 // FORWARDING //
 ////////////////
 
-// We know the PacketObject and the PacketFileLoader classes
+// We know the PacketObject, the PacketFileLoader, the PacketFileRequester and the PacketFileRemover classes
 class PacketObject;
 class PacketFileLoader;
+class PacketFileRemover;
+class PacketFileRequester;
 
 ////////////////
 // STRUCTURES //
@@ -51,8 +53,10 @@ class PacketFile
 {
 public:
 
-	// The PacketFileLoader is a friend class
+	// The PacketFileLoader, the PacketFileRemover and the PacketFileRequester are friend classes
 	friend PacketFileLoader;
+	friend PacketFileRemover;
+	friend PacketFileRequester;
 
 	// The dispatch type
 	enum class DispatchType
@@ -64,10 +68,10 @@ public:
 
 //////////////////
 // CONSTRUCTORS //
-public: //////////
+protected: ///////
 
 	// Constructor / destructor
-	PacketFile(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation = false);
+	PacketFile(PacketFileRemover* _fileRemoverReference, PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation = false);
 	~PacketFile();
 
 //////////////////
@@ -79,6 +83,9 @@ public: //////////
 
 	// Return the file dispatch type
 	DispatchType GetDispatchType();
+
+	// Release this file object
+	void Release();
 
 	// If the memory allocation should be delayed (only allocate when the loading starts)
 	bool AllocationIsDelayed();
@@ -95,6 +102,9 @@ public: //////////
 	// Return the file identifier
 	PacketFragment::FileIdentifier GetFileIdentifier();
 
+	// Return the reference count
+	uint32_t GetReferenceCount();
+
 protected:
 
 	// Allocate this file data
@@ -106,10 +116,11 @@ protected:
 	// Finish the loading for this file (called from the packet file loader object)
 	void FinishLoading();
 
-private:
+	// Increment the reference count (called by the packet file storage object)
+	void IncrementReferenceCount();
 
-	// Release?
-	// TODO
+	// Decrement the reference count (called by the packet file storage object)
+	void DecrementReferenceCount();
 
 private:
 
@@ -125,12 +136,10 @@ private: //////
 	uint32_t m_TotalNumberReferences;
 
 	// If this file is ready (if it was filled with data)
+	//  If this file is dirty (if the metadata info is invalid)
+	//   If the allocation should be delayed
 	bool m_IsReady;
-
-	// If this file is dirty (if the metadata info is invalid)
 	bool m_IsDirty;
-
-	// If the allocation should be delayed
 	bool m_DelayAllocation;
 
 	// The file identifier
@@ -138,6 +147,9 @@ private: //////
 
 	// The dispatch type
 	DispatchType m_DispatchType;
+
+	// The file remover reference
+	PacketFileRemover* m_FileRemoverRefernce;
 
 	// The load callback
 	std::function<void()> m_LoadCallback;

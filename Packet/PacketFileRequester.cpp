@@ -5,7 +5,9 @@
 #include "PacketObject.h"
 #include "PacketFileLoader.h"
 
-Packet::PacketFileRequester::PacketFileRequester(PacketObject* _packetObject) : m_PacketFileLoader(_packetObject)
+Packet::PacketFileRequester::PacketFileRequester(PacketObject* _packetObject) : 
+	m_PacketFileLoader(_packetObject), 
+	m_PacketFileRemover(m_PacketFileStorage)
 {
 	// Set our initial data
 	m_UseThreadQueue = false;
@@ -28,21 +30,29 @@ bool Packet::PacketFileRequester::UseThreadedQueue(uint32_t _totalNumberMaximumT
 	m_MaximumTotalThreadedQueues = _totalNumberMaximumThreads;
 	m_ThreadIndexMethod = _threadIndexMethod;
 
+	// Allocate enough queues for all threads
+	m_ThreadedRequestQueues = new std::vector<FileRequestData>();
+
 	// Set that we use thread queues
 	m_UseThreadQueue = true;
+
+	// Set the file remover to use threads too
+	if (!m_PacketFileRemover.UseThreadedQueue(_totalNumberMaximumThreads, _threadIndexMethod))
+	{
+		return false;
+	}
 
 	return true;
 }
 
-Packet::PacketFile* Packet::PacketFileRequester::RequestFile(PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
+Packet::PacketFile* Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>& _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
 {
-	// Create a new file object // TODO essa alocacao talvez deva ser diferente ou permitir custom allocator
-	PacketFile* newFileObject = new PacketFile(_fileIdentifier, _dispatchType, _delayAllocation);
-
 	// Prepare the request data
 	FileRequestData requestData = {};
 	requestData.fileIdentifier = _fileIdentifier;
-	requestData.fileReference = newFileObject;
+	requestData.fileReference = _futureObject;
+	requestData.fileDispatchType = _dispatchType;
+	requestData.delayAllocation = _delayAllocation;
 
 	// Check if the dispatch type is on request
 	if (_dispatchType == PacketFile::DispatchType::OnRequest)
@@ -51,10 +61,10 @@ Packet::PacketFile* Packet::PacketFileRequester::RequestFile(PacketFragment::Fil
 		if (!ProcessRequest(requestData))
 		{
 			// Error TODO call
-			return nullptr;
+			return false;
 		}
 
-		return newFileObject;
+		return true;
 	}
 
 	// Check if we should use a thread queue and if the thread index method was set
@@ -81,10 +91,10 @@ Packet::PacketFile* Packet::PacketFileRequester::RequestFile(PacketFragment::Fil
 		m_BaseRequestQueue.push_back(requestData);
 	}
 
-	return newFileObject;
+	return true;
 }
 
-bool Packet::PacketFileRequester::ProcessLoadingQueues()
+bool Packet::PacketFileRequester::ProcessFileQueues()
 {
 	// For now we will assume that no thread will try to request new files, NOT thread safe from threre! //
 	
@@ -127,16 +137,44 @@ bool Packet::PacketFileRequester::ProcessLoadingQueues()
 		}
 	}
 
+	// Process the file queues for the remover too
+	if (!m_PacketFileRemover.ProcessFileQueues())
+	{
+		return false;
+	}
+
 	return true;
 }
 
 bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)
 {
-	// Check if we already have this file on our hash (mudar esse nome)
-	// TODO
+	// Everything is single threaded from here //
+
+	// Check if we already have this file on our storage
+	PacketFile* file = m_PacketFileStorage.RequestFileFromIdentifier(_requestData.fileIdentifier);
+	if (file != nullptr)
+	{
+		// Ok the file was already loaded, the reference count incremented and we are ready to go
+		_requestData.fileReference.SetInternalObject(file);
+
+		return true;
+	}
+
+	// Create a new file object
+	PacketFile* newFile = new PacketFile(_requestData.fileIdentifierm, _requestData.fileDispatchType, _requestData.delayAllocation);
+	// TODO use custom allocator for the new file?
 	
+	// Insert this new file into the storage
+	if (!m_PacketFileStorage.InserFileWithIdentifier(_requestData.fileIdentifier, newFile))
+	{
+		return false;
+	}
+
+	// Set the file reference internal object
+	_requestData.fileReference.SetInternalObject(newFile);
+
 	// Pass this file to the file loader
-	if (!m_PacketFileLoader.ProcessPacketFile(_requestData.fileReference))
+	if (!m_PacketFileLoader.ProcessPacketFile(newFile))
 	{
 		return false;
 	}

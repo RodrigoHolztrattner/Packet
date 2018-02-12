@@ -41,7 +41,7 @@ bool Packet::PacketFileLoader::ProcessPacketFile(PacketFile* _packetFile)
 	// Check if the file dispatch is not assync (if it is OnRequest or OnProcess)
 	if (_packetFile->GetDispatchType() != PacketFile::DispatchType::Assync)
 	{
-		// Load this file
+		// Load this file now
 		return LoadFile(_packetFile);
 	}
 
