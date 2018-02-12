@@ -1,0 +1,7 @@
+Peon.cpp
+Peon.vcxproj
+Peon.vcxproj.filters
+Debug/
+Release/
+StealingQueue.cpp
+StealingQueue.h

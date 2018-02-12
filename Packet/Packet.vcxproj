@@ -168,6 +168,10 @@
     <ClCompile Include="PacketObjectTemporaryPath.cpp" />
     <ClCompile Include="PacketStringOperations.cpp" />
     <ClCompile Include="PacketStrings.cpp" />
+    <ClCompile Include="Peon-master\PeonJob.cpp" />
+    <ClCompile Include="Peon-master\PeonStealingQueue.cpp" />
+    <ClCompile Include="Peon-master\PeonSystem.cpp" />
+    <ClCompile Include="Peon-master\PeonWorker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -189,6 +193,12 @@
     <ClInclude Include="PacketObjectTemporaryPath.h" />
     <ClInclude Include="PacketStringOperations.h" />
     <ClInclude Include="PacketStrings.h" />
+    <ClInclude Include="Peon-master\Peon.h" />
+    <ClInclude Include="Peon-master\PeonConfig.h" />
+    <ClInclude Include="Peon-master\PeonJob.h" />
+    <ClInclude Include="Peon-master\PeonStealingQueue.h" />
+    <ClInclude Include="Peon-master\PeonSystem.h" />
+    <ClInclude Include="Peon-master\PeonWorker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

@@ -20,6 +20,18 @@
     <ClCompile Include="PacketFileRequester.cpp" />
     <ClCompile Include="PacketFileStorage.cpp" />
     <ClCompile Include="PacketFileRemover.cpp" />
+    <ClCompile Include="Peon-master\PeonJob.cpp">
+      <Filter>Peon</Filter>
+    </ClCompile>
+    <ClCompile Include="Peon-master\PeonStealingQueue.cpp">
+      <Filter>Peon</Filter>
+    </ClCompile>
+    <ClCompile Include="Peon-master\PeonSystem.cpp">
+      <Filter>Peon</Filter>
+    </ClCompile>
+    <ClCompile Include="Peon-master\PeonWorker.cpp">
+      <Filter>Peon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -41,8 +53,31 @@
     <ClInclude Include="PacketFileRequester.h" />
     <ClInclude Include="PacketFileStorage.h" />
     <ClInclude Include="PacketFileRemover.h" />
+    <ClInclude Include="Peon-master\Peon.h">
+      <Filter>Peon</Filter>
+    </ClInclude>
+    <ClInclude Include="Peon-master\PeonConfig.h">
+      <Filter>Peon</Filter>
+    </ClInclude>
+    <ClInclude Include="Peon-master\PeonJob.h">
+      <Filter>Peon</Filter>
+    </ClInclude>
+    <ClInclude Include="Peon-master\PeonStealingQueue.h">
+      <Filter>Peon</Filter>
+    </ClInclude>
+    <ClInclude Include="Peon-master\PeonSystem.h">
+      <Filter>Peon</Filter>
+    </ClInclude>
+    <ClInclude Include="Peon-master\PeonWorker.h">
+      <Filter>Peon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Peon">
+      <UniqueIdentifier>{8c2515b7-50a0-40a8-a52c-66305da9fa7e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
