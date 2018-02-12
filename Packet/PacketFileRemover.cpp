@@ -56,7 +56,7 @@ bool Packet::PacketFileRemover::UseThreadedQueue(uint32_t _totalNumberMaximumThr
 	m_ThreadIndexMethod = _threadIndexMethod;
 
 	// Allocate enough queues for all threads
-	m_ThreadedDeletionQueues = new std::vector<PacketFragment::FileIdentifier>();
+	m_ThreadedDeletionQueues = new std::vector<PacketFragment::FileIdentifier>[m_MaximumTotalThreadedQueues];
 
 	// Set that we use thread queues
 	m_UseThreadQueue = true;

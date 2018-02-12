@@ -31,7 +31,7 @@ bool Packet::PacketFileRequester::UseThreadedQueue(uint32_t _totalNumberMaximumT
 	m_ThreadIndexMethod = _threadIndexMethod;
 
 	// Allocate enough queues for all threads
-	m_ThreadedRequestQueues = new std::vector<FileRequestData>();
+	m_ThreadedRequestQueues = new std::vector<FileRequestData>[m_MaximumTotalThreadedQueues];
 
 	// Set that we use thread queues
 	m_UseThreadQueue = true;

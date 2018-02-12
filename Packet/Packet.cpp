@@ -42,7 +42,7 @@
 void PerformThreadedTests()
 {
 	// Initialize the peon system
-	Peon::Initialize(4, 4096);
+	Peon::Initialize(2, 4096);
 
 	// Create the new packet object
 	Packet::PacketObject* newPackObject = new Packet::PacketObject();
@@ -60,7 +60,8 @@ void PerformThreadedTests()
 	auto iterator = newPackObject->GetIterator();
 
 	// Set the threaded index method
-	packetFileRequester->UseThreadedQueue(4, []() {
+	packetFileRequester->UseThreadedQueue(4, [&]() {
+		int threadIndex = Peon::GetCurrentWorkerIndex();
 		return Peon::GetCurrentWorkerIndex();
 	});
 
