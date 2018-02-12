@@ -102,5 +102,8 @@ bool Packet::PacketFile::AllocateData(uint32_t _fileSize)
 	// Call the virtual method for allocation
 	m_Data = AllocateMemory(_fileSize);
 
+	// Set ir dirty to false
+	m_IsDirty = false;
+
 	return true;
 }
