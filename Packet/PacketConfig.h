@@ -83,7 +83,7 @@ class FutureReference
 {
 public:
 
-	FutureObject()
+	FutureReference()
 	{
 		// Set the initial data
 		m_IsReady = false;

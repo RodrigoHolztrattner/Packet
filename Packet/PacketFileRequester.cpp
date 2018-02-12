@@ -45,12 +45,11 @@ bool Packet::PacketFileRequester::UseThreadedQueue(uint32_t _totalNumberMaximumT
 	return true;
 }
 
-Packet::PacketFile* Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>& _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
+bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>& _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
 {
 	// Prepare the request data
-	FileRequestData requestData = {};
+	FileRequestData requestData(_futureObject);
 	requestData.fileIdentifier = _fileIdentifier;
-	requestData.fileReference = _futureObject;
 	requestData.fileDispatchType = _dispatchType;
 	requestData.delayAllocation = _delayAllocation;
 
@@ -161,7 +160,7 @@ bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)
 	}
 
 	// Create a new file object
-	PacketFile* newFile = new PacketFile(_requestData.fileIdentifierm, _requestData.fileDispatchType, _requestData.delayAllocation);
+	PacketFile* newFile = new PacketFile(&m_PacketFileRemover, _requestData.fileIdentifier, _requestData.fileDispatchType, _requestData.delayAllocation);
 	// TODO use custom allocator for the new file?
 	
 	// Insert this new file into the storage

@@ -36,11 +36,12 @@ PacketNamespaceBegin(Packet)
 // FORWARDING //
 ////////////////
 
-// We know the PacketObject, the PacketFileLoader, the PacketFileRequester and the PacketFileRemover classes
+// We know the PacketObject, the PacketFileLoader, the PacketFileRequester, the PacketFileStorage and the PacketFileRemover classes
 class PacketObject;
 class PacketFileLoader;
 class PacketFileRemover;
 class PacketFileRequester;
+class PacketFileStorage;
 
 ////////////////
 // STRUCTURES //
@@ -53,10 +54,11 @@ class PacketFile
 {
 public:
 
-	// The PacketFileLoader, the PacketFileRemover and the PacketFileRequester are friend classes
+	// The PacketFileLoader, the PacketFileRemover, the PacketFileStorage and the PacketFileRequester are friend classes
 	friend PacketFileLoader;
 	friend PacketFileRemover;
 	friend PacketFileRequester;
+	friend PacketFileStorage;
 
 	// The dispatch type
 	enum class DispatchType

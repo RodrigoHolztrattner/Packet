@@ -55,6 +55,8 @@ private:
 	// Our file request type
 	struct FileRequestData
 	{
+		FileRequestData(FutureReference<PacketFile>& _fileReference) : fileReference(_fileReference) {}
+
 		// The file reference
 		FutureReference<PacketFile>& fileReference;
 
