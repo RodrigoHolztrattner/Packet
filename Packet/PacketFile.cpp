@@ -15,6 +15,7 @@ Packet::PacketFile::PacketFile(PacketFileRemover* _fileRemoverReference, PacketF
 	m_DelayAllocation = _delayAllocation;
 	m_IsReady = false;
 	m_IsDirty = true;
+	m_WasReleased = false;
 	m_Data = nullptr;
 }
 
@@ -42,6 +43,9 @@ void Packet::PacketFile::Release()
 {
 	// Release this file using the file remover
 	m_FileRemoverRefernce->TryRemoveFile(m_FileIdentifier);
+
+	// Set was released to true
+	m_WasReleased = true;
 }
 
 uint32_t Packet::PacketFile::GetReferenceCount()
@@ -72,6 +76,11 @@ bool Packet::PacketFile::AllocationIsDelayed()
 bool Packet::PacketFile::IsDirty()
 {
 	return m_IsDirty;
+}
+
+bool Packet::PacketFile::WasReleased()
+{
+	return m_WasReleased;
 }
 
 bool Packet::PacketFile::HasError()

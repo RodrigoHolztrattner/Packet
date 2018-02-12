@@ -5,8 +5,12 @@
 #include "PacketObject.h"
 #include "PacketStringOperations.h"
 #include "PacketFile.h"
+#include "PacketFileRequester.h"
 
 #include <iostream>
+#include <numeric>
+
+#include "Peon-master\Peon.h"
 
 // My internal TODO list (pt-br):
 /*
@@ -35,233 +39,140 @@
 
 // Obs: There are some "TODO"s inside the classes, I need to check those too (just use a global find w/ TODO as the keyword)
 
-std::vector<std::string> Split(const std::string &txt, char ch)
+void PerformThreadedTests()
 {
-	std::vector<std::string> result;
-	size_t pos = txt.find(ch);
-	unsigned int initialPos = 0;
-	result.clear();
+	// Initialize the peon system
+	Peon::Initialize(4, 4096);
 
-	// Decompose statement
-	while (pos != std::string::npos) {
-		result.push_back(txt.substr(initialPos, pos - initialPos));
-		initialPos = pos + 1;
-
-		pos = txt.find(ch, initialPos);
-	}
-
-	// Add the last one
-	result.push_back(txt.substr(initialPos, std::min(pos, txt.size()) - initialPos + 1));
-
-	// Remove blank strings
-	for (unsigned int i = 0; i < result.size(); i++)
-	{
-		// Compare
-		if (result[i].compare(" ") == 0)
-		{
-			// Remove this blank string
-			result.erase(result.begin() + i);
-			i--;
-		}
-	}
-
-	return result;
-}
-
-// Load a packet object from the command line input
-Packet::PacketObject* GetPacket()
-{
 	// Create the new packet object
 	Packet::PacketObject* newPackObject = new Packet::PacketObject();
 
-	// Load/create
-	while (true)
+	// Initialize the packet object
+	if(!newPackObject->InitializeEmpty("ThreadedPacketTest", 67108864/4))
 	{
-		// Print the load/create message
-		std::cout << "cp <name> <size> - create a new pack with name <name>.packet and maximum fragment size <size>" << std::endl;
-		std::cout << "lp <path> - load an existing pack at <path>" << std::endl;
-
-		// Jump the line
-		std::cout << std::endl;
-
-		// Print the command line icon
-		std::cout << '>';
-
-		// Capture each command
-		std::string command;
-		std::getline(std::cin, command);
-
-		// Jump the line
-		std::cout << std::endl;
-
-		// Break the command
-		std::vector<std::string> commands = Split(command, ' ');
-
-		// Check if we have at last one command
-		if (commands.size() == 0)
-		{
-			continue;
-		}
-
-		// Verify the command
-		if (commands[0] == "cp" && commands.size() == 3)
-		{
-			if (newPackObject->InitializeEmpty(commands[1], std::stoi(commands[2])))
-			{
-				break;
-			}
-		}
-		if (commands[0] == "lp" && commands.size() == 2)
-		{
-			if (newPackObject->InitializeFromFile(commands[1]))
-			{
-				break;
-			}
-		}
+		return;
 	}
 
-	return newPackObject;
-}
-
-void Console()
-{
-	// Our packet object
-	Packet::PacketObject& packetObject = *GetPacket();
+	// Initialize the packet file requester
+	Packet::PacketFileRequester* packetFileRequester = new Packet::PacketFileRequester(newPackObject);
 
 	// Get the packet iterator
-	auto iterator = packetObject.GetIterator();
+	auto iterator = newPackObject->GetIterator();
 
-	while (true)
+	// Set the threaded index method
+	packetFileRequester->UseThreadedQueue(4, []() {
+		return Peon::GetCurrentWorkerIndex();
+	});
+
+	///////////////////
+	// FILE CREATION //
+	///////////////////
+	
+	// The total number of files we will create and the temporary data with its size
+	const uint32_t totalNumberFiles = 1000;
+	uint32_t temporaryDataSize = 1024;
+	unsigned char* temporaryData = new unsigned char[temporaryDataSize];
+
+	// Create each file
+	for (int i = 0; i < totalNumberFiles; i++)
 	{
-		// Print the current directory
-		std::cout << iterator.GetCurrentPath() << '>';
+		// Create the filename
+		std::string filename = "Test" + std::to_string(i) + ".txt";
 
-		// Capture each command
-		std::string command;
-		std::getline(std::cin, command);
-
-		// Jump the line
-		std::cout << std::endl;
-
-		// Break the command
-		std::vector<std::string> commands = Split(command, ' ');
-		
-		// Check if we have at last one command
-		if (commands.size() == 0)
+		// Create the file
+		bool result = iterator.Put(temporaryData, temporaryDataSize, filename);
+		if (!result)
 		{
-			continue;
-		}
-
-		//////////////
-		// COMMANDS //
-		//////////////
-
-		// Info
-		if (commands[0].compare("info") == 0 && commands.size() == 1)
-		{
-			std::cout << "  - cd <path>: Seek to the given <path>" << std::endl;
-			std::cout << "  - mkdir <path>: Create a new folder into the given <path>" << std::endl;
-			std::cout << "  - ls <path(optional)>: List all files and folders in the current directory or in the given <path>" << std::endl;
-			std::cout << "  - put <ext:filepath> <path(optional)>: Put the <ext:filepath> file in the current directory or in the given <path>" << std::endl;
-			std::cout << "  - get <filepath> <ext:path(optional)>: Get the <filepath> file and put it in the current operation system directry or in the <ext:path> location" << std::endl;
-			std::cout << "  - delete <path>: Delete the file or folder on <path>" << std::endl;
-			std::cout << "  - save: This MUST be called before finishing the execution to save all the data" << std::endl;
-
-			std::cout << std::endl;
-		}
-
-		// Seek
-		if (commands[0].compare("cd") == 0 && commands.size() == 2)
-		{
-			iterator.Seek(commands[1]);
-		}
-
-		// Mkdir
-		if (commands[0].compare("mkdir") == 0 && commands.size() == 2)
-		{
-			iterator.MakeDir(commands[1]);
-		}
-
-		// List
-		if (commands[0].compare("ls") == 0)
-		{
-			std::vector<std::string> result;
-
-			if (commands.size() == 2)
-			{
-				result = iterator.List(commands[1]);
-			}
-			else
-			{
-				result = iterator.List();
-			}
-
-			// For each result
-			for (auto& name : result)
-			{
-				std::cout << "   - " << name << std::endl;
-			}
-			if (result.size()) std::cout << std::endl;
-		}
-
-		// Put
-		if (commands[0].compare("put") == 0 && commands.size() >= 2)
-		{
-			if (commands.size() == 2)
-
-			{
-				iterator.Put(commands[1]);
-			}
-			else
-			{
-				iterator.Put(commands[1], commands[2]);
-			}
-		}
-
-		// Get
-		if (commands[0].compare("get") == 0 && commands.size() >= 2)
-		{
-			if (commands.size() == 2)
-			{
-				iterator.Get(commands[1]);
-			}
-			else
-			{
-				iterator.Get(commands[1], commands[2]);
-			}
-		}
-
-		// Delete
-		if (commands[0].compare("delete") == 0 && commands.size() >= 2)
-		{
-			iterator.Delete(commands[1]);
-		}
-
-		// Save
-		if (commands[0].compare("save") == 0)
-		{
-			packetObject.SavePacketData();
-		}
-
-		// Exit
-		if (commands[0].compare("exit") == 0)
-		{
-			packetObject.SavePacketData();
-			exit(0);
-		}
-
-		// Optimize
-		if (commands[0].compare("optimize") == 0)
-		{
-			iterator.Optimize();
+			return;
 		}
 	}
-}
 
-#include "PacketFileDataOperations.h"
+	//////////////////////
+	// FILE PREPARATION //
+	//////////////////////
+
+	// Allocate space for each future file
+	Packet::FutureReference<Packet::PacketFile>* files = new Packet::FutureReference<Packet::PacketFile>[totalNumberFiles];
+
+	//////////////////
+	// JOB CREATION //
+	//////////////////
+
+	// Create the job container
+	Peon::Container* jobContainer = Peon::CreateJobContainer();
+
+	// For each created file
+	for (int i = 0; i < totalNumberFiles; i++)
+	{
+		// Create a new loading job
+		Peon::Job* newJob = Peon::CreateChildJob(jobContainer, [=]() {
+
+			// Create the filename
+			std::string filename = "Test" + std::to_string(i) + ".txt";
+
+			// Request a new file
+			bool result = packetFileRequester->RequestFile(&files[i], filename.c_str(), Packet::PacketFile::DispatchType::OnProcess, true);
+			if (!result)
+			{
+				return;
+			}
+		});
+
+		// Start the new job
+		Peon::StartJob(newJob);
+	}
+
+	// Start the container job
+	Peon::StartJob(jobContainer);
+
+	// Wait for the container
+	Peon::WaitForJob(jobContainer);
+
+	// Process the request queues
+	packetFileRequester->ProcessFileQueues();
+
+	// Refresh the peon system
+	Peon::ResetWorkFrame();
+
+	// For each created file
+	for (int i = 0; i < totalNumberFiles; i++)
+	{
+		// Release this file
+		if (files[i].IsRead())
+		{
+			if (files[i]->IsReady())
+			{
+				// Create a new job
+				Peon::Job* newJob = Peon::CreateChildJob(jobContainer, [&]() {
+
+					// Release this file
+					files[i]->Release();
+				});
+
+				// Start the new job
+				Peon::StartJob(newJob);
+			}
+		}
+	}
+
+	// Start the container job
+	Peon::StartJob(jobContainer);
+
+	// Wait for the container
+	Peon::WaitForJob(jobContainer);
+
+	// Refresh the peon system
+	Peon::ResetWorkFrame();
+
+	// Process the request queues
+	packetFileRequester->ProcessFileQueues();
+
+	// Sleep a little
+	// ...
+}
 
 int main()
 {
-	Console();
+	PerformThreadedTests();
     return 0;
 }

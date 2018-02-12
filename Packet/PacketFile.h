@@ -98,6 +98,9 @@ public: //////////
 	// Return if this file is dirty
 	bool IsDirty();
 
+	// Return if this file was released
+	bool WasReleased();
+
 	// Return if there is an error on this file
 	bool HasError();
 
@@ -142,6 +145,7 @@ private: //////
 	//   If the allocation should be delayed
 	bool m_IsReady;
 	bool m_IsDirty;
+	bool m_WasReleased;
 	bool m_DelayAllocation;
 
 	// The file identifier

@@ -45,10 +45,11 @@ bool Packet::PacketFileRequester::UseThreadedQueue(uint32_t _totalNumberMaximumT
 	return true;
 }
 
-bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>& _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
+bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>* _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
 {
 	// Prepare the request data
-	FileRequestData requestData(_futureObject);
+	FileRequestData requestData = {};
+	requestData.fileReference = _futureObject;
 	requestData.fileIdentifier = _fileIdentifier;
 	requestData.fileDispatchType = _dispatchType;
 	requestData.delayAllocation = _delayAllocation;
@@ -93,7 +94,7 @@ bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>& _futu
 	return true;
 }
 
-bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>& _futureObject, const char* _fileName, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
+bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>* _futureObject, const char* _fileName, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
 {
 	return RequestFile(_futureObject, HashFilePathStatic(_fileName), _dispatchType, _delayAllocation);
 }
@@ -159,7 +160,7 @@ bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)
 	if (file != nullptr)
 	{
 		// Ok the file was already loaded, the reference count incremented and we are ready to go
-		_requestData.fileReference.SetInternalObject(file);
+		_requestData.fileReference->SetInternalObject(file);
 
 		return true;
 	}
@@ -175,7 +176,7 @@ bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)
 	}
 
 	// Set the file reference internal object
-	_requestData.fileReference.SetInternalObject(newFile);
+	_requestData.fileReference->SetInternalObject(newFile);
 
 	// Pass this file to the file loader
 	if (!m_PacketFileLoader.ProcessPacketFile(newFile))

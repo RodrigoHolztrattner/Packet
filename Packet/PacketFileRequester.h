@@ -55,10 +55,8 @@ private:
 	// Our file request type
 	struct FileRequestData
 	{
-		FileRequestData(FutureReference<PacketFile>& _fileReference) : fileReference(_fileReference) {}
-
 		// The file reference
-		FutureReference<PacketFile>& fileReference;
+		FutureReference<PacketFile>* fileReference;
 
 		// The file identifier
 		PacketFragment::FileIdentifier fileIdentifier;
@@ -86,8 +84,8 @@ public: //////////
 	bool UseThreadedQueue(uint32_t _totalNumberMaximumThreads, std::function<uint32_t()> _threadIndexMethod);
 
 	// Request a file
-	bool RequestFile(FutureReference<PacketFile>& _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
-	bool RequestFile(FutureReference<PacketFile>& _futureObject, const char* _fileName, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
+	bool RequestFile(FutureReference<PacketFile>* _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
+	bool RequestFile(FutureReference<PacketFile>* _futureObject, const char* _fileName, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
 
 	// Process all file queues (this requires synchronization and isn't thread safe)
 	bool ProcessFileQueues();
