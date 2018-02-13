@@ -8,6 +8,7 @@
 //////////////
 #include "PacketConfig.h"
 #include "PacketError.h"
+#include "PacketMultipleQueue.h"
 #include "PacketFileLoader.h"
 #include "PacketFile.h"
 #include "PacketFileStorage.h"
@@ -88,7 +89,7 @@ public: //////////
 	bool RequestFile(FutureReference<PacketFile>* _futureObject, const char* _fileName, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
 
 	// Process all file queues (this requires synchronization and isn't thread safe)
-	bool ProcessFileQueues();
+	void ProcessFileQueues();
 
 private:
 
@@ -99,29 +100,13 @@ private:
 // VARIABLES //
 private: //////
 
-	// If we are using the thread queue mode (we will use multiples arrays
-	// (one for each thread) to allow multiple simultaneous access without mutex uses)
-	bool m_UseThreadQueue;
-
-	// The maximum of total threaded queues
-	uint32_t m_MaximumTotalThreadedQueues;
-
 	// Our packet file loader, storage and remover
 	PacketFileLoader m_PacketFileLoader;
 	PacketFileStorage m_PacketFileStorage;
 	PacketFileRemover m_PacketFileRemover;
 
-	// The threaded index method <used to retrieve the current running thread index>
-	std::function<uint32_t()> m_ThreadIndexMethod;
-
-	// The mutex we will use to secure thread safe
-	std::mutex m_Mutex;
-	
-	// The base file request queue
-	std::vector<FileRequestData> m_BaseRequestQueue; // TODO usar algum vetor com memory allocation diferente? Setar size inicial? Fazer com que ele nunca recue no size?
-
-	// The threaded queues
-	std::vector<FileRequestData>* m_ThreadedRequestQueues; // TODO usar algum vetor com memory allocation diferente? Setar size inicial? Fazer com que ele nunca recue no size?
+	// Our request queue
+	Packet::MultipleQueue<FileRequestData> m_RequestQueue;
 };
 
 // Packet data explorer

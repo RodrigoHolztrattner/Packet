@@ -71,6 +71,7 @@
     <ClInclude Include="Peon-master\PeonWorker.h">
       <Filter>Peon</Filter>
     </ClInclude>
+    <ClInclude Include="PacketMultipleQueue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

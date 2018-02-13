@@ -73,6 +73,7 @@ void PerformThreadedTests()
 	const uint32_t totalNumberFiles = 1000;
 	uint32_t temporaryDataSize = 1024;
 	unsigned char* temporaryData = new unsigned char[temporaryDataSize];
+	memset(temporaryData, 0, sizeof(unsigned char) * temporaryDataSize);
 
 	// Create each file
 	for (int i = 0; i < totalNumberFiles; i++)

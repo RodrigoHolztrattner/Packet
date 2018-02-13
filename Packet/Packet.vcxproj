@@ -184,6 +184,7 @@
     <ClInclude Include="PacketFileRequester.h" />
     <ClInclude Include="PacketFileStorage.h" />
     <ClInclude Include="PacketFragment.h" />
+    <ClInclude Include="PacketMultipleQueue.h" />
     <ClInclude Include="PacketObject.h" />
     <ClInclude Include="PacketObjectHashTable.h" />
     <ClInclude Include="PacketObjectIterator.h" />
