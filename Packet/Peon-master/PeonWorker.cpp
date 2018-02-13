@@ -19,7 +19,15 @@ __InternalPeon::PeonWorker::~PeonWorker()
 #ifdef JobWorkerDebug
 static unsigned int JobWorkerId = 0;
 #endif
-thread_local int			LocalCurrentThreadIdentifier;
+
+// The thread local identifier
+thread_local int			CurrentLocalThreadIdentifier;
+
+int __InternalPeon::PeonWorker::GetCurrentLocalThreadIdentifier()
+{
+	return CurrentLocalThreadIdentifier;
+}
+
 void __InternalPeon::PeonWorker::SetQueueSize(unsigned int _jobBufferSize)
 {
 	// Initialize our concurrent queue
@@ -52,21 +60,17 @@ bool __InternalPeon::PeonWorker::Initialize(__InternalPeon::PeonSystem* _ownerSy
 	}
 	else
 	{
-		// Set the main thread id
-		__InternalPeon::CurrentThreadIdentifier = m_ThreadId;
-		LocalCurrentThreadIdentifier = m_ThreadId;
+		// Set the current local thread identifier
+		CurrentLocalThreadIdentifier = m_ThreadId;
 	}
 
 	return true;
 }
 
-
-
 void __InternalPeon::PeonWorker::ExecuteThreadAux()
 {
 	// Set the global per thread id
-	__InternalPeon::CurrentThreadIdentifier = m_ThreadId;
-	LocalCurrentThreadIdentifier = m_ThreadId;
+	CurrentLocalThreadIdentifier = m_ThreadId;
 
 	// Run the execute function
 	while (true)

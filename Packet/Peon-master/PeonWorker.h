@@ -36,9 +36,6 @@ PeonNamespaceBegin(__InternalPeon)
 // We know the job system
 class PeonSystem;
 
-// The thread id and current job
-thread_local static int			CurrentThreadIdentifier;
-
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PeonWorker
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,6 +45,11 @@ public:
 	PeonWorker();
 	PeonWorker(const PeonWorker&);
 	~PeonWorker();
+
+public:
+
+	// Get the current local thread identifier
+	static int GetCurrentLocalThreadIdentifier();
 
 public:
 

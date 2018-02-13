@@ -93,7 +93,7 @@ static Worker* GetCurrentWorker()
 // Return the current worker index for the actual context
 static int GetCurrentWorkerIndex()
 {
-	return __InternalPeon::CurrentThreadIdentifier;
+	return __InternalPeon::PeonWorker::GetCurrentLocalThreadIdentifier();
 }
 
 // Return the total number of worker threads

@@ -146,7 +146,8 @@ public:
 	// Return the current thread executing this code
 	static PeonWorker* GetCurrentPeon()
 	{
-		return &PeonSystem::m_JobWorkers[CurrentThreadIdentifier];
+		int currentThreadIdentifier = __InternalPeon::PeonWorker::GetCurrentLocalThreadIdentifier();
+		return &PeonSystem::m_JobWorkers[currentThreadIdentifier];
 	}
 
 	// Return the default worker thread

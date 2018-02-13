@@ -42,7 +42,7 @@
 void PerformThreadedTests()
 {
 	// Initialize the peon system
-	Peon::Initialize(2, 4096);
+	Peon::Initialize(4, 4096);
 
 	// Create the new packet object
 	Packet::PacketObject* newPackObject = new Packet::PacketObject();
@@ -144,7 +144,7 @@ void PerformThreadedTests()
 			if (files[i]->IsReady())
 			{
 				// Create a new job
-				Peon::Job* newJob = Peon::CreateChildJob(jobContainer, [&]() {
+				Peon::Job* newJob = Peon::CreateChildJob(jobContainer, [=]() {
 
 					// Release this file
 					files[i]->Release();
