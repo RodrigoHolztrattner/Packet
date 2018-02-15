@@ -35,6 +35,9 @@
 	- PacketFragment: Devemos aceitar uma quantidade máxima de buracos, após isso devemos marcar esse fragment como "impuro" e ele só poderá ser usado para
 	adicionar novos itens depois de ser "purificado" (rodar o algoritmo de otimização de espaço).
 	- PacketObjectManager (opcional): Deve permitir fazer um agrupamento de itens selecionados (para que os mesmos se encontrem proximos localmente e de rápida leitura).
+	- Modificar os callbacks do future resource e do packet file de forma que os mesmos sejam disparados no mesmo lugar
+	quando carregados. 
+	- Ver se existe a necessidade de load/ready callbacks para o future object e o packet file.
 */
 
 // Obs: There are some "TODO"s inside the classes, I need to check those too (just use a global find w/ TODO as the keyword)
@@ -42,7 +45,7 @@
 void PerformThreadedTests()
 {
 	// Initialize the peon system
-	Peon::Initialize(4, 4096);
+	Peon::Initialize(4, 8192);
 
 	// Create the new packet object
 	Packet::PacketObject* newPackObject = new Packet::PacketObject();
@@ -94,7 +97,7 @@ void PerformThreadedTests()
 	//////////////////////
 
 	// Allocate space for each future file
-	Packet::FutureReference<Packet::PacketFile>* files = new Packet::FutureReference<Packet::PacketFile>[totalNumberFiles];
+	Packet::FutureReference<Packet::PacketFile>* files = new Packet::FutureReference<Packet::PacketFile>[totalNumberFiles*4];
 
 	//////////////////
 	// JOB CREATION //
@@ -104,13 +107,16 @@ void PerformThreadedTests()
 	Peon::Container* jobContainer = Peon::CreateJobContainer();
 
 	// For each created file
-	for (int i = 0; i < totalNumberFiles; i++)
+	for (int i = 0; i < totalNumberFiles*4; i++)
 	{
 		// Create a new loading job
 		Peon::Job* newJob = Peon::CreateChildJob(jobContainer, [=]() {
 
+			// Set the index
+			int index = i / 4;
+
 			// Create the filename
-			std::string filename = "Test" + std::to_string(i) + ".txt";
+			std::string filename = "Test" + std::to_string(index) + ".txt";
 
 			// Request a new file
 			bool result = packetFileRequester->RequestFile(&files[i], filename.c_str(), Packet::PacketFile::DispatchType::OnProcess, true);
@@ -137,7 +143,7 @@ void PerformThreadedTests()
 	Peon::ResetWorkFrame();
 
 	// For each created file
-	for (int i = 0; i < totalNumberFiles; i++)
+	for (int i = 0; i < totalNumberFiles*4; i++)
 	{
 		// Release this file
 		if (files[i].IsRead())

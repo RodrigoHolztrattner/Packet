@@ -73,6 +73,9 @@ void Packet::PacketFileRequester::ProcessFileQueues()
 		// Process this request
 		ProcessRequest(_requestData);
 	}, true);
+
+	// Call the process method for the file remover too
+	m_PacketFileRemover.ProcessFileQueues();
 }
 
 bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)

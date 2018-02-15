@@ -76,10 +76,10 @@ bool Packet::PacketFileStorage::ShutdownFileFromIdentifier(PacketFragment::FileI
 	if (file->GetReferenceCount() == 0)
 	{
 		// Delete this file
-		// TODO
+		delete file; // TODO use another deallocation method
 		
 		// Remove the file from the storage map
-		// TODO
+		m_FileStorage.erase(iterator);
 	}
 	
 	return true;
