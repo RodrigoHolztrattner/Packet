@@ -72,8 +72,28 @@ public:
 		// Our return vector
 		std::vector<ObjectType> returnVector;
 
-		// TODO
-		// TODO
+		// Append the base queue to the result vector
+		returnVector.insert(returnVector.end(), m_BaseRequestQueue.begin(), m_BaseRequestQueue.end());
+
+		// Clear the base object queue
+		if (_clear) m_BaseRequestQueue.clear();
+
+		// If we should use the threaded queues
+		if (m_UseThreadQueue)
+		{
+			// For each threaded queue
+			for (int i = 0; i<m_MaximumTotalThreadedQueues; i++)
+			{
+				// Get a reference to this queue
+				auto& threadedQueue = m_ThreadedRequestQueues[i];
+
+				// Append this queue to the result vector
+				returnVector.insert(returnVector.end(), threadedQueue.begin(), threadedQueue.end());
+
+				// Clear this request queue
+				if (_clear) threadedQueue.clear();
+			}
+		}
 		
 		return returnVector;
 	}
@@ -118,8 +138,25 @@ public:
 
 	void Clear()
 	{
-		// TODO
-		// TODO
+		// Lock our mutex (only one thread allowed from there)
+		std::lock_guard<std::mutex> guard(m_Mutex);
+
+		// Clear the base object queue
+		m_BaseRequestQueue.clear();
+
+		// If we should use the threaded queues
+		if (m_UseThreadQueue)
+		{
+			// For each threaded queue
+			for (int i = 0; i<m_MaximumTotalThreadedQueues; i++)
+			{
+				// Get a reference to this queue
+				auto& threadedQueue = m_ThreadedRequestQueues[i];
+
+				// Clear this request queue
+				if (_clear) threadedQueue.clear();
+			}
+		}
 	}
 
 	// Set to use multiple thread queues
