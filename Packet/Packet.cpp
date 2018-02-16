@@ -10,30 +10,38 @@
 
 // My internal TODO list (pt-br):
 /*
-- (DONE) Adicionar forma de verificar erros (retornar os erros de alguma forma)
-- (NÃO NECESSÁRIO, CASO ALGO DE ERRADO EXISTE A OPÇÃO VERBOSE DE ERROS) Log opcional de quando algo é feito usando o iterator (arquivo tal foi colocado em tal pasta, path: blabla.bla, arquivo tal foi deletado, etc)
-- (NOT DONE: POSSÍVEL MAS MEIO INÚTIL) Ver uma forma precisa de descobrir se um path é um arquivo ou dir apenas (validar tal coisa no modo iterator)
-- (DONE) Ver uma forma precisa de pegar a extensão de um arquivo (adicionar unknow? caso desconhecido)
-- (DONE) Adicionar extenções dos arquivos como um field de metadado
-- Adicionar alguma extensão para debug no modo PacketFile
-- (DONE) Verificar em quais casos um novo fragment é criado (e se esses casos estão ok)
-- (DONE) Criar um arquivo que contenha todos as strings usadas (extensões, nomes de arquivos, etc)
-- (DONE) Criar um .bla conhecido por esse formato, pode ser o proprio .packet
-- (DONE?) Modificar a extensão dos nomes dos fragments
-- (DONE) Criar função delete no iterator
-- Criar função move no iterator
-- (DONE) Criar função de otimização no manager
-- Criar uma nova classes (PacketFileHash) que vai funcionar caso o sistema queira ter apenas uma referencia de cada recurso
-em uso, dessa forma um ponteiro para o mesmo deve ser mantido registrado com a Key de entrada. Deve ser adicionado um contador
-de referencia (esse possivelmente deve ficar no proprio file por causa do shutdown mas ele precisa comunicar o hash e
-a storage classes)
-- PacketFileLoader: Adicionar uma forma de uma thread externa realizar a ThreadedLoadRoutine()
-- PacketFragment: Devemos aceitar uma quantidade máxima de buracos, após isso devemos marcar esse fragment como "impuro" e ele só poderá ser usado para
-adicionar novos itens depois de ser "purificado" (rodar o algoritmo de otimização de espaço).
-- PacketObjectManager (opcional): Deve permitir fazer um agrupamento de itens selecionados (para que os mesmos se encontrem proximos localmente e de rápida leitura).
-- Modificar os callbacks do future resource e do packet file de forma que os mesmos sejam disparados no mesmo lugar
-quando carregados.
-- Ver se existe a necessidade de load/ready callbacks para o future object e o packet file.
+	- (DONE) Adicionar forma de verificar erros (retornar os erros de alguma forma)
+	- (NÃO NECESSÁRIO, CASO ALGO DE ERRADO EXISTE A OPÇÃO VERBOSE DE ERROS) Log opcional de quando algo é feito usando o iterator (arquivo tal foi colocado em tal pasta, path: blabla.bla, arquivo tal foi deletado, etc)
+	- (NOT DONE: POSSÍVEL MAS MEIO INÚTIL) Ver uma forma precisa de descobrir se um path é um arquivo ou dir apenas (validar tal coisa no modo iterator)
+	- (DONE) Ver uma forma precisa de pegar a extensão de um arquivo (adicionar unknow? caso desconhecido)
+	- (DONE) Adicionar extenções dos arquivos como um field de metadado
+	- Adicionar alguma extensão para debug no modo PacketFile
+	- (DONE) Verificar em quais casos um novo fragment é criado (e se esses casos estão ok)
+	- (DONE) Criar um arquivo que contenha todos as strings usadas (extensões, nomes de arquivos, etc)
+	- (DONE) Criar um .bla conhecido por esse formato, pode ser o proprio .packet
+	- (DONE?) Modificar a extensão dos nomes dos fragments
+	- (DONE) Criar função delete no iterator
+	- Criar função move no iterator
+	- (DONE) Criar função de otimização no manager
+	- Criar uma nova classes (PacketFileHash) que vai funcionar caso o sistema queira ter apenas uma referencia de cada recurso
+	em uso, dessa forma um ponteiro para o mesmo deve ser mantido registrado com a Key de entrada. Deve ser adicionado um contador
+	de referencia (esse possivelmente deve ficar no proprio file por causa do shutdown mas ele precisa comunicar o hash e
+	a storage classes)
+	- PacketFileLoader: Adicionar uma forma de uma thread externa realizar a ThreadedLoadRoutine()
+	- PacketFragment: Devemos aceitar uma quantidade máxima de buracos, após isso devemos marcar esse fragment como "impuro" e ele só poderá ser usado para
+	adicionar novos itens depois de ser "purificado" (rodar o algoritmo de otimização de espaço).
+	- PacketObjectManager (opcional): Deve permitir fazer um agrupamento de itens selecionados (para que os mesmos se encontrem proximos localmente e de rápida leitura).
+	- Modificar os callbacks do future resource e do packet file de forma que os mesmos sejam disparados no mesmo lugar
+	quando carregados.
+	- Ver se existe a necessidade de load/ready callbacks para o future object e o packet file.
+
+	- PacketFile transformation: - A idéia é transformar o PacketFile atual em um PacketData (outro nome?) object, dessa forma usaremos ainda o PacketFile como um objeto 
+	que será carregado com dados diretamente do PacketObject e o novo PacketData será um recipiente que pode conter um PacketFile disponível (o atual future object). 
+	Queremos que o PacketData seja um objeto que tenha controle de si, que possa saber se está disponível e que tenha funções para trabalhar com o PacketFile caso ele 
+	esteja carregado, tais funcionalidades serão importantes porque a razão de PacketFile para PacketData sempre será 0..1 X N, começaremos a usar o PacketData passado 
+	como referência para as funções de request e remove. Podemos adicionar as funcionalidades de callback que estão em hold no momento diretamente no PacketData. 
+	Talvez seja possível diretamente no PacketData inferir no tipo de PacketFile (alterando a forma com que a memória é alocada). Talvez seja interessante pensar nessa 
+	questão de memória agora com essa alteração.
 */
 
 // Obs: There are some "TODO"s inside the classes, I need to check those too (just use a global find w/ TODO as the keyword)
