@@ -101,6 +101,7 @@ public:
 	}
 
 	// Return if the internal object is ready
+	// If this returns false, the internal object is still in process to be initialized, caution should be taken here
 	bool IsRead()
 	{
 		return m_IsReady;
