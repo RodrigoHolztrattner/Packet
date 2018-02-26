@@ -75,6 +75,9 @@ bool Packet::PacketFileStorage::ShutdownFileFromIdentifier(PacketFragment::FileI
 	// Check if the file has at last one reference
 	if (file->GetReferenceCount() == 0)
 	{
+		// Call the release method
+		file->Release();
+
 		// Delete this file
 		delete file; // TODO use another deallocation method
 		

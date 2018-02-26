@@ -11,6 +11,7 @@
 #include "PacketMultipleQueue.h"
 #include "PacketFileLoader.h"
 #include "PacketFile.h"
+#include "PacketFileReference.h"
 #include "PacketFileStorage.h"
 #include "PacketFileRemover.h"
 
@@ -57,7 +58,7 @@ private:
 	struct FileRequestData
 	{
 		// The file reference
-		FutureReference<PacketFile>* fileReference;
+		PacketFileReference* fileReference;
 
 		// The file identifier
 		PacketFragment::FileIdentifier fileIdentifier;
@@ -74,7 +75,7 @@ private:
 public: //////////
 
 	// Constructor / destructor
-	PacketFileRequester(PacketObject* _packetObject);
+	PacketFileRequester(PacketFileLoader& _fileLoaderReference, PacketFileStorage& _fileStorageReference);
 	~PacketFileRequester();
 
 //////////////////
@@ -86,8 +87,7 @@ public: //////////
 
 	// Request a file
 	// TODO usar template com argumento do tipo PacketFile?
-	bool RequestFile(FutureReference<PacketFile>* _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
-	bool RequestFile(FutureReference<PacketFile>* _futureObject, const char* _fileName, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
+	bool RequestFile(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
 
 	// Process all file queues (this requires synchronization and isn't thread safe)
 	void ProcessFileQueues();
@@ -101,10 +101,9 @@ private:
 // VARIABLES //
 private: //////
 
-	// Our packet file loader, storage and remover
-	PacketFileLoader m_PacketFileLoader;
-	PacketFileStorage m_PacketFileStorage;
-	PacketFileRemover m_PacketFileRemover;
+	// Our packet file loader and storage references
+	PacketFileLoader& m_FileLoaderReference;
+	PacketFileStorage& m_FileStorageReference;
 
 	// Our request queue
 	Packet::MultipleQueue<FileRequestData> m_RequestQueue;

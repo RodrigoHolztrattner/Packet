@@ -150,6 +150,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Packet.cpp" />
+    <ClCompile Include="PacketFileManager.cpp" />
+    <ClCompile Include="PacketFileReference.cpp" />
     <ClCompile Include="PacketError.cpp" />
     <ClCompile Include="PacketFile.cpp" />
     <ClCompile Include="PacketFileDataOperations.cpp" />
@@ -175,6 +177,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
+    <ClInclude Include="PacketFileManager.h" />
+    <ClInclude Include="PacketFileReference.h" />
     <ClInclude Include="PacketError.h" />
     <ClInclude Include="PacketFile.h" />
     <ClInclude Include="PacketFileDataOperations.h" />

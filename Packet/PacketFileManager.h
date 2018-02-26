@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: PacketFileRemover.h
+// Filename: PacketFileManager.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
@@ -9,11 +9,15 @@
 #include "PacketConfig.h"
 #include "PacketError.h"
 #include "PacketMultipleQueue.h"
+#include "PacketFileLoader.h"
 #include "PacketFile.h"
-#include "PacketFileStorage.h"
 #include "PacketFileReference.h"
+#include "PacketFileStorage.h"
+#include "PacketFileRequester.h"
+#include "PacketFileRemover.h"
 
-#include <map>
+#include <string>
+#include <functional>
 #include <mutex>
 
 ///////////////
@@ -44,10 +48,11 @@ PacketNamespaceBegin(Packet)
 ////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class name: PacketFileRemover
+// Class name: PacketFileManager
 ////////////////////////////////////////////////////////////////////////////////
-class PacketFileRemover
+class PacketFileManager
 {
+
 private:
 
 //////////////////
@@ -55,36 +60,37 @@ private:
 public: //////////
 
 	// Constructor / destructor
-	PacketFileRemover(PacketFileStorage& _packetFileStorage);
-	~PacketFileRemover();
+	PacketFileManager(PacketObject* _packetObject);
+	~PacketFileManager();
 
 //////////////////
 // MAIN METHODS //
 public: //////////
 
-	// Try to remove a file (will just reduce the reference count if there are more references)
-	void TryRemoveFile(PacketFileReference* _fileReference);
-
 	// Set to use multiple thread queues
 	bool UseThreadedQueue(uint32_t _totalNumberMaximumThreads, std::function<uint32_t()> _threadIndexMethod);
 
-	// Process all file queues
-	void ProcessFileQueues();
+	// Request a file reference
+	bool RequestReference(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
+	bool RequestReference(PacketFileReference* _fileReference, const char* _fileName, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
+
+	// Release a file reference
+	bool ReleaseReference(PacketFileReference* _fileReference);
+
+	// Process all file queues (this requires synchronization and isn't thread safe)
+	void ProcessQueues();
 
 private:
-
-	// Process a removal request
-	bool ProcessRemovalRequest(PacketFragment::FileIdentifier _fileIdentifier);
 
 ///////////////
 // VARIABLES //
 private: //////
 
-	// The packet file storage reference
-	PacketFileStorage& m_FileStorageReference;
-
-	// Our deletion queue
-	Packet::MultipleQueue<PacketFragment::FileIdentifier> m_RequestQueue;
+	// Our packet file requester, loader, storage and remover
+	PacketFileLoader m_PacketFileLoader;
+	PacketFileStorage m_PacketFileStorage;
+	PacketFileRequester m_PacketFileRequester;
+	PacketFileRemover m_PacketFileRemover;
 };
 
 // Packet data explorer

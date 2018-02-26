@@ -5,9 +5,9 @@
 #include "PacketObject.h"
 #include "PacketFileLoader.h"
 
-Packet::PacketFileRequester::PacketFileRequester(PacketObject* _packetObject) : 
-	m_PacketFileLoader(_packetObject), 
-	m_PacketFileRemover(m_PacketFileStorage)
+Packet::PacketFileRequester::PacketFileRequester(PacketFileLoader& _fileLoaderReference, PacketFileStorage& _fileStorageReference) :
+	m_FileLoaderReference(_fileLoaderReference),
+	m_FileStorageReference(_fileStorageReference)
 {
 }
 
@@ -23,20 +23,14 @@ bool Packet::PacketFileRequester::UseThreadedQueue(uint32_t _totalNumberMaximumT
 		return false;
 	}
 
-	// Set the file remover to use threads too
-	if (!m_PacketFileRemover.UseThreadedQueue(_totalNumberMaximumThreads, _threadIndexMethod))
-	{
-		return false;
-	}
-
 	return true;
 }
 
-bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>* _futureObject, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
+bool Packet::PacketFileRequester::RequestFile(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
 {
 	// Prepare the request data
 	FileRequestData requestData = {};
-	requestData.fileReference = _futureObject;
+	requestData.fileReference = _fileReference;
 	requestData.fileIdentifier = _fileIdentifier;
 	requestData.fileDispatchType = _dispatchType;
 	requestData.delayAllocation = _delayAllocation;
@@ -60,11 +54,6 @@ bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>* _futu
 	return true;
 }
 
-bool Packet::PacketFileRequester::RequestFile(FutureReference<PacketFile>* _futureObject, const char* _fileName, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
-{
-	return RequestFile(_futureObject, HashFilePathStatic(_fileName), _dispatchType, _delayAllocation);
-}
-
 void Packet::PacketFileRequester::ProcessFileQueues()
 {
 	// For each request, run the process method
@@ -73,9 +62,6 @@ void Packet::PacketFileRequester::ProcessFileQueues()
 		// Process this request
 		ProcessRequest(_requestData);
 	}, true);
-
-	// Call the process method for the file remover too
-	m_PacketFileRemover.ProcessFileQueues();
 }
 
 bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)
@@ -83,33 +69,40 @@ bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)
 	// Everything is single threaded from here //
 
 	// Check if we already have this file on our storage
-	PacketFile* file = m_PacketFileStorage.RequestFileFromIdentifier(_requestData.fileIdentifier);
+	PacketFile* file = m_FileStorageReference.RequestFileFromIdentifier(_requestData.fileIdentifier);
 	if (file != nullptr)
 	{
-		// Ok the file was already loaded, the reference count incremented and we are ready to go
-		_requestData.fileReference->SetInternalObject(file);
+		// Ok the file was loaded, the reference count incremented and we are ready to go
+		_requestData.fileReference->SetFileReference(file);
+
+		// Add teh file reference request
+		file->AddFileReferenceRequest(_requestData.fileReference);
 
 		return true;
 	}
 
 	// Create a new file object
-	PacketFile* newFile = new PacketFile(&m_PacketFileRemover, _requestData.fileIdentifier, _requestData.fileDispatchType, _requestData.delayAllocation);
+	PacketFile* newFile = new PacketFile(_requestData.fileIdentifier, _requestData.fileDispatchType, _requestData.delayAllocation);
 	// TODO use custom allocator for the new file?
+	// TODO move this inside the file storage?
 	
 	// Insert this new file into the storage
-	if (!m_PacketFileStorage.InserFileWithIdentifier(_requestData.fileIdentifier, newFile))
+	if (!m_FileStorageReference.InserFileWithIdentifier(_requestData.fileIdentifier, newFile))
 	{
 		return false;
 	}
 
 	// Set the file reference internal object
-	_requestData.fileReference->SetInternalObject(newFile);
+	_requestData.fileReference->SetFileReference(newFile);
 
 	// Pass this file to the file loader
-	if (!m_PacketFileLoader.ProcessPacketFile(newFile))
+	if (!m_FileLoaderReference.ProcessPacketFile(newFile))
 	{
 		return false;
 	}
+
+	// Add teh file reference request
+	newFile->AddFileReferenceRequest(_requestData.fileReference);
 
 	return true;
 }

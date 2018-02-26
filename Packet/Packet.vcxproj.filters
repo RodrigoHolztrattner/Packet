@@ -32,6 +32,8 @@
     <ClCompile Include="Peon-master\PeonWorker.cpp">
       <Filter>Peon</Filter>
     </ClCompile>
+    <ClCompile Include="PacketFileReference.cpp" />
+    <ClCompile Include="PacketFileManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -72,6 +74,8 @@
       <Filter>Peon</Filter>
     </ClInclude>
     <ClInclude Include="PacketMultipleQueue.h" />
+    <ClInclude Include="PacketFileReference.h" />
+    <ClInclude Include="PacketFileManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

@@ -5,17 +5,16 @@
 #include "PacketObject.h"
 #include "PacketFileLoader.h"
 #include "PacketFileRemover.h"
+#include "PacketFileReference.h"
 
-Packet::PacketFile::PacketFile(PacketFileRemover* _fileRemoverReference, PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType, bool _delayAllocation)
+Packet::PacketFile::PacketFile(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType, bool _delayAllocation)
 {
 	// Set our initial data
-	m_FileRemoverRefernce = _fileRemoverReference;
 	m_FileIdentifier = _fileIdentifier;
 	m_DispatchType = _dispatchType;
 	m_DelayAllocation = _delayAllocation;
 	m_IsReady = false;
 	m_IsDirty = true;
-	m_WasReleased = false;
 	m_Data = nullptr;
 }
 
@@ -41,11 +40,9 @@ Packet::PacketFile::DispatchType Packet::PacketFile::GetDispatchType()
 
 void Packet::PacketFile::Release()
 {
-	// Release this file using the file remover
-	m_FileRemoverRefernce->TryRemoveFile(m_FileIdentifier);
-
-	// Set was released to true
-	m_WasReleased = true;
+	// Deallocate the memory
+	DeallocateMemory(m_Data);
+	m_Data = nullptr;
 }
 
 uint32_t Packet::PacketFile::GetReferenceCount()
@@ -78,11 +75,6 @@ bool Packet::PacketFile::IsDirty()
 	return m_IsDirty;
 }
 
-bool Packet::PacketFile::WasReleased()
-{
-	return m_WasReleased;
-}
-
 bool Packet::PacketFile::HasError()
 {
 	return m_ErrorObject.IsSet();
@@ -100,14 +92,41 @@ unsigned char* Packet::PacketFile::GetInternalDataPtr()
 
 void Packet::PacketFile::FinishLoading()
 {
+	// Lock our reference mutex
+	m_ReferenceMutex.lock();
+
 	// Set ready
 	m_IsReady = true;
 
-	// Check if the callback was set
-	if (m_LoadCallback)
+	// Unlock our reference mutex
+	m_ReferenceMutex.unlock();
+
+	// For each reference request
+	for (auto& referenceRequest : m_FileReferenceRequests)
 	{
-		// Call the load callback
-		m_LoadCallback();
+		// Call the ready callback for this reference
+		referenceRequest->CallReadyCallback();
+	}
+
+	// Clear the reference vector
+	m_FileReferenceRequests.clear();
+}
+
+void Packet::PacketFile::AddFileReferenceRequest(PacketFileReference* _fileReferenceRequest)
+{
+	// Lock our reference mutex
+	std::lock_guard<std::mutex> guard(m_ReferenceMutex);
+
+	// Check if this file is ready
+	if (m_IsReady)
+	{
+		// Call the ready callback
+		_fileReferenceRequest->CallReadyCallback();
+	}
+	else
+	{
+		// Add this reference to our request vector
+		m_FileReferenceRequests.push_back(_fileReferenceRequest);
 	}
 }
 

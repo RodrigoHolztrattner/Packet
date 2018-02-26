@@ -3,7 +3,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketFileRemover.h"
 
-Packet::PacketFileRemover::PacketFileRemover(PacketFileStorage& _packetFileStorage) : m_PacketFileStorageReference(_packetFileStorage)
+Packet::PacketFileRemover::PacketFileRemover(PacketFileStorage& _packetFileStorage) : 
+	m_FileStorageReference(_packetFileStorage)
 {
 	// Set our initial data
 	// ...
@@ -13,10 +14,13 @@ Packet::PacketFileRemover::~PacketFileRemover()
 {
 }
 
-void Packet::PacketFileRemover::TryRemoveFile(Packet::PacketFragment::FileIdentifier _fileIdentifier)
+void Packet::PacketFileRemover::TryRemoveFile(PacketFileReference* _fileReference)
 {
+	// Get the file object from the reference
+	PacketFile* fileObject = _fileReference->GetFileObject();
+	
 	// Insert the file identifier we will try to remove
-	m_RequestQueue.Insert(_fileIdentifier);
+	m_RequestQueue.Insert(fileObject->GetFileIdentifier());
 }
 
 bool Packet::PacketFileRemover::UseThreadedQueue(uint32_t _totalNumberMaximumThreads, std::function<uint32_t()> _threadIndexMethod)
@@ -40,7 +44,7 @@ bool Packet::PacketFileRemover::ProcessRemovalRequest(PacketFragment::FileIdenti
 	// Everything is single threaded from here //
 	
 	// Shutdown this file
-	if (!m_PacketFileStorageReference.ShutdownFileFromIdentifier(_fileIdentifier))
+	if (!m_FileStorageReference.ShutdownFileFromIdentifier(_fileIdentifier))
 	{
 		return false;
 	}

@@ -12,6 +12,7 @@
 #include "PacketError.h"
 
 #include <string>
+#include <mutex>
 
 ///////////////
 // NAMESPACE //
@@ -39,9 +40,9 @@ PacketNamespaceBegin(Packet)
 // We know the PacketObject, the PacketFileLoader, the PacketFileRequester, the PacketFileStorage and the PacketFileRemover classes
 class PacketObject;
 class PacketFileLoader;
-class PacketFileRemover;
 class PacketFileRequester;
 class PacketFileStorage;
+class PacketFileReference;
 
 ////////////////
 // STRUCTURES //
@@ -56,9 +57,9 @@ public:
 
 	// The PacketFileLoader, the PacketFileRemover, the PacketFileStorage and the PacketFileRequester are friend classes
 	friend PacketFileLoader;
-	friend PacketFileRemover;
 	friend PacketFileRequester;
 	friend PacketFileStorage;
+	friend PacketFileReference;
 
 	// The dispatch type
 	enum class DispatchType
@@ -73,7 +74,7 @@ public:
 protected: ///////
 
 	// Constructor / destructor
-	PacketFile(PacketFileRemover* _fileRemoverReference, PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation = false);
+	PacketFile(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation = false);
 	~PacketFile();
 
 //////////////////
@@ -97,9 +98,6 @@ public: //////////
 
 	// Return if this file is dirty
 	bool IsDirty();
-
-	// Return if this file was released
-	bool WasReleased();
 
 	// Return if there is an error on this file
 	bool HasError();
@@ -127,6 +125,9 @@ protected:
 	// Decrement the reference count (called by the packet file storage object)
 	void DecrementReferenceCount();
 
+	// Add a request reference to be called when this file changes its status
+	void AddFileReferenceRequest(PacketFileReference* _fileReferenceRequest);
+
 private:
 
 	// Virtual method for memory allocation and deallocation
@@ -145,7 +146,6 @@ private: //////
 	//   If the allocation should be delayed
 	bool m_IsReady;
 	bool m_IsDirty;
-	bool m_WasReleased;
 	bool m_DelayAllocation;
 
 	// The file identifier
@@ -154,14 +154,17 @@ private: //////
 	// The dispatch type
 	DispatchType m_DispatchType;
 
-	// The file remover reference
-	PacketFileRemover* m_FileRemoverRefernce;
-
 	// The load callback
 	std::function<void()> m_LoadCallback;
 
 	// The file data
 	unsigned char* m_Data;
+
+	// The file reference requests
+	std::vector<PacketFileReference*> m_FileReferenceRequests;
+
+	// The mutex we will use to manage our reference requests
+	std::mutex m_ReferenceMutex;
 
 	// The error object
 	PacketError m_ErrorObject; // TODO check if this is necessary
