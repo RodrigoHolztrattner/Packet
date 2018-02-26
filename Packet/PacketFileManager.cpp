@@ -56,6 +56,8 @@ bool Packet::PacketFileManager::ReleaseReference(PacketFileReference* _fileRefer
 
 	// Call the release method for this file reference
 	_fileReference->Release();
+
+	return true;
 }
 
 void Packet::PacketFileManager::ProcessQueues()

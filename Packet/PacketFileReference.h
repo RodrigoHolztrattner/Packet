@@ -77,6 +77,9 @@ public: //////////
 	// Return a ptr to the file object
 	PacketFile* GetFileObject();
 
+	// Set the ready callback function
+	void SetReadyCallback(std::function<void()> _readyCallback);
+
 protected:
 
 	// Release this reference

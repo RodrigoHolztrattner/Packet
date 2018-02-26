@@ -37,6 +37,11 @@ Packet::PacketFile* Packet::PacketFileReference::GetFileObject()
 	return m_PacketFileReference;
 }
 
+void Packet::PacketFileReference::SetReadyCallback(std::function<void()> _readyCallback)
+{
+	m_ReadyCallback = _readyCallback;
+}
+
 void Packet::PacketFileReference::Release()
 {
 	// Set ready to false
