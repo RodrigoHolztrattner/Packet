@@ -85,6 +85,9 @@ private: //////
 
 	// Our deletion queue
 	Packet::MultipleQueue<PacketFragment::FileIdentifier> m_RequestQueue;
+
+	// The mutex we will use to secure thread safe
+	std::mutex m_Mutex;
 };
 
 // Packet data explorer

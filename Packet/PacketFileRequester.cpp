@@ -38,10 +38,12 @@ bool Packet::PacketFileRequester::RequestFile(PacketFileReference* _fileReferenc
 	// Check if the dispatch type is on request and we should process the request right now
 	if (_dispatchType == PacketFile::DispatchType::OnRequest)
 	{
+		// Only one thread allowed when the dispatch type is "on request", prefer using another dispatch type for non-blocking operation
+		std::lock_guard<std::mutex> guard(m_Mutex);
+
 		// Load this file right now
 		if (!ProcessRequest(requestData))
 		{
-			// Error TODO call
 			return false;
 		}
 
@@ -56,6 +58,9 @@ bool Packet::PacketFileRequester::RequestFile(PacketFileReference* _fileReferenc
 
 void Packet::PacketFileRequester::ProcessFileQueues()
 {
+	// Prevent multiple threads from running this code (only one thread allowed, take care!)
+	std::lock_guard<std::mutex> guard(m_Mutex);
+
 	// For each request, run the process method
 	m_RequestQueue.ProcessAll([&](FileRequestData& _requestData)
 	{
@@ -66,7 +71,8 @@ void Packet::PacketFileRequester::ProcessFileQueues()
 
 bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)
 {
-	// Everything is single threaded from here //
+	// Everything is thread-safe from here, this method is only callable from the ProcessFileQueues() and RequestFile() methods
+	// and both uses mutexes for syncronization
 
 	// Check if we already have this file on our storage
 	PacketFile* file = m_FileStorageReference.RequestFileFromIdentifier(_requestData.fileIdentifier);

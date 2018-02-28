@@ -99,9 +99,6 @@ public: //////////
 	// Return if this file is dirty
 	bool IsDirty();
 
-	// Return if there is an error on this file
-	bool HasError();
-
 	// Return the file identifier
 	PacketFragment::FileIdentifier GetFileIdentifier();
 
@@ -165,9 +162,6 @@ private: //////
 
 	// The mutex we will use to manage our reference requests
 	std::mutex m_ReferenceMutex;
-
-	// The error object
-	PacketError m_ErrorObject; // TODO check if this is necessary
 };
 
 // Packet data explorer

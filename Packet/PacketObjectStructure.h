@@ -71,7 +71,7 @@ private:
 		std::string folderName;
 
 		// The folder complete path
-		std::string folderPath;
+		std::string folderPath; // Not used
 
 		// All the file objects this folder has
 		std::vector<FileObjectType*> files;

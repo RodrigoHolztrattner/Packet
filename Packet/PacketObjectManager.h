@@ -125,9 +125,6 @@ public: //////////
 	// Remove a file from this packet object
 	bool RemoveFile(FileFragmentIdentifier _hashIdentifier);
 
-	// Criar uma função que recebe uma função lambda de parâmetro que usaremos quando na otmização um hash identifier trocar de estado
-	// ... TODO
-
 protected:
 
 	// Optimize all objects

@@ -310,10 +310,6 @@ Packet::PacketFragment* Packet::PacketObjectManager::CreateNewFragment()
 
 bool Packet::PacketObjectManager::OptimizeFragmentsUsingIdentifiers(std::vector<FileFragmentIdentifier> _allFileFragmentIdentifiers, std::vector<FileFragmentIdentifier>& _outputFileFragmentIdentifiers)
 {
-	// TODO:
-	// This method isn't working right now, there is a problem with the filenames when updating the hash values, for now we are returning false
-	// return false;
-
 	///////////////////////////
 	// PREPARE OLD FRAGMENTS //
 	///////////////////////////

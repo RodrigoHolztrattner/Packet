@@ -86,7 +86,6 @@ public: //////////
 	bool UseThreadedQueue(uint32_t _totalNumberMaximumThreads, std::function<uint32_t()> _threadIndexMethod);
 
 	// Request a file
-	// TODO usar template com argumento do tipo PacketFile?
 	bool RequestFile(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
 
 	// Process all file queues (this requires synchronization and isn't thread safe)
@@ -107,6 +106,9 @@ private: //////
 
 	// Our request queue
 	Packet::MultipleQueue<FileRequestData> m_RequestQueue;
+
+	// The mutex we will use to secure thread safe
+	std::mutex m_Mutex;
 };
 
 // Packet data explorer

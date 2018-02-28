@@ -62,7 +62,7 @@ void Packet::PacketFile::DecrementReferenceCount()
 
 bool Packet::PacketFile::IsReady()
 {
-	return m_IsReady && !m_ErrorObject.IsSet();
+	return m_IsReady;
 }
 
 bool Packet::PacketFile::AllocationIsDelayed()
@@ -73,11 +73,6 @@ bool Packet::PacketFile::AllocationIsDelayed()
 bool Packet::PacketFile::IsDirty()
 {
 	return m_IsDirty;
-}
-
-bool Packet::PacketFile::HasError()
-{
-	return m_ErrorObject.IsSet();
 }
 
 Packet::PacketFragment::FileIdentifier Packet::PacketFile::GetFileIdentifier()
@@ -146,7 +141,6 @@ bool Packet::PacketFile::AllocateData(uint32_t _fileSize)
 	if(m_Data != nullptr)
 	{
 		// Set the error
-		m_ErrorObject.Set(PacketErrorFileDataAlreadyAllocated);
 		return false;
 	}
 

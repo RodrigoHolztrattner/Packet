@@ -31,6 +31,9 @@ bool Packet::PacketFileRemover::UseThreadedQueue(uint32_t _totalNumberMaximumThr
 
 void Packet::PacketFileRemover::ProcessFileQueues()
 {
+	// Prevent multiple threads from running this code (only one thread allowed, take care!)
+	std::lock_guard<std::mutex> guard(m_Mutex);
+
 	// For each deletion request
 	m_RequestQueue.ProcessAll([&](Packet::PacketFragment::FileIdentifier& _fileIdentifier) 
 	{
@@ -41,7 +44,8 @@ void Packet::PacketFileRemover::ProcessFileQueues()
 
 bool Packet::PacketFileRemover::ProcessRemovalRequest(PacketFragment::FileIdentifier _fileIdentifier)
 {
-	// Everything is single threaded from here //
+	// Everything is thread safe from here, this method is called only by the ProcessFileQueues() method and it has a mutex to
+	// prevent multiple threads simultaneously
 	
 	// Shutdown this file
 	if (!m_FileStorageReference.ShutdownFileFromIdentifier(_fileIdentifier))

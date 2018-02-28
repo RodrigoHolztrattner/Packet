@@ -76,7 +76,7 @@ bool Packet::PacketObjectStructure::InsertFolder(std::string _folderName, std::v
 	{
 		return false;
 	}
-
+	
 	// Check if the current folder already have a child with the given name
 	if (FolderHasSubFolder(folder, _folderName))
 	{
@@ -86,7 +86,7 @@ bool Packet::PacketObjectStructure::InsertFolder(std::string _folderName, std::v
 	// Create the new folder object
 	FolderObjectType* newFolder = new FolderObjectType();
 	newFolder->folderName = _folderName;
-	// newFolder->folderPath = TODO
+	newFolder->folderPath = PacketStringOperations::ComposeDirectory(_directoryPath);
 
 	// Insert the new folder inside the base one
 	folder->subFolders.push_back(newFolder);

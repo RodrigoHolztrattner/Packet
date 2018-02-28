@@ -62,6 +62,8 @@ bool Packet::PacketFileManager::ReleaseReference(PacketFileReference* _fileRefer
 
 void Packet::PacketFileManager::ProcessQueues()
 {
+	// TODO: We should use a mutex here to prevent multiple threads trying to run simultaneously?
+	
 	// Process the file queues for the requester
 	m_PacketFileRequester.ProcessFileQueues();
 
