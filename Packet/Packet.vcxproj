@@ -176,6 +176,7 @@
     <ClCompile Include="Peon-master\PeonWorker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketConfig.h" />
     <ClInclude Include="PacketFileManager.h" />
     <ClInclude Include="PacketFileReference.h" />

@@ -76,6 +76,7 @@
     <ClInclude Include="PacketMultipleQueue.h" />
     <ClInclude Include="PacketFileReference.h" />
     <ClInclude Include="PacketFileManager.h" />
+    <ClInclude Include="Packet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

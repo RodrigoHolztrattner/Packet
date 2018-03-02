@@ -1,10 +1,7 @@
 // Packet.cpp : Defines the entry point for the console application.
 //
 
-#include "PacketFragment.h"
-#include "PacketObject.h"
-#include "PacketStringOperations.h"
-#include "PacketFile.h"
+#include "Packet.h"
 
 #include <iostream>
 
