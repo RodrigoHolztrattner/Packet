@@ -27,6 +27,9 @@ Packet is a C++ virtual file system library built primary for games, it allows a
 
 # Install
 
+Just copy & paste every *.h* and *.cpp* from the root folder into your project. To use the library just include the **Packet.h** as it includes
+every other file needed.
+
 The project was built using the Visual Studio 2017 and should work properly just by opening its solution file. The main file located here is an example application that simulates the virtual file system with console commands.
 
 The entire solution was made using pure C++ so if you want you can just copy-paste the files and use them in your project. Just remember the only dependency: [JSON for Modern C++](https://github.com/nlohmann/json).
