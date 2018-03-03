@@ -43,7 +43,7 @@ For this guide/examples the packet name will be **"wonderland"** and **67108864*
 
 To create our packet object we will just allocate memory for it and initialize using the `InitializeEmpty` method:
 ```c++
-Packet::PacketObject* packetObject = new Packet::PacketObject();
+Packet::Object* packetObject = new Packet::Object();
 if (!packetObject->InitializeEmpty("Wonderland", 67108864))
 {
 	return false;
@@ -137,7 +137,7 @@ initialize a `PacketFileManager`. Using this manager we can request references t
 "bundle".
 
 ```c++
-Packet::PacketFileManager* fileManager = new Packet::PacketFileManager(&packetObject);
+Packet::FileManager* fileManager = new Packet::FileManager(&packetObject);
 ```
 
 Requesting a file is simple, we need to provide the file reference object, the file name and the load operating mode (**OnRequest**, **OnProcess** or **Assync**).
@@ -146,12 +146,12 @@ It's possible to determine if the memory allocation for the loading phase should
 *This method is thread-safe and allows multiple worker thread access.*
 
 ```c++
-PacketFileReference fileReference;
+Packet::FileReference fileReference;
 fileManager->RequestReference(&fileReference, "resources/images/icon.jpg", PacketFile::DispatchType::Assync);
 ```
 
 > - OnRequest should be used when the file must be loaded on the current thread and inside the current request call.
-> - OnProcess means that you need to call the **ProcessQueues** method to start the loading process.
+> - OnProcess means that you need to call the **ProcessQueues** method first to start the loading process of all files inside the current load queue.
 > - If Assync was your choice, the file will be loaded by a dedicated thread some time after the **ProcessQueues** method was called.
 >
 > It's possible to derive the PacketFile class to override the memory allocation and deallocation methods.
@@ -177,8 +177,10 @@ of worker threads (the maximum number established) and the method to retrieve th
 of worket threads).
 
 ```c++
+// We will allocate 4 worker threads for the system, the other parameter is a lambda function
 fileManager->UseThreadedQueue(4, []() 
 {
+    // Using my other library (Peon) for this example
     return Peon::GetCurrentWorkerIndex();
 });
 ```
@@ -188,8 +190,10 @@ fileManager->UseThreadedQueue(4, []()
 If something wrong occurs you can retrieve an error object that contains the current operation status and any error code:
 
 ```c++
+// Acquire the error object
 auto errorObject = packetIterator.GetError();
 
+// Print the current error code and message into the default output
 errorObject.PrintInfo();
 ```
 
@@ -199,6 +203,7 @@ Alternatively you can get the error info and handle it by yourself.
 uint32_t errorCode;         
 std::string errorString;
 
+// Acquire the error info
 errorObject.GetInfo(errorCode, errorString);
 ```
 
