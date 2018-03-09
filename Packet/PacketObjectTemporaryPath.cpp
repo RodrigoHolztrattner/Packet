@@ -33,7 +33,7 @@ std::string Packet::PacketObjectTemporaryPath::GetFolderPath()
 	return PacketStringOperations::ComposeDirectory(m_FolderSplitPath, m_IsFile);
 }
 
-std::vector<std::string> Packet::PacketObjectTemporaryPath::GetFolderSplitPath()
+std::vector<std::string>& Packet::PacketObjectTemporaryPath::GetFolderSplitPath()
 {
 	return m_FolderSplitPath;
 }
@@ -229,7 +229,7 @@ bool Packet::PacketObjectTemporaryPath::TryJoinWithCurrentPath(std::vector<std::
 	uint32_t appendPathSize = m_IsFile ? _appendPath.size() - 1 : _appendPath.size();
 
 	// For each folder inside the append path
-	for (int i = 0; i < appendPathSize; i++)
+	for (unsigned int i = 0; i < appendPathSize; i++)
 	{
 		// Insert the append path into the current path
 		currentPath.push_back(_appendPath[i]);

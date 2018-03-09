@@ -94,7 +94,7 @@ std::string Packet::PacketStringOperations::ComposeDirectory(std::vector<std::st
 {
 	// Compose the string dir
 	std::string stringDir;
-	for (int i=0; i<_dir.size(); i++)
+	for (unsigned int i=0; i<_dir.size(); i++)
 	{
 		std::string& folder = _dir[i];
 

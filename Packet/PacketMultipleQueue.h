@@ -118,7 +118,7 @@ public:
 		if (m_UseThreadQueue)
 		{
 			// For each threaded queue
-			for (int i = 0; i<m_MaximumTotalThreadedQueues; i++)
+			for (unsigned int i = 0; i<m_MaximumTotalThreadedQueues; i++)
 			{
 				// Get a reference to this queue
 				auto& threadedQueue = m_ThreadedRequestQueues[i];

@@ -255,7 +255,7 @@ Packet::PacketFragment* Packet::PacketObjectManager::GetValidFragment(uint32_t& 
 Packet::PacketFragment* Packet::PacketObjectManager::GetValidFragmentForSize(uint32_t _size, uint32_t& _fragmentIndex)
 {
 	// For each fragment
-	for (int i=0; i<m_Fragments.size(); i++)
+	for (unsigned int i=0; i<m_Fragments.size(); i++)
 	{
 		// Get the current fragment
 		auto& fragment = m_Fragments[i];

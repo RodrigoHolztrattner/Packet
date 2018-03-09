@@ -70,7 +70,7 @@ public: //////////
 
 	// Return the current path and action path
 	std::string GetCurrentPath();
-	std::vector<std::string> GetCurrentActionPath();
+	std::vector<std::string>& GetCurrentActionPath();
 
 	// Compose the action directory from the given path
 	std::vector<std::string> ComposeActionDirectory(std::string& _path, bool _seeking = false);

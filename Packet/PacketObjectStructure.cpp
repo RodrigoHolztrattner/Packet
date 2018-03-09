@@ -125,7 +125,7 @@ bool Packet::PacketObjectStructure::RemoveFolder(std::string _folderName, std::v
 	}
 
 	// For each subfolder inside the parent folder
-	for (int i = 0; i < parentFolder->subFolders.size(); i++)
+	for (unsigned int i = 0; i < parentFolder->subFolders.size(); i++)
 	{
 		// Get the current folder
 		FolderObjectType* currentFolder = parentFolder->subFolders[i];
@@ -184,7 +184,7 @@ bool Packet::PacketObjectStructure::RemoveFile(std::string _fileName, std::vecto
 	}
 
 	// For each file inside this folder
-	for (int i=0; i<folder->files.size(); i++)
+	for (unsigned int i=0; i<folder->files.size(); i++)
 	{
 		// Get the current file
 		FileObjectType* file = folder->files[i];

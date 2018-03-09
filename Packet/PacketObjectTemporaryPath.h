@@ -77,7 +77,7 @@ public:
 
 	// Return the folder path or split path
 	std::string GetFolderPath();
-	std::vector<std::string> GetFolderSplitPath();
+	std::vector<std::string>& GetFolderSplitPath();
 
 	// Return the file name with extension / without extension / extension only
 	std::string GetFilename();

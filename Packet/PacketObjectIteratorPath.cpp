@@ -46,7 +46,7 @@ std::string Packet::PacketObjectIteratorPath::GetCurrentPath()
 	return PacketStringOperations::ComposeDirectory(m_CurrentDirectoryPath);
 }
 
-std::vector<std::string> Packet::PacketObjectIteratorPath::GetCurrentActionPath()
+std::vector<std::string>& Packet::PacketObjectIteratorPath::GetCurrentActionPath()
 {
 	return m_CurrentDirectoryPath;
 }
