@@ -158,7 +158,7 @@ bool Packet::PacketObjectHashTable::UpdateHashWithVector(std::vector<PacketObjec
 
 	// For each actual entry
 	int index = 0;
-	for (auto& it = m_HashTable.begin(); it != m_HashTable.end(); ++it)
+	for (auto it = m_HashTable.begin(); it != m_HashTable.end(); ++it)
 	{
 		// Update the entry
 		it->second = _hashVector[index];
