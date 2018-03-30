@@ -38,6 +38,7 @@ PacketNamespaceBegin(Packet)
 
 // The classes we know
 class PacketFileRequester;
+class PacketFileRemover;
 class PacketFileManager;
 
 ////////////////
@@ -51,6 +52,7 @@ class PacketFileReference
 {
 	// Our friend classes
 	friend PacketFileRequester;
+	friend PacketFileRemover;
 	friend PacketFile;
 	friend PacketFileManager;
 
@@ -62,6 +64,7 @@ protected: ///////
 
 	// Constructor / destructor
 	PacketFileReference();
+	PacketFileReference(std::function<void()> _setCallback);
 	~PacketFileReference();
 
 //////////////////
@@ -74,13 +77,16 @@ public: //////////
 	// Return if this reference was released
 	bool WasReleased();
 
-	// Return a ptr to the file object
-	PacketFile* GetFileObject();
-
-	// Set the ready callback function
-	void SetReadyCallback(std::function<void()> _readyCallback);
+	// Arrow operator (member access)
+	PacketFile* operator->() 
+	{
+		return m_PacketFileReference;
+	}
 
 protected:
+
+	// Return a ptr to the file object
+	PacketFile * GetFileObject();
 
 	// Release this reference
 	void Release();

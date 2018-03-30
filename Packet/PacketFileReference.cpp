@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: FluxMyWrapper.cpp
+// Filename: PacketFileReference.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketFileReference.h"
 #include "PacketObject.h"
@@ -10,6 +10,15 @@ Packet::PacketFileReference::PacketFileReference()
 	m_PacketFileReference = nullptr;
 	m_IsReady = false;
 	m_WasReleased = false;
+}
+
+Packet::PacketFileReference::PacketFileReference(std::function<void()> _setCallback)
+{
+	// Set our initial data
+	m_PacketFileReference = nullptr;
+	m_IsReady = false;
+	m_WasReleased = false;
+	m_ReadyCallback = _setCallback;
 }
 
 Packet::PacketFileReference::~PacketFileReference()
@@ -37,11 +46,6 @@ Packet::PacketFile* Packet::PacketFileReference::GetFileObject()
 	return m_PacketFileReference;
 }
 
-void Packet::PacketFileReference::SetReadyCallback(std::function<void()> _readyCallback)
-{
-	m_ReadyCallback = _readyCallback;
-}
-
 void Packet::PacketFileReference::Release()
 {
 	// Set ready to false
@@ -56,13 +60,13 @@ void Packet::PacketFileReference::SetFileReference(PacketFile* _fileReference)
 
 void Packet::PacketFileReference::CallReadyCallback()
 {
+	// Set we are ready
+	m_IsReady = true;
+
 	// If we have a ready callback...
 	if (m_ReadyCallback)
 	{
 		// Call the ready callback
 		m_ReadyCallback();
 	}
-
-	// Set we are ready
-	m_IsReady = true;
 }

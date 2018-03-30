@@ -31,9 +31,9 @@
     <ClCompile Include="Peon-master\PeonWorker.cpp">
       <Filter>Peon</Filter>
     </ClCompile>
-    <ClCompile Include="PacketFileReference.cpp" />
     <ClCompile Include="PacketFileManager.cpp" />
     <ClCompile Include="PacketFileQueue.cpp" />
+    <ClCompile Include="PacketFileReference.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -73,10 +73,10 @@
       <Filter>Peon</Filter>
     </ClInclude>
     <ClInclude Include="PacketMultipleQueue.h" />
-    <ClInclude Include="PacketFileReference.h" />
     <ClInclude Include="PacketFileManager.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketFileQueue.h" />
+    <ClInclude Include="PacketFileReference.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

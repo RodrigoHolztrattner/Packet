@@ -11,7 +11,6 @@
 #include "PacketMultipleQueue.h"
 #include "PacketFileLoader.h"
 #include "PacketFile.h"
-#include "PacketFileReference.h"
 #include "PacketFileStorage.h"
 #include "PacketFileRequester.h"
 #include "PacketFileRemover.h"
