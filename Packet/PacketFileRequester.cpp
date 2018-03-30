@@ -26,7 +26,7 @@ bool Packet::PacketFileRequester::UseThreadedQueue(uint32_t _totalNumberMaximumT
 	return true;
 }
 
-bool Packet::PacketFileRequester::RequestFile(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
+bool Packet::PacketFileRequester::RequestFile(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, std::function<PacketFile*()> _packetFileCreationFunction, bool _delayAllocation)
 {
 	// Prepare the request data
 	FileRequestData requestData = {};
@@ -34,6 +34,7 @@ bool Packet::PacketFileRequester::RequestFile(PacketFileReference* _fileReferenc
 	requestData.fileIdentifier = _fileIdentifier;
 	requestData.fileDispatchType = _dispatchType;
 	requestData.delayAllocation = _delayAllocation;
+	requestData.fileCreationFunction = _packetFileCreationFunction;
 
 	// Check if the dispatch type is on request and we should process the request right now
 	if (_dispatchType == PacketFile::DispatchType::OnRequest)
@@ -86,12 +87,13 @@ bool Packet::PacketFileRequester::ProcessRequest(FileRequestData _requestData)
 
 		return true;
 	}
-
-	// Create a new file object
-	PacketFile* newFile = new PacketFile(_requestData.fileIdentifier, _requestData.fileDispatchType, _requestData.delayAllocation);
-	// TODO use custom allocator for the new file?
-	// TODO move this inside the file storage?
 	
+	// Create a new file object (use the file creation method)
+	PacketFile* newFile = _requestData.fileCreationFunction();
+
+	// Set the load params for the new file
+	newFile->SetLoadParams(_requestData.fileIdentifier, _requestData.fileDispatchType, _requestData.delayAllocation);
+
 	// Insert this new file into the storage
 	if (!m_FileStorageReference.InserFileWithIdentifier(_requestData.fileIdentifier, newFile))
 	{

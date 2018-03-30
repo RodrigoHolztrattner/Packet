@@ -74,8 +74,8 @@ public:
 protected: ///////
 
 	// Constructor / destructor
-	PacketFile(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation = false);
-	~PacketFile();
+	PacketFile();
+	virtual ~PacketFile();
 
 //////////////////
 // MAIN METHODS //
@@ -106,6 +106,9 @@ public: //////////
 	uint32_t GetReferenceCount();
 
 protected:
+
+	// Set the load params
+	void SetLoadParams(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation = false);
 
 	// Allocate this file data
 	bool AllocateData(uint32_t _fileSize);

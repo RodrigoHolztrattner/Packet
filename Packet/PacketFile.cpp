@@ -7,12 +7,9 @@
 #include "PacketFileRemover.h"
 #include "PacketFileReference.h"
 
-Packet::PacketFile::PacketFile(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType, bool _delayAllocation)
+Packet::PacketFile::PacketFile()
 {
 	// Set our initial data
-	m_FileIdentifier = _fileIdentifier;
-	m_DispatchType = _dispatchType;
-	m_DelayAllocation = _delayAllocation;
 	m_IsReady = false;
 	m_IsDirty = true;
 	m_Data = nullptr;
@@ -133,6 +130,13 @@ unsigned char* Packet::PacketFile::AllocateMemory(uint32_t _fileSize)
 void Packet::PacketFile::DeallocateMemory(unsigned char* _fileData)
 {
 	delete[] _fileData;
+}
+
+void Packet::PacketFile::SetLoadParams(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation)
+{
+	m_FileIdentifier = _fileIdentifier;
+	m_DispatchType = _dispatchType;
+	m_DelayAllocation = _delayAllocation;
 }
 
 bool Packet::PacketFile::AllocateData(uint32_t _fileSize)

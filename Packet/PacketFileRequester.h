@@ -66,6 +66,9 @@ private:
 		// The dispatch type
 		PacketFile::DispatchType fileDispatchType;
 
+		// The file creation function
+		std::function<PacketFile*()> fileCreationFunction;
+
 		// If the memory allocation should be delayed
 		bool delayAllocation;
 	};
@@ -84,9 +87,9 @@ public: //////////
 
 	// Set to use multiple thread queues
 	bool UseThreadedQueue(uint32_t _totalNumberMaximumThreads, std::function<uint32_t()> _threadIndexMethod);
-
+	
 	// Request a file
-	bool RequestFile(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
+	bool RequestFile(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, std::function<PacketFile*()> _packetFileCreationFunction, bool _delayAllocation = false);
 
 	// Process all file queues (this requires synchronization and isn't thread safe)
 	void ProcessFileQueues();

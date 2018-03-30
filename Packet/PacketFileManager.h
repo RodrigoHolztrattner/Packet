@@ -71,8 +71,8 @@ public: //////////
 	bool UseThreadedQueue(uint32_t _totalNumberMaximumThreads, std::function<uint32_t()> _threadIndexMethod);
 
 	// Request a file reference
-	bool RequestReference(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
-	bool RequestReference(PacketFileReference* _fileReference, const char* _fileName, PacketFile::DispatchType _dispatchType = PacketFile::DispatchType::OnProcess, bool _delayAllocation = false);
+	bool RequestReference(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, std::function<PacketFile*()> _packetFileCreationFunction, bool _delayAllocation = false);
+	bool RequestReference(PacketFileReference* _fileReference, const char* _fileName, PacketFile::DispatchType _dispatchType, std::function<PacketFile*()> _packetFileCreationFunction, bool _delayAllocation = false);
 
 	// Release a file reference
 	bool ReleaseReference(PacketFileReference* _fileReference);

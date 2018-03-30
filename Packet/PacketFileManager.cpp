@@ -33,14 +33,14 @@ bool Packet::PacketFileManager::UseThreadedQueue(uint32_t _totalNumberMaximumThr
 	return true;
 }
 
-bool Packet::PacketFileManager::RequestReference(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
+bool Packet::PacketFileManager::RequestReference(PacketFileReference* _fileReference, PacketFragment::FileIdentifier _fileIdentifier, PacketFile::DispatchType _dispatchType, std::function<PacketFile*()> _packetFileCreationFunction, bool _delayAllocation)
 {
-	return m_PacketFileRequester.RequestFile(_fileReference, _fileIdentifier, _dispatchType, _delayAllocation);
+	return m_PacketFileRequester.RequestFile(_fileReference, _fileIdentifier, _dispatchType, _packetFileCreationFunction, _delayAllocation);
 }
 
-bool Packet::PacketFileManager::RequestReference(PacketFileReference* _fileReference, const char* _fileName, PacketFile::DispatchType _dispatchType, bool _delayAllocation)
+bool Packet::PacketFileManager::RequestReference(PacketFileReference* _fileReference, const char* _fileName, PacketFile::DispatchType _dispatchType, std::function<PacketFile*()> _packetFileCreationFunction, bool _delayAllocation)
 {
-	return RequestReference(_fileReference, HashFilePathStatic(_fileName), _dispatchType, _delayAllocation);
+	return RequestReference(_fileReference, HashFilePathStatic(_fileName), _dispatchType, _packetFileCreationFunction, _delayAllocation);
 }
 
 bool Packet::PacketFileManager::ReleaseReference(PacketFileReference* _fileReference)
