@@ -55,7 +55,7 @@ Packet::PacketFile* Packet::PacketFileStorage::RequestFileFromIdentifier(PacketF
 	return file;
 }
 
-bool Packet::PacketFileStorage::ShutdownFileFromIdentifier(PacketFragment::FileIdentifier _fileIdentifier)
+Packet::PacketFile* Packet::PacketFileStorage::TryReleaseFileFromIdentifier(PacketFragment::FileIdentifier _fileIdentifier)
 {
 	// Not thread safe //
 	
@@ -63,7 +63,7 @@ bool Packet::PacketFileStorage::ShutdownFileFromIdentifier(PacketFragment::FileI
 	auto iterator = m_FileStorage.find(_fileIdentifier);
 	if (iterator == m_FileStorage.end())
 	{
-		return false;
+		return nullptr;
 	}
 
 	// Get the file reference variable
@@ -75,15 +75,12 @@ bool Packet::PacketFileStorage::ShutdownFileFromIdentifier(PacketFragment::FileI
 	// Check if the file has at last one reference
 	if (file->GetReferenceCount() == 0)
 	{
-		// Call the release method
-		file->Release();
-
-		// Delete this file
-		delete file; // TODO use another deallocation method
-		
 		// Remove the file from the storage map
 		m_FileStorage.erase(iterator);
+
+		// Return the file to be deleted
+		return file;
 	}
 	
-	return true;
+	return nullptr;
 }

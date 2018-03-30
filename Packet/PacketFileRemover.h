@@ -12,6 +12,7 @@
 #include "PacketFile.h"
 #include "PacketFileStorage.h"
 #include "PacketFileReference.h"
+#include "PacketFileQueue.h"
 
 #include <map>
 #include <mutex>
@@ -76,6 +77,9 @@ private:
 	// Process a removal request
 	bool ProcessRemovalRequest(PacketFragment::FileIdentifier _fileIdentifier);
 
+	// The threaded deletion routine
+	void ThreadedDeletionRoutine();
+
 ///////////////
 // VARIABLES //
 private: //////
@@ -84,10 +88,14 @@ private: //////
 	PacketFileStorage& m_FileStorageReference;
 
 	// Our deletion queue
-	Packet::MultipleQueue<PacketFragment::FileIdentifier> m_RequestQueue;
+	Packet::MultipleQueue<PacketFragment::FileIdentifier> m_ReleaseRequestQueue;
 
-	// The mutex we will use to secure thread safe
+	// The packet file deletion queue
+	PacketFileQueue m_DeletionQueue;
+
+	// The mutex we will use to secure thread safe and the deletion thread
 	std::mutex m_Mutex;
+	std::thread m_DeletionThread;
 };
 
 // Packet data explorer

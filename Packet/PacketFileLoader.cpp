@@ -136,7 +136,7 @@ void Packet::PacketFileLoader::ThreadedLoadRoutine()
 			if(!result)
 			{
 				// Error (throw)
-				// TODO
+				std::logic_error("PacketFileLoader -> Failed to load the current file");
 			}
 		}
 	}

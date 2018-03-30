@@ -65,8 +65,8 @@ public: //////////
 	// Request a file from the given identifier
 	PacketFile* RequestFileFromIdentifier(PacketFragment::FileIdentifier _fileIdentifier);
 
-	// Shutdown a file from the given identifier
-	bool ShutdownFileFromIdentifier(PacketFragment::FileIdentifier _fileIdentifier);
+	// Try to release a file from the given identifier, return a ptr to the file if it should be deleted
+	PacketFile* TryReleaseFileFromIdentifier(PacketFragment::FileIdentifier _fileIdentifier);
 
 private:
 

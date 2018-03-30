@@ -6,8 +6,8 @@
 Packet::PacketFileRemover::PacketFileRemover(PacketFileStorage& _packetFileStorage) : 
 	m_FileStorageReference(_packetFileStorage)
 {
-	// Set our initial data
-	// ...
+	// Create the thread for the threaded load routine
+	m_DeletionThread = std::thread(&Packet::PacketFileRemover::ThreadedDeletionRoutine, this);
 }
 
 Packet::PacketFileRemover::~PacketFileRemover()
@@ -20,13 +20,13 @@ void Packet::PacketFileRemover::TryRemoveFile(PacketFileReference* _fileReferenc
 	PacketFile* fileObject = _fileReference->GetFileObject();
 	
 	// Insert the file identifier we will try to remove
-	m_RequestQueue.Insert(fileObject->GetFileIdentifier());
+	m_ReleaseRequestQueue.Insert(fileObject->GetFileIdentifier());
 }
 
 bool Packet::PacketFileRemover::UseThreadedQueue(uint32_t _totalNumberMaximumThreads, std::function<uint32_t()> _threadIndexMethod)
 {
 	// Set to use the threaded queue mode
-	return m_RequestQueue.AllowThreadedAccess(_totalNumberMaximumThreads, _threadIndexMethod);
+	return m_ReleaseRequestQueue.AllowThreadedAccess(_totalNumberMaximumThreads, _threadIndexMethod);
 }
 
 void Packet::PacketFileRemover::ProcessFileQueues()
@@ -35,7 +35,7 @@ void Packet::PacketFileRemover::ProcessFileQueues()
 	std::lock_guard<std::mutex> guard(m_Mutex);
 
 	// For each deletion request
-	m_RequestQueue.ProcessAll([&](Packet::PacketFragment::FileIdentifier& _fileIdentifier) 
+	m_ReleaseRequestQueue.ProcessAll([&](Packet::PacketFragment::FileIdentifier& _fileIdentifier)
 	{
 		// Call the process method
 		ProcessRemovalRequest(_fileIdentifier);
@@ -47,11 +47,37 @@ bool Packet::PacketFileRemover::ProcessRemovalRequest(PacketFragment::FileIdenti
 	// Everything is thread safe from here, this method is called only by the ProcessFileQueues() method and it has a mutex to
 	// prevent multiple threads simultaneously
 	
-	// Shutdown this file
-	if (!m_FileStorageReference.ShutdownFileFromIdentifier(_fileIdentifier))
+	// Release this file
+	PacketFile* file = m_FileStorageReference.TryReleaseFileFromIdentifier(_fileIdentifier);
+	if (file != nullptr)
 	{
-		return false;
+		// Insert the file into the deletion queue
+		m_DeletionQueue.Enqueue(file);
 	}
 
 	return true;
+}
+
+void Packet::PacketFileRemover::ThreadedDeletionRoutine()
+{
+	// While forever
+	while (true)
+	{
+		// Try do dequeue an item
+		PacketFile* file = m_DeletionQueue.TryDequeue();
+		if (file == nullptr)
+		{
+			// Yield
+			// std::this_thread::yield();
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+		else
+		{
+			// Call the release method
+			file->Release();
+
+			// Delete this file
+			delete file; // TODO use another deallocation method
+		}
+	}
 }

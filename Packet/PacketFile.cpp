@@ -20,7 +20,7 @@ Packet::PacketFile::~PacketFile()
 	// Check if we should deallocate our data
 	if(m_Data != nullptr)
 	{
-		DeallocateMemory(m_Data);
+		OnMemoryDeallocationRequest(m_Data);
 		m_Data = nullptr;
 	}
 }
@@ -32,9 +32,12 @@ Packet::PacketFile::DispatchType Packet::PacketFile::GetDispatchType()
 
 void Packet::PacketFile::Release()
 {
+	// Call the OnRelease() callback virtual method
+	OnRelease();
+
 	// Deallocate the memory
-	DeallocateMemory(m_Data);
 	m_Data = nullptr;
+	OnMemoryDeallocationRequest(m_Data);
 }
 
 uint32_t Packet::PacketFile::GetReferenceCount()
@@ -83,6 +86,9 @@ void Packet::PacketFile::FinishLoading()
 	// Unlock our reference mutex
 	m_ReferenceMutex.unlock();
 
+	// Call the callback method
+	OnLoadingCompleted();
+
 	// For each reference request
 	for (auto& referenceRequest : m_FileReferenceRequests)
 	{
@@ -112,12 +118,12 @@ void Packet::PacketFile::AddFileReferenceRequest(PacketFileReference* _fileRefer
 	}
 }
 
-unsigned char* Packet::PacketFile::AllocateMemory(uint32_t _fileSize)
+unsigned char* Packet::PacketFile::OnMemoryAllocationRequest(uint32_t _fileSize)
 {
 	return new unsigned char[_fileSize];
 }
 
-void Packet::PacketFile::DeallocateMemory(unsigned char* _fileData)
+void Packet::PacketFile::OnMemoryDeallocationRequest(unsigned char* _fileData)
 {
 	delete[] _fileData;
 }
@@ -139,7 +145,7 @@ bool Packet::PacketFile::AllocateData(uint32_t _fileSize)
 	}
 
 	// Call the virtual method for allocation
-	m_Data = AllocateMemory(_fileSize);
+	m_Data = OnMemoryAllocationRequest(_fileSize);
 
 	// Set ir dirty to false
 	m_IsDirty = false;

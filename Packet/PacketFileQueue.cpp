@@ -1,18 +1,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
-#include "PacketFileLoaderQueue.h"
+#include "PacketFileQueue.h"
 #include "PacketFile.h"
 
-Packet::PacketFileLoaderQueue::PacketFileLoaderQueue()
+Packet::PacketFileQueue::PacketFileQueue()
 {
 }
 
-Packet::PacketFileLoaderQueue::~PacketFileLoaderQueue()
+Packet::PacketFileQueue::~PacketFileQueue()
 {
 }
 
-void Packet::PacketFileLoaderQueue::Enqueue(PacketFile* _file)
+void Packet::PacketFileQueue::Enqueue(PacketFile* _file)
 {
 	// Lock our mutex
 	std::lock_guard<std::mutex> lock(m_Mutex);
@@ -21,7 +21,7 @@ void Packet::PacketFileLoaderQueue::Enqueue(PacketFile* _file)
 	m_FileList.push_back(_file);
 }
 
-Packet::PacketFile* Packet::PacketFileLoaderQueue::TryDequeue()
+Packet::PacketFile* Packet::PacketFileQueue::TryDequeue()
 {
 	// Lock our mutex
 	std::lock_guard<std::mutex> lock(m_Mutex);
@@ -39,7 +39,7 @@ Packet::PacketFile* Packet::PacketFileLoaderQueue::TryDequeue()
 	return file;
 }
 
-uint32_t Packet::PacketFileLoaderQueue::GetSize()
+uint32_t Packet::PacketFileQueue::GetSize()
 {
 	// Lock our mutex
 	std::lock_guard<std::mutex> lock(m_Mutex);

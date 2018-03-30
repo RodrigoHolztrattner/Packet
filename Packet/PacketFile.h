@@ -43,6 +43,7 @@ class PacketFileLoader;
 class PacketFileRequester;
 class PacketFileStorage;
 class PacketFileReference;
+class PacketFileRemover;
 
 ////////////////
 // STRUCTURES //
@@ -60,6 +61,7 @@ public:
 	friend PacketFileRequester;
 	friend PacketFileStorage;
 	friend PacketFileReference;
+	friend PacketFileRemover;
 
 	// The dispatch type
 	enum class DispatchType
@@ -119,14 +121,16 @@ protected:
 	// Add a request reference to be called when this file changes its status
 	void AddFileReferenceRequest(PacketFileReference* _fileReferenceRequest);
 
-private:
-
 	// Release this file object
-	virtual void Release();
+	void Release();
 
-	// Virtual method for memory allocation and deallocation
-	virtual unsigned char* AllocateMemory(uint32_t _fileSize);
-	virtual void DeallocateMemory(unsigned char* _fileData);
+protected:
+
+	// On xxx virtual methods
+	virtual unsigned char* OnMemoryAllocationRequest(uint32_t _fileSize);
+	virtual void OnMemoryDeallocationRequest(unsigned char* _fileData);
+	virtual void OnLoadingCompleted() {};
+	virtual void OnRelease() {};
 
 ///////////////
 // VARIABLES //

@@ -12,7 +12,6 @@
     <ClCompile Include="PacketFileDataOperations.cpp" />
     <ClCompile Include="PacketFile.cpp" />
     <ClCompile Include="PacketFileLoader.cpp" />
-    <ClCompile Include="PacketFileLoaderQueue.cpp" />
     <ClCompile Include="PacketError.cpp" />
     <ClCompile Include="PacketStrings.cpp" />
     <ClCompile Include="PacketObjectTemporaryPath.cpp" />
@@ -34,6 +33,7 @@
     </ClCompile>
     <ClCompile Include="PacketFileReference.cpp" />
     <ClCompile Include="PacketFileManager.cpp" />
+    <ClCompile Include="PacketFileQueue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -47,7 +47,6 @@
     <ClInclude Include="PacketFileDataOperations.h" />
     <ClInclude Include="PacketFile.h" />
     <ClInclude Include="PacketFileLoader.h" />
-    <ClInclude Include="PacketFileLoaderQueue.h" />
     <ClInclude Include="PacketError.h" />
     <ClInclude Include="PacketStrings.h" />
     <ClInclude Include="PacketObjectTemporaryPath.h" />
@@ -77,6 +76,7 @@
     <ClInclude Include="PacketFileReference.h" />
     <ClInclude Include="PacketFileManager.h" />
     <ClInclude Include="Packet.h" />
+    <ClInclude Include="PacketFileQueue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

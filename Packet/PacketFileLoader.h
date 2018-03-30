@@ -9,7 +9,7 @@
 #include "PacketConfig.h"
 #include "PacketFragment.h"
 #include "PacketObjectManager.h"
-#include "PacketFileLoaderQueue.h"
+#include "PacketFileQueue.h"
 
 #include <thread>
 
@@ -85,9 +85,9 @@ private: //////
 	PacketObject* m_PacketObjectReference;
 
 	// The load queue
-	PacketFileLoaderQueue m_LoadQueue;
+	PacketFileQueue m_LoadQueue;
 
-	// Or loading thread and mutex
+	// Our loading thread and mutex
 	std::thread m_LoadingThread;
 	std::mutex m_LoadingMutex;
 };
