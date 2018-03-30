@@ -25,11 +25,6 @@ Packet::PacketFile::~PacketFile()
 	}
 }
 
-void Packet::PacketFile::SetLoadCallback(std::function<void()> _loadCallback)
-{
-	m_LoadCallback = _loadCallback;
-}
-
 Packet::PacketFile::DispatchType Packet::PacketFile::GetDispatchType()
 {
 	return m_DispatchType;
@@ -57,19 +52,14 @@ void Packet::PacketFile::DecrementReferenceCount()
 	m_TotalNumberReferences--;
 }
 
-bool Packet::PacketFile::IsReady()
+bool Packet::PacketFile::WasLoaded()
 {
-	return m_IsReady;
+	return m_IsReady && !m_IsDirty;
 }
 
 bool Packet::PacketFile::AllocationIsDelayed()
 {
 	return m_DelayAllocation;
-}
-
-bool Packet::PacketFile::IsDirty()
-{
-	return m_IsDirty;
 }
 
 Packet::PacketFragment::FileIdentifier Packet::PacketFile::GetFileIdentifier()
@@ -132,7 +122,7 @@ void Packet::PacketFile::DeallocateMemory(unsigned char* _fileData)
 	delete[] _fileData;
 }
 
-void Packet::PacketFile::SetLoadParams(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation)
+void Packet::PacketFile::SetLoadParams(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType, bool _delayAllocation)
 {
 	m_FileIdentifier = _fileIdentifier;
 	m_DispatchType = _dispatchType;

@@ -81,31 +81,22 @@ protected: ///////
 // MAIN METHODS //
 public: //////////
 
-	// Set the load callback (the callback will be fired when the loading phase ends)
-	void SetLoadCallback(std::function<void()> _loadCallback);
+	// If the memory allocation should be delayed (only allocate when the loading starts)
+	bool AllocationIsDelayed();
+
+	// Return if this file was loaded successfully
+	bool WasLoaded();
 
 	// Return the file dispatch type
 	DispatchType GetDispatchType();
 
-	// Release this file object
-	void Release();
-
-	// If the memory allocation should be delayed (only allocate when the loading starts)
-	bool AllocationIsDelayed();
-
-	// Return if this file is ready
-	bool IsReady();
-
-	// Return if this file is dirty
-	bool IsDirty();
-
 	// Return the file identifier
 	PacketFragment::FileIdentifier GetFileIdentifier();
 
+protected:
+
 	// Return the reference count
 	uint32_t GetReferenceCount();
-
-protected:
 
 	// Set the load params
 	void SetLoadParams(PacketFragment::FileIdentifier _fileIdentifier, DispatchType _dispatchType = DispatchType::OnProcess, bool _delayAllocation = false);
@@ -130,6 +121,9 @@ protected:
 
 private:
 
+	// Release this file object
+	virtual void Release();
+
 	// Virtual method for memory allocation and deallocation
 	virtual unsigned char* AllocateMemory(uint32_t _fileSize);
 	virtual void DeallocateMemory(unsigned char* _fileData);
@@ -153,9 +147,6 @@ private: //////
 
 	// The dispatch type
 	DispatchType m_DispatchType;
-
-	// The load callback
-	std::function<void()> m_LoadCallback;
 
 	// The file data
 	unsigned char* m_Data;
