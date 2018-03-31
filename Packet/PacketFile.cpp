@@ -13,6 +13,7 @@ Packet::PacketFile::PacketFile()
 	m_IsReady = false;
 	m_IsDirty = true;
 	m_Data = nullptr;
+	m_DataSize = 0;
 }
 
 Packet::PacketFile::~PacketFile()
@@ -70,9 +71,19 @@ Packet::PacketFragment::FileIdentifier Packet::PacketFile::GetFileIdentifier()
 	return m_FileIdentifier;
 }
 
-unsigned char* Packet::PacketFile::GetInternalDataPtr()
+unsigned char* Packet::PacketFile::GetDataPtr()
 {
 	return m_Data;
+}
+
+uint32_t Packet::PacketFile::GetDataSize()
+{
+	return m_DataSize;
+}
+
+void Packet::PacketFile::SetDataSize(uint32_t _size)
+{
+	m_DataSize = _size;
 }
 
 void Packet::PacketFile::FinishLoading()

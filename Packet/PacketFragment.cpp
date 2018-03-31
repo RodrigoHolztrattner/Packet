@@ -143,7 +143,7 @@ uint32_t Packet::PacketFragment::GetDataSize(FileIdentifier _fileIdentifier)
 	return 0;
 }
 
-bool Packet::PacketFragment::GetData(unsigned char* _data, FileIdentifier _fileIdentifier)
+bool Packet::PacketFragment::GetData(unsigned char* _data, uint32_t& _size, FileIdentifier _fileIdentifier)
 {
 	// Try to find the file section metadata
 	auto it = m_FragmentFileMapping.find(_fileIdentifier);
@@ -160,6 +160,9 @@ bool Packet::PacketFragment::GetData(unsigned char* _data, FileIdentifier _fileI
 	{
 		return false;
 	}
+
+	// Set the size
+	_size = section.sectionSize;
 
 	return true;
 }

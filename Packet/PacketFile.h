@@ -95,7 +95,16 @@ public: //////////
 	// Return the file identifier
 	PacketFragment::FileIdentifier GetFileIdentifier();
 
+	// Return a ptr to the internal data
+	unsigned char* GetDataPtr();
+
+	// Return the data size
+	uint32_t GetDataSize();
+
 protected:
+
+	// Set the data size
+	void SetDataSize(uint32_t _size);
 
 	// Return the reference count
 	uint32_t GetReferenceCount();
@@ -105,9 +114,6 @@ protected:
 
 	// Allocate this file data
 	bool AllocateData(uint32_t _fileSize);
-
-	// Return a ptr to the internal data
-	unsigned char* GetInternalDataPtr();
 
 	// Finish the loading for this file (called from the packet file loader object)
 	void FinishLoading();
@@ -152,8 +158,9 @@ private: //////
 	// The dispatch type
 	DispatchType m_DispatchType;
 
-	// The file data
+	// The file data and its size
 	unsigned char* m_Data;
+	uint32_t m_DataSize;
 
 	// The file reference requests
 	std::vector<PacketFileReference*> m_FileReferenceRequests;

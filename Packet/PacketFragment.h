@@ -100,7 +100,7 @@ public: //////////
 	uint32_t GetDataSize(FileIdentifier _fileIdentifier);
 
 	// Return a data from this fragment
-	bool GetData(unsigned char* _data, FileIdentifier _fileIdentifier);
+	bool GetData(unsigned char* _data, uint32_t& _size, FileIdentifier _fileIdentifier);
 
 	// Return if this fragment is pure (if it has more sections than it should have)
 	bool IsPure();

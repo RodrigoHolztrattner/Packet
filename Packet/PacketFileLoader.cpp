@@ -104,11 +104,15 @@ bool Packet::PacketFileLoader::LoadFile(PacketFile* _file)
 	std::lock_guard<std::mutex> guard(m_LoadingMutex);
 
 	// Load the file
-	bool result = objectManagerReference->GetData(_file->GetInternalDataPtr(), fileFragmentIdentifier);
+	uint32_t dataSize = 0;
+	bool result = objectManagerReference->GetData(_file->GetDataPtr(), dataSize, fileFragmentIdentifier);
 	if(!result)
 	{
 		return false;
 	}
+
+	// Set the data size
+	_file->SetDataSize(dataSize);
 
 	// Call the finish loading method for this file
 	_file->FinishLoading();

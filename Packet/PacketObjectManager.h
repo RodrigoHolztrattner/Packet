@@ -120,7 +120,7 @@ public: //////////
 	bool GetFile(std::string _filePathDestination, FileFragmentIdentifier _hashidentifier);
 
 	// Get a chunk of data
-	bool GetData(unsigned char* _data, FileFragmentIdentifier _hashidentifier);
+	bool GetData(unsigned char* _data, uint32_t& _size, FileFragmentIdentifier _hashidentifier);
 
 	// Remove a file from this packet object
 	bool RemoveFile(FileFragmentIdentifier _hashIdentifier);

@@ -198,7 +198,7 @@ bool Packet::PacketObjectManager::GetFile(std::string _filePathDestination, File
 	return true;
 }
 
-bool Packet::PacketObjectManager::GetData(unsigned char* _data, FileFragmentIdentifier _hashidentifier)
+bool Packet::PacketObjectManager::GetData(unsigned char* _data, uint32_t& _size, FileFragmentIdentifier _hashidentifier)
 {
 	// Check if the data is valid
 	if (_data == nullptr)
@@ -214,7 +214,7 @@ bool Packet::PacketObjectManager::GetData(unsigned char* _data, FileFragmentIden
 	}
 
 	// Return the data
-	return fragment->GetData(_data, _hashidentifier.fileIdentifier);
+	return fragment->GetData(_data, _size, _hashidentifier.fileIdentifier);
 }
 
 bool Packet::PacketObjectManager::RemoveFile(FileFragmentIdentifier _hashIdentifier)
