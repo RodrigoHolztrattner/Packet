@@ -166,7 +166,8 @@ bool Packet::PacketObjectManager::GetFile(std::string _filePathDestination, File
 	unsigned char* temporaryData = new unsigned char[fileSize];
 
 	// Get the data and check if everything is correct
-	if (!GetData(temporaryData, _hashidentifier))
+	uint32_t dataSize = 0;
+	if (!GetData(temporaryData, dataSize, _hashidentifier))
 	{
 		// Desalloc the temporary data
 		delete[] temporaryData;
@@ -374,7 +375,8 @@ bool Packet::PacketObjectManager::OptimizeFragmentsUsingIdentifiers(std::vector<
 		PacketFragment* fragment = oldFragments[fileFragmentIdentifier.fragmentIndex];
 
 		// Get the file data
-		if (!fragment->GetData(temporaryData, fileFragmentIdentifier.fileIdentifier))
+		uint32_t dataSize = 0;
+		if (!fragment->GetData(temporaryData, dataSize, fileFragmentIdentifier.fileIdentifier))
 		{
 			// Probem retrieving the data
 			return false;

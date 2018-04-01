@@ -9,9 +9,7 @@
 #include "PacketConfig.h"
 #include "PacketObject.h"
 #include "PacketObjectIterator.h"
-#include "PacketFileManager.h"
-#include "PacketFile.h"
-#include "PacketFileReference.h"
+#include "PacketDataLoader.h"
 
 /////////////
 // DEFINES //
@@ -30,9 +28,7 @@ PacketNamespaceBegin(Packet)
 
 typedef Packet::PacketObject			Object;
 typedef Packet::PacketObjectIterator	Iterator;
-typedef Packet::PacketFileManager		FileManager;
-typedef Packet::PacketFile				File;
-typedef Packet::PacketFileReference		FileReference;
+typedef Packet::PacketDataLoader		DataLoader;
 
 // Packet
 PacketNamespaceEnd(Packet)

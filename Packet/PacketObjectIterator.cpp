@@ -151,7 +151,8 @@ bool Packet::PacketObjectIterator::Get(std::string _iFileLocation, unsigned char
 	}
 
 	// Get the file
-	if (!m_PacketManagerReference.GetData(_data, *fileFragmentIdentifier))
+	uint32_t dataSize = 0;
+	if (!m_PacketManagerReference.GetData(_data, dataSize, *fileFragmentIdentifier))
 	{
 		// Set the error
 		m_ErrorObject.Set(PacketErrorRetrieveData);

@@ -6,19 +6,13 @@
     <ClCompile Include="PacketFragment.cpp" />
     <ClCompile Include="PacketObjectIterator.cpp" />
     <ClCompile Include="PacketStringOperations.cpp" />
-    <ClCompile Include="PacketObjectManager.cpp" />
     <ClCompile Include="PacketObjectStructure.cpp" />
     <ClCompile Include="PacketObjectHashTable.cpp" />
     <ClCompile Include="PacketFileDataOperations.cpp" />
-    <ClCompile Include="PacketFile.cpp" />
-    <ClCompile Include="PacketFileLoader.cpp" />
     <ClCompile Include="PacketError.cpp" />
     <ClCompile Include="PacketStrings.cpp" />
     <ClCompile Include="PacketObjectTemporaryPath.cpp" />
     <ClCompile Include="PacketObjectIteratorPath.cpp" />
-    <ClCompile Include="PacketFileRequester.cpp" />
-    <ClCompile Include="PacketFileStorage.cpp" />
-    <ClCompile Include="PacketFileRemover.cpp" />
     <ClCompile Include="Peon-master\PeonJob.cpp">
       <Filter>Peon</Filter>
     </ClCompile>
@@ -31,9 +25,8 @@
     <ClCompile Include="Peon-master\PeonWorker.cpp">
       <Filter>Peon</Filter>
     </ClCompile>
-    <ClCompile Include="PacketFileManager.cpp" />
-    <ClCompile Include="PacketFileQueue.cpp" />
-    <ClCompile Include="PacketFileReference.cpp" />
+    <ClCompile Include="PacketObjectManager.cpp" />
+    <ClCompile Include="PacketDataLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketConfig.h" />
@@ -41,19 +34,13 @@
     <ClInclude Include="PacketFragment.h" />
     <ClInclude Include="PacketObjectIterator.h" />
     <ClInclude Include="PacketStringOperations.h" />
-    <ClInclude Include="PacketObjectManager.h" />
     <ClInclude Include="PacketObjectStructure.h" />
     <ClInclude Include="PacketObjectHashTable.h" />
     <ClInclude Include="PacketFileDataOperations.h" />
-    <ClInclude Include="PacketFile.h" />
-    <ClInclude Include="PacketFileLoader.h" />
     <ClInclude Include="PacketError.h" />
     <ClInclude Include="PacketStrings.h" />
     <ClInclude Include="PacketObjectTemporaryPath.h" />
     <ClInclude Include="PacketObjectIteratorPath.h" />
-    <ClInclude Include="PacketFileRequester.h" />
-    <ClInclude Include="PacketFileStorage.h" />
-    <ClInclude Include="PacketFileRemover.h" />
     <ClInclude Include="Peon-master\Peon.h">
       <Filter>Peon</Filter>
     </ClInclude>
@@ -73,10 +60,9 @@
       <Filter>Peon</Filter>
     </ClInclude>
     <ClInclude Include="PacketMultipleQueue.h" />
-    <ClInclude Include="PacketFileManager.h" />
     <ClInclude Include="Packet.h" />
-    <ClInclude Include="PacketFileQueue.h" />
-    <ClInclude Include="PacketFileReference.h" />
+    <ClInclude Include="PacketObjectManager.h" />
+    <ClInclude Include="PacketDataLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

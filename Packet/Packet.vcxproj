@@ -151,16 +151,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Packet.cpp" />
-    <ClCompile Include="PacketFileManager.cpp" />
-    <ClCompile Include="PacketFileReference.cpp" />
     <ClCompile Include="PacketError.cpp" />
-    <ClCompile Include="PacketFile.cpp" />
     <ClCompile Include="PacketFileDataOperations.cpp" />
-    <ClCompile Include="PacketFileLoader.cpp" />
-    <ClCompile Include="PacketFileQueue.cpp" />
-    <ClCompile Include="PacketFileRemover.cpp" />
-    <ClCompile Include="PacketFileRequester.cpp" />
-    <ClCompile Include="PacketFileStorage.cpp" />
+    <ClCompile Include="PacketDataLoader.cpp" />
     <ClCompile Include="PacketFragment.cpp" />
     <ClCompile Include="PacketObject.cpp" />
     <ClCompile Include="PacketObjectHashTable.cpp" />
@@ -179,16 +172,9 @@
   <ItemGroup>
     <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketConfig.h" />
-    <ClInclude Include="PacketFileManager.h" />
-    <ClInclude Include="PacketFileReference.h" />
     <ClInclude Include="PacketError.h" />
-    <ClInclude Include="PacketFile.h" />
     <ClInclude Include="PacketFileDataOperations.h" />
-    <ClInclude Include="PacketFileLoader.h" />
-    <ClInclude Include="PacketFileQueue.h" />
-    <ClInclude Include="PacketFileRemover.h" />
-    <ClInclude Include="PacketFileRequester.h" />
-    <ClInclude Include="PacketFileStorage.h" />
+    <ClInclude Include="PacketDataLoader.h" />
     <ClInclude Include="PacketFragment.h" />
     <ClInclude Include="PacketMultipleQueue.h" />
     <ClInclude Include="PacketObject.h" />

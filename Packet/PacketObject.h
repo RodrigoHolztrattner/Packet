@@ -12,7 +12,6 @@
 #include "PacketObjectStructure.h"
 #include "PacketObjectHashTable.h"
 #include "PacketObjectIterator.h"
-#include "PacketFileLoader.h"
 
 #include <string>
 
@@ -40,7 +39,7 @@ PacketNamespaceBegin(Packet)
 ////////////////
 
 // We know the PacketFileLoader and the PacketFile classes
-class PacketFileLoader;
+class PacketDataLoader;
 class PacketFile;
 
 ////////////////
@@ -54,8 +53,8 @@ class PacketObject
 {
 public:
 
-	// The PacketFileLoader and the PacketFile are friend classes
-	friend PacketFileLoader;
+	// The PacketDataLoader and the PacketFile are friend classes
+	friend PacketDataLoader;
 	friend PacketFile;
 
 //////////////////
