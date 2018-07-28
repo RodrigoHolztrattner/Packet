@@ -8,18 +8,6 @@
 //////////////
 #include "PacketConfig.h"
 
-#include <vector>
-#include <string>
-#include <map>
-
-#include "PacketString.h"
-#include "PacketFile.h"
-#include "PacketDirectory.h"
-#include "PacketIndex.h"
-
-#include "PacketLoader.h"
-#include "PacketIndexLoader.h"
-
 ///////////////
 // NAMESPACE //
 ///////////////
@@ -37,7 +25,7 @@
 ///////////////
 
 // Packet data explorer
-PacketNamespaceBegin(Packet)
+PacketDevelopmentNamespaceBegin(Packet)
 
 ////////////////
 // FORWARDING //
@@ -73,4 +61,4 @@ private: //////
 };
 
 // Packet data explorer
-PacketNamespaceEnd(Packet)
+PacketDevelopmentNamespaceEnd(Packet)

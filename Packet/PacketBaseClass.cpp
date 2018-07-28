@@ -3,12 +3,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketManager.h"
 
-Packet::PacketManager::PacketManager()
+///////////////
+// NAMESPACE //
+///////////////
+PacketUsingDevelopmentNamespace(Packet)
+
+PacketManager::PacketManager()
 {
 	// Set the initial data
 	// ...
 }
 
-Packet::PacketManager::~PacketManager()
+PacketManager::~PacketManager()
 {
 }

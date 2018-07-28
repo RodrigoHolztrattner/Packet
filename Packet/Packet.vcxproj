@@ -89,8 +89,10 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\json-develop\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\json\single_include;$(ProjectDir)\ThirdParty\cereal\include</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableModules>false</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,7 +124,9 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\json-develop\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\json\single_include;$(ProjectDir)\ThirdParty\cereal\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableModules>false</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,47 +155,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Packet.cpp" />
-    <ClCompile Include="PacketError.cpp" />
-    <ClCompile Include="PacketFileDataOperations.cpp" />
-    <ClCompile Include="PacketDataLoader.cpp" />
-    <ClCompile Include="PacketFragment.cpp" />
-    <ClCompile Include="PacketObject.cpp" />
-    <ClCompile Include="PacketObjectHashTable.cpp" />
-    <ClCompile Include="PacketObjectIterator.cpp" />
-    <ClCompile Include="PacketObjectIteratorPath.cpp" />
-    <ClCompile Include="PacketObjectManager.cpp" />
-    <ClCompile Include="PacketObjectStructure.cpp" />
-    <ClCompile Include="PacketObjectTemporaryPath.cpp" />
-    <ClCompile Include="PacketStringOperations.cpp" />
-    <ClCompile Include="PacketStrings.cpp" />
-    <ClCompile Include="Peon-master\PeonJob.cpp" />
-    <ClCompile Include="Peon-master\PeonStealingQueue.cpp" />
-    <ClCompile Include="Peon-master\PeonSystem.cpp" />
-    <ClCompile Include="Peon-master\PeonWorker.cpp" />
+    <ClCompile Include="PacketCondensedModeFileLoader.cpp" />
+    <ClCompile Include="PacketCondenser.cpp" />
+    <ClCompile Include="PacketEditModeFileLoader.cpp" />
+    <ClCompile Include="PacketReferenceManager.cpp" />
+    <ClCompile Include="PacketScanner.cpp" />
+    <ClCompile Include="PacketSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Packet.h" />
+    <ClInclude Include="PacketCondensedModeFileLoader.h" />
+    <ClInclude Include="PacketCondenser.h" />
     <ClInclude Include="PacketConfig.h" />
-    <ClInclude Include="PacketError.h" />
-    <ClInclude Include="PacketFileDataOperations.h" />
-    <ClInclude Include="PacketDataLoader.h" />
-    <ClInclude Include="PacketFragment.h" />
-    <ClInclude Include="PacketMultipleQueue.h" />
-    <ClInclude Include="PacketObject.h" />
-    <ClInclude Include="PacketObjectHashTable.h" />
-    <ClInclude Include="PacketObjectIterator.h" />
-    <ClInclude Include="PacketObjectIteratorPath.h" />
-    <ClInclude Include="PacketObjectManager.h" />
-    <ClInclude Include="PacketObjectStructure.h" />
-    <ClInclude Include="PacketObjectTemporaryPath.h" />
-    <ClInclude Include="PacketStringOperations.h" />
-    <ClInclude Include="PacketStrings.h" />
-    <ClInclude Include="Peon-master\Peon.h" />
-    <ClInclude Include="Peon-master\PeonConfig.h" />
-    <ClInclude Include="Peon-master\PeonJob.h" />
-    <ClInclude Include="Peon-master\PeonStealingQueue.h" />
-    <ClInclude Include="Peon-master\PeonSystem.h" />
-    <ClInclude Include="Peon-master\PeonWorker.h" />
+    <ClInclude Include="PacketEditModeFileLoader.h" />
+    <ClInclude Include="PacketReferenceManager.h" />
+    <ClInclude Include="PacketScanner.h" />
+    <ClInclude Include="PacketSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

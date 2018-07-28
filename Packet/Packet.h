@@ -7,9 +7,6 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketObject.h"
-#include "PacketObjectIterator.h"
-#include "PacketDataLoader.h"
 
 /////////////
 // DEFINES //
@@ -20,15 +17,15 @@
 ///////////////
 
 // Packet
-PacketNamespaceBegin(Packet)
+PacketDevelopmentNamespaceBegin(Packet)
 
 ////////////
 // GLOBAL //
 ////////////
 
-typedef Packet::PacketObject			Object;
-typedef Packet::PacketObjectIterator	Iterator;
-typedef Packet::PacketDataLoader		DataLoader;
+// typedef Packet::PacketObject			Object;
+// typedef Packet::PacketObjectIterator	Iterator;
+// typedef Packet::PacketDataLoader		DataLoader;
 
 // Packet
-PacketNamespaceEnd(Packet)
+PacketDevelopmentNamespaceEnd(Packet)
