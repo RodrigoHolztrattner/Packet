@@ -7,6 +7,7 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
+#include "PacketReferenceManager.h"
 
 #include <string>
 
@@ -62,6 +63,9 @@ public: //////////
 	// Pack all files
 	bool ConstructPacket();
 
+	// Return a ptr to the reference manager
+	PacketReferenceManager* GetReferenceManager();
+
 public:
 
 	// Request an object for the given instance and resource hash
@@ -97,6 +101,9 @@ private:
 
 	// Our packet file loader
 	std::unique_ptr<PacketFileLoader> m_FileLoader;
+
+	// The reference manager
+	PacketReferenceManager m_ReferenceManager;
 };
 
 // Packet data explorer

@@ -54,7 +54,7 @@ private:
 		std::ifstream* file = nullptr;
 
 		// The file path
-		char filePath[FilePathSize];
+		Path filePath;
 
 		// The total number of files inside
 		uint32_t totalNumberFiles;

@@ -45,7 +45,8 @@ void PacketScanner::Scan(std::string _packetDirectory)
 			{
 				// Ignore reference extensions and condensed extensions
 				if (path.extension().string().compare(ReferenceExtension) != 0 
-					&& path.extension().string().compare(CondensedExtension) != 0)
+					&& path.extension().string().compare(CondensedExtension) != 0
+					&& path.extension().string().compare(CondensedInfoExtension) != 0)
 				{
 					// Insert the file path
 					_currentNode->files.push_back(relativePath);

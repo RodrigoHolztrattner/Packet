@@ -9,7 +9,6 @@
 #include "PacketConfig.h"
 #include "PacketScanner.h"
 #include "PacketCondenser.h"
-#include "PacketReferenceManager.h"
 
 #include <string>
 
@@ -77,7 +76,6 @@ private: //////
 
 	// The helper objects
 	PacketScanner m_Scanner;
-	PacketReferenceManager m_ReferenceManager;
 	PacketCondenser m_PacketCondenser;
 };
 

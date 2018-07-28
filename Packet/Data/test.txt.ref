@@ -1,0 +1,16 @@
+{
+    "references": [
+        {
+            "ext": ".png",
+            "location": 0,
+            "path": "Data\\gems prices.png",
+            "size": 1313538
+        },
+        {
+            "ext": ".png",
+            "location": 128,
+            "path": "Data\\Sounds\\linhas terrain unreal.png",
+            "size": 1055478
+        }
+    ]
+}

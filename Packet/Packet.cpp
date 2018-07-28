@@ -36,10 +36,35 @@
 
 PacketUsingDevelopmentNamespace(Packet)
 
+#include <fstream>
+
 int main()
 {
 	PacketSystem packetSystem;
-	packetSystem.Initialize("Data", OperationMode::Condensed);
+	packetSystem.Initialize("Data", OperationMode::Edit);
+
+	//
+
+	// Open the owning file in read mode
+	Path path;
+	std::ofstream file("Data\\test.txt", std::ios::binary);
+
+	path = "Data\\gems prices.png";
+	file.write((char*)&path, sizeof(Path));
+
+	path = "Data\\Textures\\linhas terrain unreal.png";
+	file.write((char*)&path, sizeof(Path));
+
+	file.close();
+
+	//
+
+	bool result = packetSystem.GetReferenceManager()->ValidateFileReferences("Data\\test.txt", PacketReferenceManager::ReferenceFixer::MatchAll);
+
+	// packetSystem.GetReferenceManager()->RegisterFileReference("Data\\test.txt", "Data\\gems prices.png", 0);
+	// packetSystem.GetReferenceManager()->RegisterFileReference("Data\\test.txt", "Data\\Textures\\linhas terrain unreal.png", sizeof(Path));
+
+	//
 
 	packetSystem.ConstructPacket();
     return 0;

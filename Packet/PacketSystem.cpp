@@ -27,6 +27,9 @@ bool PacketSystem::Initialize(std::string _packetFolderPath, OperationMode _oper
 	m_PacketFolderPath = _packetFolderPath;
 	m_OperationMode = _operationMode;
 
+	// Initialize the reference manager
+	m_ReferenceManager.Initialize(_packetFolderPath);
+
 	// Create our file loader using the given operation mode
 	if (_operationMode == OperationMode::Edit)
 	{
@@ -51,4 +54,14 @@ bool PacketSystem::FileExist(Hash _fileHash)
 bool PacketSystem::ConstructPacket()
 {
 	return m_FileLoader->ConstructPacket();
+}
+
+PacketReferenceManager* PacketSystem::GetReferenceManager()
+{
+	if (m_OperationMode != OperationMode::Edit)
+	{
+		return nullptr;
+	}
+
+	return &m_ReferenceManager;
 }

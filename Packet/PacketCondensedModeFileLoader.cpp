@@ -91,7 +91,7 @@ bool PacketCondensedModeFileLoader::GetFileData(uint8_t* _dataOut, uint32_t _buf
 	if (!file)
 	{
 		// Error reading the file
-		std::cout << "Error reading the file: " << _fileHash.GetString() << ", only " << file.gcount() << " could be read!" << std::endl;
+		std::cout << "Error reading the file: " << _fileHash.GetPath() << ", only " << file.gcount() << " could be read!" << std::endl;
 
 		return false;
 	}
@@ -117,7 +117,7 @@ bool PacketCondensedModeFileLoader::ReadPacketData(std::string _packetFolderPath
 	condensedInfoName.append(CondensedInfoName);
 	condensedInfoName.append(CondensedInfoExtension);
 
-	// Create the file and check if we are ok to proceed
+	// Open the file and check if we are ok to proceed
 	std::ifstream file(condensedInfoName, std::ios::binary);
 	if (!file.is_open())
 	{
@@ -149,7 +149,7 @@ void PacketCondensedModeFileLoader::ProcessPacketData()
 	{
 		// The condensed file header we will be using
 		CondensedFileReader fileReader = {};
-		strcpy_s(fileReader.filePath, fileInfo.filePath);
+		fileReader.filePath = fileInfo.filePath;
 		fileReader.totalNumberFiles = fileInfo.totalNumberFiles;
 
 		// Open the file

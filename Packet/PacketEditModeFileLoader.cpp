@@ -13,8 +13,6 @@ PacketUsingDevelopmentNamespace(Packet)
 
 PacketEditModeFileLoader::PacketEditModeFileLoader(std::string _packetFolderPath) : PacketFileLoader(_packetFolderPath)
 {
-	// Initialize the reference manager
-	m_ReferenceManager.Initialize(_packetFolderPath);
 }
 
 PacketEditModeFileLoader::~PacketEditModeFileLoader()
@@ -24,7 +22,7 @@ PacketEditModeFileLoader::~PacketEditModeFileLoader()
 bool PacketEditModeFileLoader::FileExist(Hash _fileHash)
 {
 	// Get the path
-	auto filePath = std::experimental::filesystem::path(_fileHash.GetString());
+	auto filePath = std::experimental::filesystem::path(_fileHash.GetPath().String());
 
 	// Check if the file exist and is valid
 	if (std::experimental::filesystem::exists(filePath) && !std::experimental::filesystem::is_directory(filePath))
@@ -42,7 +40,7 @@ bool PacketEditModeFileLoader::FileExist(Hash _fileHash)
 uint64_t PacketEditModeFileLoader::GetFileSize(Hash _fileHash)
 {
 	// Get the path
-	auto filePath = std::experimental::filesystem::path(_fileHash.GetString());
+	auto filePath = std::experimental::filesystem::path(_fileHash.GetPath().String());
 
 	// Check if the file exist and is valid
 	if (std::experimental::filesystem::exists(filePath) && !std::experimental::filesystem::is_directory(filePath))
@@ -58,7 +56,7 @@ uint64_t PacketEditModeFileLoader::GetFileSize(Hash _fileHash)
 bool PacketEditModeFileLoader::GetFileData(uint8_t* _dataOut, uint32_t _bufferSize, Hash _fileHash)
 {
 	// Open the file and check if we are ok to proceed
-	std::ifstream file(_fileHash.GetString(), std::ios::binary);
+	std::ifstream file(_fileHash.GetPath().String(), std::ios::binary);
 	if (!file.is_open())
 	{
 		// Error openning the file!

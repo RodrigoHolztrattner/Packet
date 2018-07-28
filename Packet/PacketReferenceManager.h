@@ -65,8 +65,16 @@ public:
 		// The file extension
 		std::string fileExtension;
 
-		// The file size
+		// The file size, if the size is 0 this reference is considered invalid
 		uint64_t fileSize = 0;
+
+		// The location inside the owner file that has the reference path
+		uint64_t ownerFileReferenceLocation;
+
+		bool IsValid()
+		{
+			return fileSize != 0;
+		}
 	};
 
 //////////////////
@@ -85,7 +93,7 @@ public: //////////
 	bool Initialize(std::string _packetDirectory);
 
 	// This method will register that a given file references another, creating a link between both
-	bool RegisterFileReference(std::string _thisFile, std::string _referencesThis);
+	bool RegisterFileReference(std::string _thisFile, std::string _referencesThis, uint64_t _atLocation);
 
 	// Clear all references for the given file
 	void ClearFileReferences(std::string _filePath);
@@ -112,6 +120,9 @@ private:
 	// This method will try to find a file inside the packet directories that match the given reference 
 	// using a fixer
 	FileReference TryFindMatchingFileForReferenceUsingFixer(FileReference& _fileReference, ReferenceFixer _fixer);
+
+	// This method will update an owner file with its updated references
+	bool UpdateOwnerFileWithUpdatedReferences(std::string _filePath, std::vector<FileReference>& _oldReferences, std::vector<FileReference>& _newReferences);
 
 ///////////////
 // VARIABLES //

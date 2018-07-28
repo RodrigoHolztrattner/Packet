@@ -44,7 +44,7 @@ std::vector<CondensedFileInfo> PacketCondenser::CondenseFolder(std::string _root
 
 	// The current condensed file info
 	CondensedFileInfo currentCondensedFileInfo = {};
-	strcpy_s(currentCondensedFileInfo.filePath, GetCondensedFilename().c_str());
+	currentCondensedFileInfo.filePath = GetCondensedFilename();
 
 	// The current condensed file size and the current output write file
 	uint64_t currentCondensedFileSize = 0;
@@ -78,7 +78,7 @@ std::vector<CondensedFileInfo> PacketCondenser::CondenseFolder(std::string _root
 
 			// Create another condensed file info
 			currentCondensedFileInfo = CondensedFileInfo();
-			strcpy_s(currentCondensedFileInfo.filePath, GetCondensedFilename().c_str());
+			currentCondensedFileInfo.filePath = GetCondensedFilename();
 
 			// Close the current file and write to a new one
 			writeFile.close();

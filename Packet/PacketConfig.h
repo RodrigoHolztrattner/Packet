@@ -44,7 +44,7 @@ static const std::string ReferenceExtension		= ".ref";
 static const std::string CondensedName			= "Data";
 static const std::string CondensedExtension		= ".pack";
 static const std::string CondensedInfoName		= "Data";
-static const std::string CondensedInfoExtension	= ".config";
+static const std::string CondensedInfoExtension	= ".manifest";
 
 // The current condensed file minor and major versions
 static const uint16_t CondensedMinorVersion		= 1;
@@ -166,6 +166,62 @@ constexpr std::size_t fnv1a(const char *const _str) noexcept
 	return hashfn.digest();
 }
 
+// The path type
+struct Path
+{
+	Path() {}
+	Path(char* _str)
+	{
+		strcpy_s(m_PathString, _str);
+	}
+	Path(std::string& _str)
+	{
+		strcpy_s(m_PathString, _str.c_str());
+	}
+	
+	Path& operator =(const char* _str)
+	{
+		strcpy_s(m_PathString, _str);
+		return *this;
+	}
+	Path& operator =(const std::string _str)
+	{
+		strcpy_s(m_PathString, _str.c_str());
+		return *this;
+	}
+
+	operator const char*() const
+	{
+		return m_PathString;
+	}
+
+	const char* String() const
+	{
+		return m_PathString;
+	}
+
+	friend std::ostream& operator<< (std::ostream& _stream, const Path& _path) 
+	{
+		return _stream << _path.m_PathString;
+	}
+
+	bool Compare(const char* _str)
+	{
+		return strcmp(_str, m_PathString) == 0;
+	}
+
+	/*
+	bool operator ==(const char* _str)
+	{
+		return strcmp(_str, m_PathString);
+	}
+	*/
+
+private:
+
+	char m_PathString[FilePathSize];
+};
+
 // The hash primitive type
 typedef std::size_t HashPrimitive;
 
@@ -176,13 +232,12 @@ struct Hash
 	Hash(const std::string _str)
 	{
 		m_Hash = fnv1a(_str.c_str());
-		strcpy_s(m_String, _str.c_str());
-
+		m_Path = _str;
 	}
 	Hash(const char* _str)
 	{
 		m_Hash = fnv1a(_str);
-		strcpy_s(m_String, _str);
+		m_Path = _str;
 	}
 
 	operator HashPrimitive()
@@ -202,17 +257,17 @@ struct Hash
 		return m_Hash;
 	}
 
-	// Return the stringe reference
-	const char* GetString()
+	// Return the path reference
+	const Path& GetPath()
 	{
-		return m_String;
+		return m_Path;
 	}
 
 private:
 
 	// The hash properties
 	HashPrimitive m_Hash;
-	char m_String[FilePathSize];
+	Path m_Path;
 };
 
 // The condensed header info
@@ -243,7 +298,7 @@ struct CondensedFileInfo
 	};
 
 	// The path to the condensed file
-	char filePath[FilePathSize];
+	Path filePath;
 
 	// The total number of files inside
 	uint32_t totalNumberFiles = 0;
