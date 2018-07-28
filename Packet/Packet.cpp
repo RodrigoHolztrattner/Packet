@@ -41,13 +41,15 @@ PacketUsingDevelopmentNamespace(Packet)
 int main()
 {
 	PacketSystem packetSystem;
-	packetSystem.Initialize("Data", OperationMode::Edit);
+	packetSystem.Initialize("Data", OperationMode::Condensed);
 
 	//
 
-	// Open the owning file in read mode
-	Path path;
+	/*
+	// Open the file and check if we are ok to proceed
 	std::ofstream file("Data\\test.txt", std::ios::binary);
+
+	Path path;
 
 	path = "Data\\gems prices.png";
 	file.write((char*)&path, sizeof(Path));
@@ -56,10 +58,11 @@ int main()
 	file.write((char*)&path, sizeof(Path));
 
 	file.close();
+	*/
 
 	//
 
-	bool result = packetSystem.GetReferenceManager()->ValidateFileReferences("Data\\test.txt", PacketReferenceManager::ReferenceFixer::MatchAll);
+	bool result = packetSystem.GetReferenceManager()->ValidateFileReferences("Data\\test.txt", PacketReferenceManager::ReferenceFixer::NameAndExtensionOrSizeAndExtension);
 
 	// packetSystem.GetReferenceManager()->RegisterFileReference("Data\\test.txt", "Data\\gems prices.png", 0);
 	// packetSystem.GetReferenceManager()->RegisterFileReference("Data\\test.txt", "Data\\Textures\\linhas terrain unreal.png", sizeof(Path));

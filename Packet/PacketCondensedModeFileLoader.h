@@ -75,7 +75,7 @@ private:
 public: //////////
 
 	// Constructor / destructor
-	PacketCondensedModeFileLoader(std::string _packetFolderPath);
+	PacketCondensedModeFileLoader(std::string _packetManifestDirectory);
 	~PacketCondensedModeFileLoader();
 
 //////////////////
@@ -97,10 +97,15 @@ public: //////////
 private:
 
 	// Read the packet data
-	bool ReadPacketData(std::string _packetFolderPath);
+	bool ReadPacketData(std::string _packetManifestDirectory);
 
 	// Process the packet data
 	void ProcessPacketData();
+
+	// This method will return the hashes of the files that needs to be updated or doesn't exist for the input packed path, the 
+	// date created, version and file write dates will be considered when generating this list, this is a costly method and should 
+	// be used with caution
+	std::vector<Hash> GetFileHashesThatNeedUpdate(std::string _packetManifestDirectory);
 
 ///////////////
 // VARIABLES //

@@ -21,26 +21,26 @@ PacketSystem::~PacketSystem()
 {
 }
 
-bool PacketSystem::Initialize(std::string _packetFolderPath, OperationMode _operationMode)
+bool PacketSystem::Initialize(std::string _packetManifestDirectory, OperationMode _operationMode)
 {
 	// Set the data
-	m_PacketFolderPath = _packetFolderPath;
+	m_PacketFolderPath = _packetManifestDirectory;
 	m_OperationMode = _operationMode;
 
 	// Initialize the reference manager
-	m_ReferenceManager.Initialize(_packetFolderPath);
+	m_ReferenceManager.Initialize(_packetManifestDirectory);
 
 	// Create our file loader using the given operation mode
 	if (_operationMode == OperationMode::Edit)
 	{
 		// Create the file loader
-		m_FileLoader = std::make_unique<PacketEditModeFileLoader>(_packetFolderPath);
+		m_FileLoader = std::make_unique<PacketEditModeFileLoader>(_packetManifestDirectory);
 	}
 	// Condensed
 	else
 	{
 		// Create the file loader
-		m_FileLoader = std::make_unique<PacketCondensedModeFileLoader>(_packetFolderPath);
+		m_FileLoader = std::make_unique<PacketCondensedModeFileLoader>(_packetManifestDirectory);
 	}
 
 	return true;

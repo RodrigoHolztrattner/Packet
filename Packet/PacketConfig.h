@@ -44,7 +44,8 @@ static const std::string ReferenceExtension		= ".ref";
 static const std::string CondensedName			= "Data";
 static const std::string CondensedExtension		= ".pack";
 static const std::string CondensedInfoName		= "Data";
-static const std::string CondensedInfoExtension	= ".manifest";
+static const std::string CondensedInfoExtension = ".manifest";
+static const std::string TemporaryFileExtension = ".temp";
 
 // The current condensed file minor and major versions
 static const uint16_t CondensedMinorVersion		= 1;
@@ -313,9 +314,9 @@ class PacketFileLoader
 public:
 
 	// Constructor
-	PacketFileLoader(std::string _packetFolderPath)
+	PacketFileLoader(std::string _packetManifestDirectory)
 	{
-		m_PacketFolderPath = _packetFolderPath;
+		m_PacketFolderPath = _packetManifestDirectory;
 	}
 
 //////////////////

@@ -95,7 +95,7 @@ public: //////////
 	// This method will register that a given file references another, creating a link between both
 	bool RegisterFileReference(std::string _thisFile, std::string _referencesThis, uint64_t _atLocation);
 
-	// Clear all references for the given file
+	// Clear all references for the given file, deleting the reference file
 	void ClearFileReferences(std::string _filePath);
 
 	// This method will validade the given file references, checking if they exist and optionally 

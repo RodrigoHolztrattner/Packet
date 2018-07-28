@@ -51,7 +51,7 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketEditModeFileLoader(std::string _packetFolderPath);
+	PacketEditModeFileLoader(std::string _packetManifestDirectory);
 	~PacketEditModeFileLoader();
 
 //////////////////

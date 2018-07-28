@@ -63,21 +63,19 @@ void PacketReferenceManager::ClearFileReferences(std::string _filePath)
 	auto mainFilePath = std::experimental::filesystem::path(_filePath);
 	auto referenceFilePath = std::experimental::filesystem::path(mainFilePath.string().append(ReferenceExtension));
 
-	// Check if the reference extension file already exists, else create it
+	// Check if the reference extension file already exists
 	if (!FileReferenceExist(referenceFilePath.string()))
 	{
 		// The reference file doesn't exist
 		return;
 	}
 
-	// Get the reference vector
-	std::vector<FileReference> referenceVector = InternalGetFileReferences(referenceFilePath.string());
-
-	// Clear the vector
-	referenceVector.clear();
-
-	// Save the file references
-	InternalSaveFileReferencesVector(referenceFilePath.string(), referenceVector);
+	// Remove the reference file
+	if (!std::experimental::filesystem::remove(referenceFilePath))
+	{
+		// Error removing the reference file
+		std::cout << "Error trying to remove the file reference for file: " << _filePath << std::endl;
+	}
 }
 
 std::vector<std::string> PacketReferenceManager::GetFileReferences(std::string _filePath)
@@ -241,7 +239,7 @@ bool PacketReferenceManager::ValidateFileReferences(std::string _filePath, Refer
 
 	// Construct the updated reference vector
 	std::vector<FileReference> updatedReferences;
-	for (int i = 0; i < referenceVector.size(); i++)
+	for (unsigned int i = 0; i < referenceVector.size(); i++)
 	{
 		// Check what reference we should use
 		if (referenceFixerVector[i].IsValid())
@@ -444,6 +442,9 @@ bool PacketReferenceManager::UpdateOwnerFileWithUpdatedReferences(std::string _f
 			// Error verifying this reference
 			std::cout << "Error verifying a file reference, the file path is: \"" << _filePath << "\" and the location is at: " << reference.ownerFileReferenceLocation << std::endl;
 
+			// Well, the reference file is invalid or was corrupted, delete it
+			ClearFileReferences(_filePath);
+
 			return false;
 		}
 	}
@@ -453,12 +454,46 @@ bool PacketReferenceManager::UpdateOwnerFileWithUpdatedReferences(std::string _f
 
 	// If we are here the owning file has its old references on the correct location and we are ready to update them //
 
-	// Open the owning file in read mode
-	std::ofstream writeFile(_filePath, std::ios::binary);
+	// Setup a temporary filename so we don't write directly into the original file
+	std::string temporaryFilePath = std::string(_filePath).append(TemporaryFileExtension);
+
+	// Delete any old temporary file that exist with the same name (if there is a temporary file an old execution probably failed
+	{
+		// Check if there is an old temporary file
+		if (std::experimental::filesystem::exists(temporaryFilePath))
+		{
+			// Warning text
+			std::cout << "Foun a temporary file with path: \"" << temporaryFilePath << "\" that shouldn't exist" << std::endl;
+
+			// Delete the file
+			std::experimental::filesystem::remove(temporaryFilePath);
+		}
+	}
+
+	// We need to care care here because we can't compromise the original file or do some mistake that could invalidate it, so we will 
+	// be checking almost every operation to ensure correctness
+
+	// Create the temporary file
+	{
+		std::error_code error;
+		std::experimental::filesystem::copy(_filePath, temporaryFilePath, error);
+		if (static_cast<bool>(error))
+		{
+			// Error copying the file!
+			std::cout << "Error trying to copy the original file into a temporary file, the original file path is: \"" << temporaryFilePath 
+				<< "\" and the temporary path is: \"" << temporaryFilePath  << "\"" << std::endl;
+
+			return false;
+		}
+	}
+	
+
+	// Open the temporary file in read mode
+	std::ofstream writeFile(temporaryFilePath, std::ios::binary);
 	if (!writeFile.is_open())
 	{
 		// Error openning the file!
-		std::cout << "Error trying to open a file to update its references, the file path is: " << _filePath << std::endl;
+		std::cout << "Error trying to open a temporary file to update its references, the file path is: \"" << temporaryFilePath << "\"" << std::endl;
 
 		return false;
 	}
@@ -472,8 +507,8 @@ bool PacketReferenceManager::UpdateOwnerFileWithUpdatedReferences(std::string _f
 		// Check if this reference needs to be updated
 		if (!newReference.IsValid())
 		{
-			// Just ignore it
-			continue;
+			// Use the old reference
+			newReference = _oldReferences[i];
 		}
 
 		// The path string
@@ -481,13 +516,67 @@ bool PacketReferenceManager::UpdateOwnerFileWithUpdatedReferences(std::string _f
 
 		// Set the file position inside the owning file
 		writeFile.seekp(newReference.ownerFileReferenceLocation, std::ios_base::beg);
+		if (!writeFile)
+		{
+			// Error
+			std::cout << "Error seeking on the temporary file: \"" << temporaryFilePath << "\" on position: " << newReference.ownerFileReferenceLocation << std::endl;
+
+			return false;
+		}
 
 		// Write the reference
 		writeFile.write((char*)&path, sizeof(Path));
+		if (!writeFile)
+		{
+			// Error
+			std::cout << "Error updating the references on the temporary file: \"" << temporaryFilePath << "\""<< std::endl;
+
+			return false;
+		}
 	}
 
 	// Close the file
 	writeFile.close();
+
+	// Ok if we are here the temporary file was written successfully, lets delete the old original file
+	{
+		// The error object
+		std::error_code error;
+
+		// Setup a temporary path for the original file
+		std::string originalFileTemporaryPath = std::string(_filePath).append(".original").append(TemporaryFileExtension);
+
+		// Rename the original file
+		std::experimental::filesystem::rename(_filePath, originalFileTemporaryPath, error);
+		if (static_cast<bool>(error))
+		{
+			// Error renaming the file
+			std::cout << "Error trying to rename the original file to a temporary file, the original path is: \"" << _filePath
+				<< "\" if something wrong occured you can check the original temporary file path on: \"" << originalFileTemporaryPath << "\"" << std::endl;
+
+			return false;
+		}
+
+		// Rename the temporary file
+		std::experimental::filesystem::rename(temporaryFilePath, _filePath, error);
+		if (static_cast<bool>(error))
+		{
+			// Error renaming the file
+			std::cout << "Error trying to rename the temporary file to be the original one, the original path is: \"" << _filePath
+				<< "\" if something wrong occured you can check the original temporary file path on: \"" << originalFileTemporaryPath << "\"" << std::endl;
+
+			return false;
+		}
+
+		// Delete the original file
+		if (!std::experimental::filesystem::remove(originalFileTemporaryPath))
+		{
+			// Error
+			std::cout << "Error deleting the old file at path: \"" << temporaryFilePath << "\"" << std::endl;
+
+			return false;
+		}
+	}
 
 	return true;
 }

@@ -68,8 +68,8 @@ std::vector<CondensedFileInfo> PacketCondenser::CondenseFolder(std::string _root
 		CondensedFileInfo::InternalFileInfo internalFileInfo = {};
 		internalFileInfo.hash = hash;
 		internalFileInfo.size = uint64_t(fileSize);
-		internalFileInfo.time = uint64_t(std::chrono::system_clock::now().time_since_epoch().count());
-
+		internalFileInfo.time = uint64_t(std::experimental::filesystem::last_write_time(filePath).time_since_epoch().count());
+		
 		// Check if we need to generate another condensed file info
 		if (currentCondensedFileSize + fileSize >= MaximumPackageSize)
 		{

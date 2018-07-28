@@ -58,7 +58,7 @@ public: //////////
 public: //////////
 
 	// Initialize this object
-	bool Initialize(std::string _packetFolderPath, OperationMode _operationMode);
+	bool Initialize(std::string _packetManifestDirectory, OperationMode _operationMode);
 
 	// Pack all files
 	bool ConstructPacket();

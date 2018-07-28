@@ -10,10 +10,10 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketCondensedModeFileLoader::PacketCondensedModeFileLoader(std::string _packetFolderPath) : PacketFileLoader(_packetFolderPath)
+PacketCondensedModeFileLoader::PacketCondensedModeFileLoader(std::string _packetManifestDirectory) : PacketFileLoader(_packetManifestDirectory)
 {
 	// Load the packet data
-	m_PackedDataLoaded = ReadPacketData(_packetFolderPath);
+	m_PackedDataLoaded = ReadPacketData(_packetManifestDirectory);
 	if (!m_PackedDataLoaded)
 	{
 		// Error!
@@ -107,10 +107,10 @@ bool PacketCondensedModeFileLoader::ConstructPacket()
 	return false;
 }
 
-bool PacketCondensedModeFileLoader::ReadPacketData(std::string _packetFolderPath)
+bool PacketCondensedModeFileLoader::ReadPacketData(std::string _packetManifestDirectory)
 {
 	// Get the root folder name
-	auto rootFolderName = GetRootFolder(_packetFolderPath);
+	auto rootFolderName = GetRootFolder(_packetManifestDirectory);
 
 	// Setup the condensed info file name
 	std::string condensedInfoName = rootFolderName;
@@ -122,7 +122,7 @@ bool PacketCondensedModeFileLoader::ReadPacketData(std::string _packetFolderPath
 	if (!file.is_open())
 	{
 		// Error openning the file!
-		std::cout << "Error trying to open the packed data on: " << _packetFolderPath << std::endl;
+		std::cout << "Error trying to open the packed data on: " << _packetManifestDirectory << std::endl;
 
 		return false;
 	}
@@ -181,4 +181,98 @@ void PacketCondensedModeFileLoader::ProcessPacketData()
 		// Insert the file reader into our vector
 		m_FileReaders.push_back(fileReader);
 	}
+}
+
+std::vector<Hash> PacketCondensedModeFileLoader::GetFileHashesThatNeedUpdate(std::string _packetManifestDirectory)
+{
+	// The output vector
+	std::vector<Hash> out;
+
+	// Check if our packet data was loaded
+	if (!m_PackedDataLoaded)
+	{
+		// We need to load the packet data first
+		return out;
+	}
+
+	// Get the root folder name
+	auto rootFolderName = GetRootFolder(_packetManifestDirectory);
+
+	// Setup the condensed info file name
+	std::string condensedInfoName = rootFolderName;
+	condensedInfoName.append(CondensedInfoName);
+	condensedInfoName.append(CondensedInfoExtension);
+
+	// Open the file and check if we are ok to proceed
+	std::ifstream file(condensedInfoName, std::ios::binary);
+	if (!file.is_open())
+	{
+		// Error openning the file!
+		std::cout << "Error trying to open the packed data on: " << _packetManifestDirectory << std::endl;
+
+		return out;
+	}
+
+	// The data header info
+	CondensedHeaderInfo headerInfo;
+
+	// Read the condensed header
+	file.read((char*)&headerInfo, sizeof(CondensedHeaderInfo));
+
+	// The condensed file infos
+	std::vector<CondensedFileInfo> condensedFileInfos;
+
+	// Allocate memory for all file infos
+	condensedFileInfos.resize(headerInfo.totalInfos);
+
+	// Read the condensed file infos
+	file.read((char*)condensedFileInfos.data(), sizeof(CondensedFileInfo) * headerInfo.totalInfos);
+
+	// Close the file
+	file.close();
+
+	// Check if the read header is newer the our current one
+	if(m_CondensedFileHeader.saveTime >= headerInfo.saveTime 
+		|| m_CondensedFileHeader.majorVersion > headerInfo.majorVersion
+		|| (m_CondensedFileHeader.majorVersion == headerInfo.majorVersion && m_CondensedFileHeader.minorVersion > headerInfo.minorVersion))
+	{
+		// Our current header is newer or equal to the given one
+		return out;
+	}
+
+	// Ok the new header is newer then ours, lets update //
+
+	// Now for each condensed file info
+	for (auto& condensedFileInfo : condensedFileInfos)
+	{
+		// For each internal file inside this condensed info
+		for (unsigned int i = 0; i < condensedFileInfo.totalNumberFiles; i++)
+		{
+			// Get the internal file info
+			auto& internalFileInfo = condensedFileInfo.fileInfos[i];
+
+			// Check if we have this file info
+			auto iter = m_MappedInternalFileInfos.find(internalFileInfo.hash);
+			if (iter == m_MappedInternalFileInfos.end())
+			{
+				// We don't have this file, add its hash into the output vector
+				out.push_back(internalFileInfo.hash);
+			}
+			// We have the file
+			else
+			{
+				// Get the file info
+				auto& currentInternalFileInfo = iter->second.info;
+
+				// Compare the written date
+				if (currentInternalFileInfo.time < internalFileInfo.time)
+				{
+					// The newer file has a newert written date, insert its hash into the output vector
+					out.push_back(internalFileInfo.hash);
+				}
+			}
+		}
+	}
+
+	return out;
 }

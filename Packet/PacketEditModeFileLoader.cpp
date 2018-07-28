@@ -11,7 +11,7 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketEditModeFileLoader::PacketEditModeFileLoader(std::string _packetFolderPath) : PacketFileLoader(_packetFolderPath)
+PacketEditModeFileLoader::PacketEditModeFileLoader(std::string _packetManifestDirectory) : PacketFileLoader(_packetManifestDirectory)
 {
 }
 
