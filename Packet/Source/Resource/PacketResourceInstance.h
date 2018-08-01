@@ -181,17 +181,22 @@ public: //////////
 
 		// Talvez só precisemos do (ou do !m_IsLocked?) AreDependenciesFulfilled() já que ele fica true só quando os outros já aconteceram não?
 		// m_IsLinked NÃO entra aqui!!
-		return !m_IsLocked;
+		// We only need to check if we are locked and if the reference object is pending replacement, if we are unlocked the reference object
+		// is valid (so no need to check the resource ptr) and it is ready to be used, the only case it won't be ok for us is if it is pending
+		// replacement, in this case we shouldn't use it until the resource is totally replaced
+		return !m_IsLocked && !m_ReferenceObject->IsPendingReplacement();
 		return m_ReferenceObject != nullptr && m_ReferenceObject->IsReady() && AreDependenciesFulfilled() && !m_IsLocked;
 	}
 
 ///////////////////////
 protected: // STATUS //
 ///////////////////////
-private:
 
 	// Return if all dependencies are fulfilled
 	bool AreDependenciesFulfilled();
+
+	// Return if this instance is locked
+	bool IsLocked();
 
 //////////////////////////////////
 protected: // SELF INTERNAL USE //
@@ -199,6 +204,10 @@ protected: // SELF INTERNAL USE //
 
 	// Add a dependency to another instance
 	void AddInstanceDependency(PacketResourceInstance& _instance);
+
+	// Return if in case this instance has another one that depends on it, if this one is locked. In case there is no
+	// dependency, return false
+	bool InstanceDependencyIsLocked();
 
 /////////////////////////////
 protected: // EXTERNAL USE //
@@ -233,6 +242,13 @@ protected:
 	// Begin the construction of this instance
 	void BeginConstruction();
 
+	// Reset this instance, clearing its status, this method must be called by a resource object 
+	// that is being replaced by a newer version, its ensured that this will only be called when 
+	// all dependencies for this instance are fulfilled, also if there is another instance that 
+	// depends on this one, it's ensured that this instance was also constructed and ready, 
+	// recursivelly
+	void ResetInstance();
+
 	// Set the peasant object reference
 	void SetObjectReference(PacketResource* _objectReference);
 
@@ -240,9 +256,20 @@ protected:
 // VIRTUAL METHODS //
 protected: //////////
 
-	// The on xxx methods
+	// Called when the resource object was loaded, here its possible to set internal variables 
+	// and all other instance dependencies for this one
 	virtual void OnConstruct() = 0;
+
+	// Called when all instance dependencies are fulfilled
 	virtual void OnDependenciesFulfilled() = 0;
+
+	// Called when this instance object was reseted and its status must be cleaned, this means that 
+	// this instance will be constructed again, also if there is another instance that depends on 
+	// this one it will be put on locked state until this instance is reconstructed.
+	// It's ensured that this will only be called when all dependencies for this instance are fulfilled, 
+	// also if there is another instance that depends on this one, it's ensured that this instance was 
+	// also constructed and ready, recursivelly
+	virtual void OnReset() = 0;
 
 private:
 

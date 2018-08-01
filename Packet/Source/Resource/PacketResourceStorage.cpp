@@ -46,6 +46,25 @@ bool PacketResourceStorage::InsertObject(std::unique_ptr<PacketResource>& _objec
 	return true;
 }
 
+std::unique_ptr<PacketResource> PacketResourceStorage::ReplaceObject(std::unique_ptr<PacketResource>& _object, Hash _hash)
+{
+	// Check if an object with the given hash exist
+	auto iterator = m_ObjectMap.find(_hash);
+	if (iterator == m_ObjectMap.end())
+	{
+		// Nothing we can replace
+		return nullptr;
+	}
+
+	// Take ownership from the object
+	std::unique_ptr<PacketResource> oldResource = std::move(iterator->second);
+
+	// Replace the old object
+	iterator->second = std::move(_object);
+
+	return oldResource;
+}
+
 bool PacketResourceStorage::RemoveObject(PacketResource* _object)
 {
 	return RemoveObject(_object->GetHash());

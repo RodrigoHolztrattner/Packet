@@ -246,6 +246,11 @@ struct Hash
 		return m_Hash;
 	}
 
+	bool operator ==(const Hash& b) const
+	{
+		return m_Hash == b.m_Hash;
+	}
+
 	// Comparator
 	bool operator()(const Hash& a, const Hash& b) const
 	{

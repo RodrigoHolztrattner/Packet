@@ -108,12 +108,15 @@ PacketResource::PacketResource()
 	m_DataValid = false;
 	m_WasSynchronized = false;
 	m_IsPersistent = false;
-	m_TotalReferences = 0;
+	m_IsPendingReplacement = false;
+	m_TotalDirectReferences = 0;
+	m_TotalIndirectReferences = 0;
 }
 
 PacketResource::~PacketResource()
 {
-	assert(m_TotalReferences == 0);
+	assert(m_TotalDirectReferences == 0);
+	assert(m_TotalIndirectReferences == 0);
 }
 
 bool PacketResource::BeginLoad(bool _isPersistent)
@@ -186,9 +189,24 @@ bool PacketResource::IsReady()
 	return m_DataValid && m_WasSynchronized;
 }
 
+bool PacketResource::IsPendingReplacement()
+{
+	return m_IsPendingReplacement;
+}
+
 bool PacketResource::IsReferenced()
 {
-	return m_TotalReferences > 0;
+	return m_TotalDirectReferences > 0 || m_TotalIndirectReferences > 0;
+}
+
+bool PacketResource::IsDirectlyReferenced()
+{
+	return m_TotalDirectReferences > 0;
+}
+
+bool PacketResource::IsIndirectlyReferenced()
+{
+	return m_TotalIndirectReferences > 0;
 }
 
 bool PacketResource::IsPersistent()
@@ -211,27 +229,94 @@ void PacketResource::SetFactoryReference(PacketResourceFactory* _factoryReferenc
 	m_FactoryPtr = _factoryReference;
 }
 
+void PacketResource::SetPedingReplacement()
+{
+	m_IsPendingReplacement = true;
+}
+
+void PacketResource::RedirectInstancesToResource(PacketResource* _newResource)
+{
+#ifndef NDEBUG
+
+	// For each instance
+	for (auto* instance : m_InstancesThatUsesThisResource)
+	{
+		// Set the object reference
+		_newResource->MakeInstanceReference(instance);
+
+		// Reset this instance
+		instance->ResetInstance();
+	}
+
+	// Clear the instance vector
+	m_InstancesThatUsesThisResource.clear();
+
+	// Zero the total number of direct references
+	m_TotalDirectReferences = 0;
+
+#endif
+
+	// Set is pending replacement to false
+	m_IsPendingReplacement = false;
+}
+
+bool PacketResource::AreInstancesReadyToBeUsed()
+{
+	// For each instance
+	for (auto* instance : m_InstancesThatUsesThisResource)
+	{
+		// Check if this instance or the instance that depends on it (if there is one) are locked
+		if (instance->IsLocked() || instance->InstanceDependencyIsLocked())
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void PacketResource::MakeInstanceReference(PacketResourceInstance* _instance)
 {
 	// Increment the total number of references
-	m_TotalReferences++;
+	m_TotalDirectReferences++;
 
 	// Set the object reference
 	_instance->SetObjectReference(this);
+
+
+#ifndef NDEBUG
+
+	// Insert this instance into the instance vector os dependencies
+	{
+		std::lock_guard<std::mutex> lock(m_InstanceVectorMutex);
+		m_InstancesThatUsesThisResource.push_back(_instance);
+	}
+
+#endif
 }
 
-void PacketResource::MakeInstanceReference()
+void PacketResource::RemoveInstanceReference(PacketResourceInstance* _instance)
 {
-	// Increment the total number of references
-	m_TotalReferences++;
-}
-
-void PacketResource::ReleaseInstance()
-{
-	assert(m_TotalReferences > 0);
+	assert(m_TotalDirectReferences > 0);
 
 	// Subtract one from the reference count
-	m_TotalReferences--;
+	m_TotalDirectReferences--;
+
+#ifndef NDEBUG
+
+	// Find the instance object inside the instance vector and remove it, there is no need to use
+	// the mutex because this can only happens on the update phase of the PacketResourceManager
+	for (unsigned int i = 0; i < m_InstancesThatUsesThisResource.size(); i++)
+	{
+		// Compare the pointers
+		if (m_InstancesThatUsesThisResource[i] == _instance)
+		{
+			// Remove it
+			m_InstancesThatUsesThisResource.erase(m_InstancesThatUsesThisResource.begin() + i);
+		}
+	}
+
+#endif
 }
 
 uint32_t PacketResource::GetDataSize()
@@ -241,7 +326,22 @@ uint32_t PacketResource::GetDataSize()
 
 uint32_t PacketResource::GetTotalNumberReferences()
 {
-	return m_TotalReferences;
+	return m_TotalDirectReferences + m_TotalIndirectReferences;
+}
+
+uint32_t PacketResource::GetTotalNumberDirectReferences()
+{
+	return m_TotalDirectReferences;
+}
+
+uint32_t PacketResource::GetTotalNumberIndirectReferences()
+{
+	return m_TotalIndirectReferences;
+}
+
+PacketResourceFactory* PacketResource::GetFactoryPtr()
+{
+	return m_FactoryPtr;
 }
 
 /*

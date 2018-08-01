@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <vector>
 #include <atomic>
+#include <mutex>
 
 ///////////////
 // NAMESPACE //
@@ -46,6 +47,7 @@ class PacketResourceManager;
 class PacketResourceLoader;
 class PacketResourceDeleter;
 class PacketResourceFactory;
+class PacketResourceWatcher;
 class PacketSystem;
 
 /*
@@ -78,6 +80,8 @@ class PacketSystem;
 		- Criar resource diretamente? Essa é a melhor forma? Permitir construtores diferentes?
 */
 
+// The structure that will be used to store the resource data, it works like a vector of uint8_t and is allocation 
+// and deallocation must be managed by a factory class
 struct PacketResourceData
 {
 	// Our constructors
@@ -126,6 +130,7 @@ public:
 	friend PacketResourceManager;
 	friend PacketResourceLoader;
 	friend PacketResourceDeleter;
+	friend PacketResourceWatcher;
 
 //////////////////
 // CONSTRUCTORS //
@@ -142,12 +147,6 @@ protected: //////////
 	// The OnLoad() method (asynchronous method)
 	virtual bool OnLoad(PacketResourceData& _data) = 0;
 
-	// The OnDataChanged() method. This will be called when we are on the edit mode on the packet system and whenever this 
-	// resource physical file is edited or its data was changed directly. Before calling this method a future call to 
-	// OnSynchronization() will be made, note that those behaviours can be controlled using flags (look the flag section).
-	// (synchronous method when calling the update() method)
-	virtual void OnDataChanged(PacketResourceData& _data) {};
-
 	// The OnSynchronization() method (synchronous method when calling the update() method)
 	virtual bool OnSynchronization() = 0;
 
@@ -161,6 +160,7 @@ public: //////////
 	enum ResourceUpdateConditionBits
 	{
 		ResourceUpdateOnRelease = 1 << 0
+
 	};
 	typedef uint32_t ResourceUpdateConditionFlags;
 
@@ -168,8 +168,10 @@ public: //////////
 	void RegisterUpdateCondition(ResourceUpdateConditionFlags _updateFlags);
 
 	// Update this resource physical data, overwritting it. This method will only works if the packet system is operating on 
-	// edit mode, by default calling this method will result in a future call to OnDataChanged() and subsequently call 
-	// OnSynchronization(), this behavious can be changed (take a look at the flags section).
+	// edit mode, by default calling this method will result in a future deletion of this resource object and in a future 
+	// creation of a new resource object with the updated data, if the user needs to update the data at runtime multiple times
+	// is recomended to batch multiple "data updates" and call this method once in a while (only call this method when there is 
+	// a real need to actually save the data)
 	bool UpdateResourcePhysicalData(uint8_t* _data, uint32_t _dataSize);
 	bool UpdateResourcePhysicalData(PacketResourceData& _data);
 
@@ -181,6 +183,11 @@ public: //////////
 
 	// Return the total number of instances that directly or indirectly references this resource
 	uint32_t GetTotalNumberReferences();
+	uint32_t GetTotalNumberDirectReferences();
+	uint32_t GetTotalNumberIndirectReferences();
+
+	// Return the object factory without cast
+	PacketResourceFactory* GetFactoryPtr();
 
 	// Return the object factory casting to the given template typeclass
 	template<typename FactoryClass>
@@ -189,20 +196,11 @@ public: //////////
 		return reinterpret_cast<FactoryClass*>(m_Factory);
 	}
 
-	// Return the object factory without cast
-	PacketResourceFactory* GetFactoryPtr()
-	{
-		return m_FactoryPtr;
-	}
-
 public:
 
-	// Make a instance reference this object
+	// Make a instance reference this object / remove reference 
 	void MakeInstanceReference(PacketResourceInstance* _instance);
-	void MakeInstanceReference();
-
-	// Release a instance of this object
-	void ReleaseInstance();
+	void RemoveInstanceReference(PacketResourceInstance* _instance);
 
 ////////////////////
 public: // STATUS //
@@ -211,8 +209,13 @@ public: // STATUS //
 	// Return if this object is ready to be used
 	bool IsReady();
 
+	// Return if this object is pending replacement
+	bool IsPendingReplacement();
+
 	// Return if this object is referenced
 	bool IsReferenced();
+	bool IsDirectlyReferenced();
+	bool IsIndirectlyReferenced();
 
 	// Return if this object is persistent (if it won't be released when it's reference count reaches 0)
 	bool IsPersistent();
@@ -232,8 +235,20 @@ protected: // INTERNAL //
 	// Set the factory reference
 	void SetFactoryReference(PacketResourceFactory* _factoryReference);
 
-	// Return the data ptr
-	// uint32_t& GetDataSizeRef();
+	// Set that this resource is pending replacement
+	void SetPedingReplacement();
+
+	// Make all instances that depends on this resource to point to another resource, decrementing the total 
+	// number of references to zero, this method must be called when inside the update phase on the resource 
+	// manager so no race conditions will happen. This method will only do something when on debug builds
+	void RedirectInstancesToResource(PacketResource* _newResource);
+
+	// This method will check if all instances that depends on this resource are totally constructed and ready
+	// to be used, this method only works on debug builds and it's not intended to be used on release builds, 
+	// also this method must be called when inside the update method on the PacketResourceManager class
+	bool AreInstancesReadyToBeUsed();
+
+	// Return the data reference
 	PacketResourceData& GetDataRef();
 
 ///////////////
@@ -244,9 +259,11 @@ private: //////
 	bool m_DataValid;
 	bool m_WasSynchronized;
 	bool m_IsPersistent;
+	bool m_IsPendingReplacement;
 
-	// The total number of references
-	std::atomic<uint32_t> m_TotalReferences;
+	// The total number of direct and indirect references
+	std::atomic<uint32_t> m_TotalDirectReferences;
+	std::atomic<uint32_t> m_TotalIndirectReferences;
 
 	// The resource data and hash
 	PacketResourceData m_Data;
@@ -258,6 +275,17 @@ private: //////
 	// A pointer to the resource factory and the packet system
 	PacketResourceFactory* m_FactoryPtr;
 	PacketSystem* m_PacketSystemPtr;
+
+#ifndef NDEBUG
+
+	// This is a vector with all instances that uses this object + a mutex to prevent multiple writes 
+	// at the same time, those variables exist only on debug builds and they offer functionality to 
+	// the runtime detection of resource file changes, providing a way to update all instances that 
+	// points to a given resource object
+	std::vector<PacketResourceInstance*> m_InstancesThatUsesThisResource;
+	std::mutex m_InstanceVectorMutex;
+
+#endif
 };
 
 // Packet

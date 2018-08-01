@@ -13,9 +13,11 @@
 #include "PacketMultipleQueue.h"
 #include "PacketResourceLoader.h"
 #include "PacketResourceDeleter.h"
+#include "PacketResourceWatcher.h"
 
 #include <cstdint>
 #include <vector>
+#include <iostream>
 
 ///////////////
 // NAMESPACE //
@@ -86,14 +88,11 @@ public:
 		bool deleteSync;
 	};
 
-	// The temporary object release
-	struct TemporaryObjectRelease
+	// The deletion type
+	struct DeletionRequest
 	{
-		// The object
-		PacketResource* object;
-
-		// The factory ptr
-		PacketResourceFactory* factoryPtr;
+		// The resource
+		std::unique_ptr<PacketResource> resource;
 
 		// If this object should be deleted synchronous
 		bool deleteSync;
@@ -104,7 +103,7 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketResourceManager(PacketResourceStorage* _storagePtr, PacketFileLoader* _fileLoaderPtr, uint32_t _workerThreads, ThreadIndexRetrieveMethod _threadIndexMethod);
+	PacketResourceManager(PacketResourceStorage* _storagePtr, PacketFileLoader* _fileLoaderPtr, PacketResourceWatcher* _resourceWatcherPtr, uint32_t _workerThreads, ThreadIndexRetrieveMethod _threadIndexMethod);
 	~PacketResourceManager();
 	
 //////////////////
@@ -117,6 +116,15 @@ public: //////////
 	{
 		// Asserts
 		assert(!m_InUpdatePhase || (m_InUpdatePhase && std::this_thread::get_id() == m_UpdateThreadID));
+
+		// Check if a resource with the given hash exist
+		if (!m_FileLoaderPtr->FileExist(_hash))
+		{
+			// The file doesn't exist
+			std::cout << "Trying to load file at path: \"" << _hash.GetPath() << "\" and hash: " << _hash.GetHashValue() << " but it doesn't exist on our database!" << std::endl;
+
+			return false;
+		}
 
 		// Create a new resource instance object
 		std::unique_ptr<PacketResourceInstance> newInstance = _factoryPtr->RequestInstance(_hash, this);
@@ -146,7 +154,7 @@ public: //////////
 			ObjectRequest request = { newInstancePtr, _hash, _factoryPtr, _isPersistent };
 
 			// Push the new request
-			m_ObjectRequests.Insert(request);
+			m_ResourceRequests.Insert(request);
 		}
 
 		return true;
@@ -155,12 +163,20 @@ public: //////////
 	// The update method, process all requests
 	void Update();
 
+	// This method is called when a resource file is modified, its execution will happen when inside the 
+	// update phase. This method won't be called when on release or non edit builds
+	void OnResourceDataChanged(PacketResource* _resource);
+
 protected:
 
 	// Release an object instance, this method must be called only by a packet resource instance ptr when it is deleted without
 	// being moved to another variable using move semantics
 	void ReleaseObject(std::unique_ptr<PacketResourceInstance>& _instance, PacketResourceFactory* _factoryPtr, bool _allowAsynchronousDeletion = false);
-	void ReleaseObject(PacketResource* _object, PacketResourceFactory* _factoryPtr, bool _allowAsynchronousDeletion = false);
+
+	// This method must be called by a instance object that needs to be reconstructed, this method must be
+	// called when doing the update phase here on this class (doesn't need to be called necessarilly inside
+	// this object but we must ensure we are doing an update)
+	void ReconstructInstance(PacketResourceInstance* _instance);
 
 	// TODO: Maybe remove this?
 	// Query the loaded objects map, returning a reference to it
@@ -173,20 +189,23 @@ private: //////
 	// The mutex we will use to secure thread safety
 	std::mutex m_Mutex;
 
-	// The object loader and deleter
-	PacketResourceLoader m_ObjectLoader;
-	PacketResourceDeleter m_ObjectDeleter;
+	// The resource loader and deleter
+	PacketResourceLoader m_ResourceLoader;
+	PacketResourceDeleter m_ResourceDeleter;
 
 	// The object requests and the release queue
-	MultipleQueue<ObjectRequest> m_ObjectRequests;
+	MultipleQueue<ObjectRequest> m_ResourceRequests;
 	MultipleQueue<ObjectRelease> m_InstanceReleases;
-	MultipleQueue<TemporaryObjectRelease> m_TemporaryInstanceReleases;
 
-	// The construct queue
+	// The construct, deletion and replace queues
 	std::vector<PacketResourceInstance*> m_ConstructQueue;
+	std::vector<DeletionRequest> m_DeletionQueue;
+	std::vector<PacketResource*> m_ReplaceQueue;
 
-	// The object storage ptr
+	// The object storage, the file loader and the resoruce watcher ptrs
 	PacketResourceStorage* m_ResourceStoragePtr;
+	PacketResourceWatcher* m_ResourceWatcherPtr;
+	PacketFileLoader* m_FileLoaderPtr;
 	
 	// If we are inside the update phase and the updating thread id (used for asserts only)
 	bool m_InUpdatePhase;

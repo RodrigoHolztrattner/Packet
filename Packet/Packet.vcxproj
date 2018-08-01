@@ -169,6 +169,7 @@
     <ClCompile Include="Source\Resource\PacketResourceLoader.cpp" />
     <ClCompile Include="Source\Resource\PacketResourceManager.cpp" />
     <ClCompile Include="Source\Resource\PacketResourceStorage.cpp" />
+    <ClCompile Include="Source\Resource\PacketResourceWatcher.cpp" />
     <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcher.cpp" />
     <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherLinux.cpp" />
     <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherOSX.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="Source\Resource\PacketResourceLoader.h" />
     <ClInclude Include="Source\Resource\PacketResourceManager.h" />
     <ClInclude Include="Source\Resource\PacketResourceStorage.h" />
+    <ClInclude Include="Source\Resource\PacketResourceWatcher.h" />
     <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcher.h" />
     <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherImpl.h" />
     <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherLinux.h" />

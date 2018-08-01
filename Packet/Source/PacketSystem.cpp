@@ -46,8 +46,11 @@ bool PacketSystem::Initialize(std::string _packetManifestDirectory, OperationMod
 	// Create the resource storage
 	m_ResourceStorage = std::make_unique<PacketResourceStorage>();
 
+	// Create the resource watcher
+	m_ResourceWatcher = std::make_unique<PacketResourceWatcher>(_operationMode);
+
 	// Create the resource manager
-	m_ResourceManager = std::make_unique<PacketResourceManager>(m_ResourceStorage.get(), m_FileLoader.get(), 1, nullptr);
+	m_ResourceManager = std::make_unique<PacketResourceManager>(m_ResourceStorage.get(), m_FileLoader.get(), m_ResourceWatcher.get(), 1, nullptr);
 
 	return true;
 }

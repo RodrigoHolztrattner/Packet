@@ -9,6 +9,7 @@
 #include "PacketConfig.h"
 #include "PacketReferenceManager.h"
 #include "Resource/PacketResourceManager.h"
+#include "Resource/PacketResourceWatcher.h"
 
 #include <string>
 
@@ -111,9 +112,10 @@ private:
 	// The reference manager
 	PacketReferenceManager m_ReferenceManager;
 
-	// The resource storage and our current manager
+	// The resource storage, our current resource manager and the resource watcher
 	std::unique_ptr<PacketResourceStorage> m_ResourceStorage;
 	std::unique_ptr<PacketResourceManager> m_ResourceManager;
+	std::unique_ptr<PacketResourceWatcher> m_ResourceWatcher;
 };
 
 // Packet data explorer

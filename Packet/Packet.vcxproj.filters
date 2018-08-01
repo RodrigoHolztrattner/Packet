@@ -56,6 +56,9 @@
     <ClCompile Include="Source\Resource\PacketResourceStorage.cpp">
       <Filter>Source\Resource</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Resource\PacketResourceWatcher.cpp">
+      <Filter>Source\Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Packet.h" />
@@ -121,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="Source\PacketSystem.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Resource\PacketResourceWatcher.h">
+      <Filter>Source\Resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -68,6 +68,9 @@ public: //////////
 	// Insert a new object
 	bool InsertObject(std::unique_ptr<PacketResource>& _object, Hash _hash);
 
+	// Replace an resource by a new one
+	std::unique_ptr<PacketResource> ReplaceObject(std::unique_ptr<PacketResource>& _object, Hash _hash);
+
 	// Remove an object
 	bool RemoveObject(PacketResource* _object);
 	bool RemoveObject(Hash _hash);

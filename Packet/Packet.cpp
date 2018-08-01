@@ -48,21 +48,19 @@ public:
 
 	bool OnLoad(PacketResourceData& _data) override
 	{
+		std::cout << (int)this << " - Resource -> OnLoad() - data size: " << _data.GetSize() << std::endl;
 		return true;
-	}
-
-	void OnDataChanged(PacketResourceData& _data) override
-	{
-		return;
 	}
 
 	bool OnSynchronization()  override
 	{
+		std::cout << (int)this << " - Resource -> OnSynchronization()" << std::endl;
 		return true;
 	}
 
 	bool OnDelete(PacketResourceData&) override
 	{
+		std::cout << (int)this << " - Resource -> OnDelete()" << std::endl;
 		return true;
 	}
 };
@@ -78,12 +76,17 @@ public:
 
 	void OnConstruct() override
 	{
-
+		std::cout << (int)this << " - Instance -> OnConstruct()" << std::endl;
 	}
 
 	void OnDependenciesFulfilled() override
 	{
+		std::cout << (int)this << " - Instance -> OnDependenciesFulfilled()" << std::endl;
+	}
 
+	void OnReset() override
+	{
+		std::cout << (int)this << " - Instance -> OnReset()" << std::endl;
 	}
 };
 
@@ -93,32 +96,40 @@ public:
 
 	std::unique_ptr<PacketResourceInstance> RequestInstance(Hash _hash, PacketResourceManager* _resourceManager) override
 	{
-		return std::unique_ptr<PacketResourceInstance>(new TextureInstance(_hash, _resourceManager, this));
+		auto object = std::unique_ptr<PacketResourceInstance>(new TextureInstance(_hash, _resourceManager, this));
+		std::cout << "Factory -> RequestInstance() - ptr: " << (int)object.get() << std::endl;
+		return object;
 	}
 
 	void ReleaseInstance(std::unique_ptr<PacketResourceInstance>& _instance) override
 	{
+		std::cout << "Factory -> ReleaseInstance() - ptr: " << (int)_instance.get() << std::endl;
 		_instance.reset();
 	}
 
 	std::unique_ptr<PacketResource> RequestObject() override
 	{
-		return std::unique_ptr<Texture>(new Texture());
+		auto object = std::unique_ptr<Texture>(new Texture());
+		std::cout << "Factory -> RequestObject() - ptr: " << (int)object.get() << std::endl;
+		return object;
 	}
 
 	void ReleaseObject(std::unique_ptr<PacketResource>& _object) override
 	{
+		std::cout << "Factory -> ReleaseObject() - ptr: " << (int)_object.get() << std::endl;
 		_object.reset();
 	}
 
 	bool AllocateData(PacketResourceData& _resourceDataRef, uint64_t _total) override
 	{
+		std::cout << "Factory -> AllocateData() - total: " << _total << std::endl;
 		// Allocate the data
 		return _resourceDataRef.AllocateMemory(_total);
 	}
 
 	void DeallocateData(PacketResourceData& _data) override
 	{
+		std::cout << "Factory -> DeallocateData() - total: " << _data.GetSize() << std::endl;
 		// Deallocate the memory
 		_data.DeallocateMemory();
 	}
@@ -127,7 +138,7 @@ public:
 int main()
 {
 	PacketSystem packetSystem;
-	packetSystem.Initialize("Data", OperationMode::Condensed);
+	packetSystem.Initialize("Data", OperationMode::Edit);
 
 	//
 
@@ -166,19 +177,19 @@ int main()
 	PacketResourceInstancePtr<TextureInstance> textureInstancePtr;
 	TextureFactory textureFactory;
 
-	packetSystem.RequestObject(textureInstancePtr, "Data\\test.txt", &textureFactory);
-	textureInstancePtr.Reset();
+	packetSystem.RequestObject(textureInstancePtr, "Data\\texto.txt", &textureFactory);
 	while (true)
 	{
 		packetSystem.Update();
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-		if (textureInstancePtr && textureInstancePtr->IsReady())
+		if (textureInstancePtr && !textureInstancePtr->IsReady())
 		{
-			std::cout << "IsReady!" << std::endl;
+			std::cout << "Not ready!" << std::endl;
 
-			
+			// textureInstancePtr.Reset();
+
 		}
 	}
 

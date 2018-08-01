@@ -38,6 +38,17 @@ void PacketResourceInstance::AddInstanceDependency(PacketResourceInstance& _inst
 	_instance.m_LinkedInstanceDependency = this;
 }
 
+bool PacketResourceInstance::InstanceDependencyIsLocked()
+{
+	// No dependency
+	if (m_LinkedInstanceDependency == nullptr)
+	{
+		return false;
+	}
+
+	return m_LinkedInstanceDependency->IsLocked();
+}
+
 PacketResource* PacketResourceInstance::GetObjectPtr()
 {
 	assert(m_ReferenceObject != nullptr);
@@ -52,6 +63,11 @@ void PacketResourceInstance::SetObjectReference(PacketResource* _objectReference
 bool PacketResourceInstance::AreDependenciesFulfilled()
 {
 	return m_DependencyCount == 0;
+}
+
+bool PacketResourceInstance::IsLocked()
+{
+	return m_IsLocked;
 }
 
 /*
@@ -98,6 +114,32 @@ void PacketResourceInstance::BeginConstruction()
 		// Fulfill the dependency
 		m_LinkedInstanceDependency->FulfillDependency(this);
 	}
+}
+
+void PacketResourceInstance::ResetInstance()
+{
+	// DETAIL: There is no need to check if the dependency count is zero because it 
+	// doesn't matters
+
+	// If there is a dependency that depends on this one, reset. 
+	if (m_LinkedInstanceDependency != nullptr)
+	{
+		// Reset it, this will probably release this instance because if there is a 
+		// dependency, it must have a pointer to this instance, so calling the 
+		// OnReset() method we expect it to release this instance
+		m_LinkedInstanceDependency->ResetInstance();
+	}
+	else
+	{
+		// Set the initial data
+		m_IsLocked = true;
+
+		// Make this instance be reconstructed in the future
+		m_ResourceManagerPtr->ReconstructInstance(this);
+	}
+
+	// Call the on reset virtual method
+	OnReset();
 }
 
 void PacketResourceInstance::FulfillDependency(PacketResourceInstance* _instance)
