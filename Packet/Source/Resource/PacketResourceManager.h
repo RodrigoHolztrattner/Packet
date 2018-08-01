@@ -48,6 +48,7 @@ PacketDevelopmentNamespaceBegin(Packet)
 
 // Classes we know
 class PacketResourceInstance;
+class PacketReferenceManager;
 template <typename InstanceClass>
 struct PacketResourceInstancePtr;
 
@@ -103,7 +104,13 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketResourceManager(PacketResourceStorage* _storagePtr, PacketFileLoader* _fileLoaderPtr, PacketResourceWatcher* _resourceWatcherPtr, uint32_t _workerThreads, ThreadIndexRetrieveMethod _threadIndexMethod);
+	PacketResourceManager(OperationMode _operationMode,
+		PacketResourceStorage* _storagePtr,
+		PacketFileLoader* _fileLoaderPtr, 
+		PacketReferenceManager* _referenceManager, 
+		PacketResourceWatcher* _resourceWatcherPtr, 
+		uint32_t _workerThreads, 
+		ThreadIndexRetrieveMethod _threadIndexMethod);
 	~PacketResourceManager();
 	
 //////////////////
@@ -202,10 +209,14 @@ private: //////
 	std::vector<DeletionRequest> m_DeletionQueue;
 	std::vector<PacketResource*> m_ReplaceQueue;
 
-	// The object storage, the file loader and the resoruce watcher ptrs
+	// The current operation mode
+	OperationMode m_OperationMode;
+
+	// The object storage, the file loader, the resoruce watcher and the reference manager ptrs
 	PacketResourceStorage* m_ResourceStoragePtr;
 	PacketResourceWatcher* m_ResourceWatcherPtr;
 	PacketFileLoader* m_FileLoaderPtr;
+	PacketReferenceManager* m_ReferenceManagerPtr;
 	
 	// If we are inside the update phase and the updating thread id (used for asserts only)
 	bool m_InUpdatePhase;

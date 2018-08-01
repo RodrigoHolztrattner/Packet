@@ -46,16 +46,6 @@ class PacketReferenceManager
 {
 public:
 
-	// The reference fixer types
-	enum class ReferenceFixer
-	{
-		None, 
-		MatchAll, 
-		AtLeastNameAndExtension, 
-		AtLeastName, 
-		NameAndExtensionOrSizeAndExtension
-	};
-
 	// The reference type
 	struct FileReference
 	{

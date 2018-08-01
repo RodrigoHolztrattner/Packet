@@ -58,6 +58,16 @@ enum class OperationMode
 	Condensed
 };
 
+// The reference fixer types
+enum class ReferenceFixer
+{
+	None,
+	MatchAll,
+	AtLeastNameAndExtension,
+	AtLeastName,
+	NameAndExtensionOrSizeAndExtension
+};
+
 /////////////
 // METHODS //
 /////////////

@@ -8,13 +8,17 @@
 // Using namespace Peasant
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketResourceManager::PacketResourceManager(PacketResourceStorage* _storagePtr, 
+PacketResourceManager::PacketResourceManager(OperationMode _operationMode, 
+	PacketResourceStorage* _storagePtr,
 	PacketFileLoader* _fileLoaderPtr, 
+	PacketReferenceManager* _referenceManager, 
 	PacketResourceWatcher* _resourceWatcherPtr, 
 	uint32_t _workerThreads, 
 	ThreadIndexRetrieveMethod _threadIndexMethod) :
+	m_OperationMode(_operationMode), 
 	m_ResourceStoragePtr(_storagePtr),
 	m_FileLoaderPtr(_fileLoaderPtr), 
+	m_ReferenceManagerPtr(_referenceManager), 
 	m_ResourceLoader(_fileLoaderPtr), 
 	m_ResourceWatcherPtr(_resourceWatcherPtr)
 {
@@ -75,9 +79,9 @@ void PacketResourceManager::Update()
 			// Set the object hash
 			object->SetHash(_requestData.hash);
 
-			// Set the object factory reference
-			object->SetFactoryReference(_requestData.factoryPtr);
-
+			// Set the helper pointers and the current operation mode
+			object->SetHelperObjects(_requestData.factoryPtr, m_ReferenceManagerPtr, m_FileLoaderPtr, m_OperationMode);
+			
 			// Watch this resource file object (not enabled on release and non-edit builds)
 			m_ResourceWatcherPtr->WatchResource(object);
 
@@ -199,8 +203,8 @@ void PacketResourceManager::Update()
 		// Set the object hash
 		objectPtr->SetHash(hash);
 
-		// Set the object factory reference
-		objectPtr->SetFactoryReference(factory);
+		// Set the helper pointers and the current operation mode
+		objectPtr->SetHelperObjects(factory, m_ReferenceManagerPtr, m_FileLoaderPtr, m_OperationMode);
 
 		// Update the resource watched
 		m_ResourceWatcherPtr->UpdateWatchedResource(objectPtr.get());

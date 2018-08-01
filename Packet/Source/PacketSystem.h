@@ -65,6 +65,7 @@ public: //////////
 	// Pack all files
 	bool ConstructPacket();
 
+	// TODO: Remove this method?
 	// Return a ptr to the reference manager
 	PacketReferenceManager* GetReferenceManager();
 
@@ -109,10 +110,8 @@ private:
 	// Our packet file loader
 	std::unique_ptr<PacketFileLoader> m_FileLoader;
 
-	// The reference manager
-	PacketReferenceManager m_ReferenceManager;
-
-	// The resource storage, our current resource manager and the resource watcher
+	// The reference manager, the resource storage, our current resource manager and the resource watcher
+	std::unique_ptr<PacketReferenceManager> m_ReferenceManager;
 	std::unique_ptr<PacketResourceStorage> m_ResourceStorage;
 	std::unique_ptr<PacketResourceManager> m_ResourceManager;
 	std::unique_ptr<PacketResourceWatcher> m_ResourceWatcher;

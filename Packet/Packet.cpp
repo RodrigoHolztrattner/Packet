@@ -159,7 +159,7 @@ int main()
 
 	//
 
-	bool result = packetSystem.GetReferenceManager()->ValidateFileReferences("Data\\test.txt", PacketReferenceManager::ReferenceFixer::NameAndExtensionOrSizeAndExtension);
+	bool result = packetSystem.GetReferenceManager()->ValidateFileReferences("Data\\test.txt", ReferenceFixer::NameAndExtensionOrSizeAndExtension);
 
 	// packetSystem.GetReferenceManager()->RegisterFileReference("Data\\test.txt", "Data\\gems prices.png", 0);
 	// packetSystem.GetReferenceManager()->RegisterFileReference("Data\\test.txt", "Data\\Textures\\linhas terrain unreal.png", sizeof(Path));

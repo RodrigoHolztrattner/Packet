@@ -4,6 +4,7 @@
 #include "PacketResource.h"
 #include "PacketResourceInstance.h"
 #include "PacketResourceFactory.h"
+#include "..\PacketReferenceManager.h"
 
 #include <cassert>
 
@@ -224,9 +225,12 @@ void PacketResource::SetHash(Hash _hash)
 	m_Hash = _hash;
 }
 
-void PacketResource::SetFactoryReference(PacketResourceFactory* _factoryReference)
+void PacketResource::SetHelperObjects(PacketResourceFactory* _factoryReference, PacketReferenceManager* _referenceManager, PacketFileLoader* _fileLoader, OperationMode _operationMode)
 {
 	m_FactoryPtr = _factoryReference;
+	m_ReferenceManagerPtr = _referenceManager;
+	m_FileLoaderPtr = _fileLoader;
+	m_CurrentOperationMode = _operationMode;
 }
 
 void PacketResource::SetPedingReplacement()
@@ -344,14 +348,72 @@ PacketResourceFactory* PacketResource::GetFactoryPtr()
 	return m_FactoryPtr;
 }
 
-/*
-uint32_t& PacketResource::GetDataSizeRef()
-{
-	return m_Data.size();
-}
-*/
-
 PacketResourceData& PacketResource::GetDataRef()
 {
 	return m_Data;
+}
+
+bool PacketResource::RegisterPhysicalResourceReference(Hash _targetResourceHash, uint64_t _hashDataLocation)
+{
+	// Check the current operation mode
+	if (m_CurrentOperationMode != OperationMode::Edit)
+	{
+		std::cout << "Trying to call the method RegisterPhysicalResourceReference() but the operation mode is different from the Edit mode!" << std::endl;
+
+		return false;
+	}
+
+#ifndef NDEBUG
+
+	// Call the validate file references method for the reference manager
+	return m_ReferenceManagerPtr->RegisterFileReference(m_Hash.GetPath().String(), _targetResourceHash.GetPath().String(), _hashDataLocation);
+
+#endif
+
+	std::cout << "Trying to call the method RegisterPhysicalResourceReference() but the current build isn't a debug one!" << std::endl;
+	return false;
+}
+
+bool PacketResource::ClearAllPhysicalResourceReferences()
+{
+	// Check the current operation mode
+	if (m_CurrentOperationMode != OperationMode::Edit)
+	{
+		std::cout << "Trying to call the method ClearAllPhysicalResourceReferences() but the operation mode is different from the Edit mode!" << std::endl;
+
+		return false;
+	}
+
+#ifndef NDEBUG
+
+	// Clear all file references
+	m_ReferenceManagerPtr->ClearFileReferences(m_Hash.GetPath().String());
+
+	return true;
+
+#endif
+
+	std::cout << "Trying to call the method ClearAllPhysicalResourceReferences() but the current build isn't a debug one!" << std::endl;
+	return false;
+}
+
+bool PacketResource::VerifyPhysicalResourceReferences(ReferenceFixer _fixer, bool _allOrNothing)
+{
+	// Check the current operation mode
+	if (m_CurrentOperationMode != OperationMode::Edit)
+	{
+		std::cout << "Trying to call the method VerifyPhysicalResourceReferences() but the operation mode is different from the Edit mode!" << std::endl;
+
+		return false;
+	}
+
+#ifndef NDEBUG
+
+	// Call the validate file references method for the reference manager
+	return m_ReferenceManagerPtr->ValidateFileReferences(m_Hash.GetPath().String(), _fixer, _allOrNothing);
+
+#endif
+
+	std::cout << "Trying to call the method VerifyPhysicalResourceReferences() but the current build isn't a debug one!" << std::endl;
+	return false;
 }

@@ -48,7 +48,7 @@ class PacketResourceLoader;
 class PacketResourceDeleter;
 class PacketResourceFactory;
 class PacketResourceWatcher;
-class PacketSystem;
+class PacketReferenceManager;
 
 /*
 	=> Novos métodos:
@@ -157,24 +157,6 @@ protected: //////////
 // MAIN METHODS //
 public: //////////
 
-	enum ResourceUpdateConditionBits
-	{
-		ResourceUpdateOnRelease = 1 << 0
-
-	};
-	typedef uint32_t ResourceUpdateConditionFlags;
-
-	// TODO: 
-	void RegisterUpdateCondition(ResourceUpdateConditionFlags _updateFlags);
-
-	// Update this resource physical data, overwritting it. This method will only works if the packet system is operating on 
-	// edit mode, by default calling this method will result in a future deletion of this resource object and in a future 
-	// creation of a new resource object with the updated data, if the user needs to update the data at runtime multiple times
-	// is recomended to batch multiple "data updates" and call this method once in a while (only call this method when there is 
-	// a real need to actually save the data)
-	bool UpdateResourcePhysicalData(uint8_t* _data, uint32_t _dataSize);
-	bool UpdateResourcePhysicalData(PacketResourceData& _data);
-
 	// Return the resource hash
 	Hash GetHash();
 
@@ -196,11 +178,49 @@ public: //////////
 		return reinterpret_cast<FactoryClass*>(m_Factory);
 	}
 
-public:
+//////////////////////////////////
+public: // PHYSICAL DATA UPDATE //
+//////////////////////////////////
 
-	// Make a instance reference this object / remove reference 
-	void MakeInstanceReference(PacketResourceInstance* _instance);
-	void RemoveInstanceReference(PacketResourceInstance* _instance);
+	enum ResourceUpdateConditionBits
+	{
+		ResourceUpdateOnRelease = 1 << 0
+
+	};
+	typedef uint32_t ResourceUpdateConditionFlags;
+
+	// TODO: 
+	void RegisterUpdateCondition(ResourceUpdateConditionFlags _updateFlags);
+
+	// Update this resource physical data, overwritting it. This method will only works if the packet system is operating on 
+	// edit mode, by default calling this method will result in a future deletion of this resource object and in a future 
+	// creation of a new resource object with the updated data, if the user needs to update the data at runtime multiple times
+	// is recomended to batch multiple "data updates" and call this method once in a while (only call this method when there is 
+	// a real need to actually save the data)
+	bool UpdateResourcePhysicalData(uint8_t* _data, uint32_t _dataSize);
+	bool UpdateResourcePhysicalData(PacketResourceData& _data);
+
+////////////////////////////////////////
+public: // PHYSICAL RESOURCE REFERECE //
+////////////////////////////////////////
+
+	// Register a physical reference from this resource to another one path, doing this will allows the reference system to 
+	// detect filename changes and modifications, allowing it to update this resource to point to the new resources, this 
+	// method will return false if the current operation mode is different from the edit one or if this isn't a debug build.
+	// The user must provide the location where the target resource hash data is located INSIDE this resource data, the 
+	// location must indicates where this hash can be found when reading the resource file (doing a seek + this position).
+	bool RegisterPhysicalResourceReference(Hash _targetResourceHash, uint64_t _hashDataLocation);
+
+	// This method will clear all physical resource references for this current resource, the same rules above also apply to
+	// this method (return false if the operation mode isn't the edit one or this isn't a debug build)
+	bool ClearAllPhysicalResourceReferences();
+
+	// This method will verify all resource physical references this resource have, checking if they exist, it's possible to 
+	// pass a ReferenceFixer as argument that determine a behaviour to find any missing reference and fix it. For more info 
+	// take a look at the documentation, use this method with caution.
+	// The same rules above also apply to this method (return false if the operation mode isn't the edit one or this isn't 
+	// a debug build)
+	bool VerifyPhysicalResourceReferences(ReferenceFixer _fixer = ReferenceFixer::None, bool _allOrNothing = true);
 
 ////////////////////
 public: // STATUS //
@@ -220,6 +240,14 @@ public: // STATUS //
 	// Return if this object is persistent (if it won't be released when it's reference count reaches 0)
 	bool IsPersistent();
 
+/////////////////////////////////////
+protected: // INSTANCE REFERENCING //
+/////////////////////////////////////
+
+	// Make a instance reference this object / remove reference 
+	void MakeInstanceReference(PacketResourceInstance* _instance);
+	void RemoveInstanceReference(PacketResourceInstance* _instance);
+
 /////////////////////////
 protected: // INTERNAL //
 /////////////////////////
@@ -232,8 +260,8 @@ protected: // INTERNAL //
 	// Set the hash
 	void SetHash(Hash _hash);
 
-	// Set the factory reference
-	void SetFactoryReference(PacketResourceFactory* _factoryReference);
+	// Set the helper object pointers and the operation mode
+	void SetHelperObjects(PacketResourceFactory* _factoryReference, PacketReferenceManager* _referenceManager, PacketFileLoader* _fileLoader, OperationMode _operationMode);
 
 	// Set that this resource is pending replacement
 	void SetPedingReplacement();
@@ -272,9 +300,13 @@ private: //////
 	// The resource update condition flags
 	ResourceUpdateConditionFlags m_UpdateConditionFlags;
 
-	// A pointer to the resource factory and the packet system
+	// A pointer to the resource factory, the reference manager and the file loader
 	PacketResourceFactory* m_FactoryPtr;
-	PacketSystem* m_PacketSystemPtr;
+	PacketReferenceManager* m_ReferenceManagerPtr;
+	PacketFileLoader* m_FileLoaderPtr;
+
+	// The current operation mode for the packet system
+	OperationMode m_CurrentOperationMode;
 
 #ifndef NDEBUG
 

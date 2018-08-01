@@ -27,8 +27,9 @@ bool PacketSystem::Initialize(std::string _packetManifestDirectory, OperationMod
 	m_PacketFolderPath = _packetManifestDirectory;
 	m_OperationMode = _operationMode;
 
-	// Initialize the reference manager
-	m_ReferenceManager.Initialize(_packetManifestDirectory);
+	// Create and initialize the reference manager
+	m_ReferenceManager = std::make_unique<PacketReferenceManager>();
+	m_ReferenceManager->Initialize(_packetManifestDirectory);
 
 	// Create our file loader using the given operation mode
 	if (_operationMode == OperationMode::Edit)
@@ -50,7 +51,13 @@ bool PacketSystem::Initialize(std::string _packetManifestDirectory, OperationMod
 	m_ResourceWatcher = std::make_unique<PacketResourceWatcher>(_operationMode);
 
 	// Create the resource manager
-	m_ResourceManager = std::make_unique<PacketResourceManager>(m_ResourceStorage.get(), m_FileLoader.get(), m_ResourceWatcher.get(), 1, nullptr);
+	m_ResourceManager = std::make_unique<PacketResourceManager>(_operationMode, 
+		m_ResourceStorage.get(), 
+		m_FileLoader.get(), 
+		m_ReferenceManager.get(), 
+		m_ResourceWatcher.get(), 
+		1, 
+		nullptr);
 
 	return true;
 }
@@ -72,7 +79,7 @@ PacketReferenceManager* PacketSystem::GetReferenceManager()
 		return nullptr;
 	}
 
-	return &m_ReferenceManager;
+	return m_ReferenceManager.get();
 }
 
 void PacketSystem::Update()
