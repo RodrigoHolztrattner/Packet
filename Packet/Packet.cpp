@@ -46,6 +46,8 @@ class Texture : public PacketResource
 {
 public:
 
+protected:
+
 	bool OnLoad(PacketResourceData& _data) override
 	{
 		std::cout << (int)this << " - Resource -> OnLoad() - data size: " << _data.GetSize() << std::endl;
@@ -74,6 +76,13 @@ public:
 
 	}
 
+	Texture * GetTexture()
+	{
+		return static_cast<Texture*>(GetObjectPtr());
+	}
+
+protected:
+
 	void OnConstruct() override
 	{
 		std::cout << (int)this << " - Instance -> OnConstruct()" << std::endl;
@@ -88,6 +97,7 @@ public:
 	{
 		std::cout << (int)this << " - Instance -> OnReset()" << std::endl;
 	}
+
 };
 
 class TextureFactory : public PacketResourceFactory
@@ -176,8 +186,20 @@ int main()
 
 	PacketResourceInstancePtr<TextureInstance> textureInstancePtr;
 	TextureFactory textureFactory;
+	
 
 	packetSystem.RequestObject(textureInstancePtr, "Data\\texto.txt", &textureFactory);
+
+	while (textureInstancePtr && !textureInstancePtr->IsReady())
+	{
+		packetSystem.Update();
+	}
+
+	PacketResourceReferencePtr<Texture> textureReference = textureInstancePtr->GetResourceReference<Texture>();
+
+	char tempData[] = "olar! isso aqui é um teste!";
+	textureReference->UpdateResourcePhysicalData((uint8_t*)tempData, strlen(tempData));
+
 	while (true)
 	{
 		packetSystem.Update();
@@ -190,6 +212,10 @@ int main()
 
 			// textureInstancePtr.Reset();
 
+		}
+		else
+		{
+			textureReference.~PacketResourceReferencePtr();
 		}
 	}
 

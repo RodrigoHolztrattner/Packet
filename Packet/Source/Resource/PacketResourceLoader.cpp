@@ -3,16 +3,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketResourceLoader.h"
 #include "PacketResourceFactory.h"
+#include "..\PacketReferenceManager.h"
+
 #include <cassert>
 #include <chrono>
 
 // Using namespace Peasant
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketResourceLoader::PacketResourceLoader(PacketFileLoader* _fileLoaderPtr)
+PacketResourceLoader::PacketResourceLoader(PacketFileLoader* _fileLoaderPtr, PacketReferenceManager* _referenceManager, OperationMode _operationMode)
 {
-	// Save the file loader ptr
+	// Save the pointers and the operation mode
 	m_FileLoaderPtr = _fileLoaderPtr;
+	m_ReferenceManagerPtr = _referenceManager;
+	m_OperationMode = _operationMode;
 
 	// Create the auxiliar thread
 	m_AuxiliarThread = std::thread(&PacketResourceLoader::LoadObjectAuxiliar, this);
@@ -58,6 +62,18 @@ void PacketResourceLoader::LoadObjectAuxiliar()
 
 		// Check if the resource exist
 		assert(m_FileLoaderPtr->FileExist(loadData.hash));
+
+		// Check the operation mode to know if we should validate this resource references
+		if (m_OperationMode == OperationMode::Edit)
+		{
+			// Validate this resource file references (if they exist), also try to fix them if they are invalid
+			bool validationResult = m_ReferenceManagerPtr->ValidateFileReferences(loadData.hash.GetPath().String(), ReferenceFixer::AtLeastNameAndExtension);
+			if (!validationResult)
+			{
+				// Error validating this resource references, we will continue but keep in mind that this resource needs to update it references hashes
+				// TODO: Log warning!
+			}
+		}
 
 		// Get the resource size
 		auto resourceSize = m_FileLoaderPtr->GetFileSize(loadData.hash);

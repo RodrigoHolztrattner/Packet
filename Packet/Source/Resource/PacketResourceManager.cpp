@@ -19,7 +19,7 @@ PacketResourceManager::PacketResourceManager(OperationMode _operationMode,
 	m_ResourceStoragePtr(_storagePtr),
 	m_FileLoaderPtr(_fileLoaderPtr), 
 	m_ReferenceManagerPtr(_referenceManager), 
-	m_ResourceLoader(_fileLoaderPtr), 
+	m_ResourceLoader(_fileLoaderPtr, _referenceManager, _operationMode),
 	m_ResourceWatcherPtr(_resourceWatcherPtr)
 {
 	// If we have at last one worker thread
@@ -104,7 +104,7 @@ void PacketResourceManager::Update()
 	m_InstanceReleases.ProcessAll([&](ObjectRelease& _releaseRequest)
 	{
 		// Check if this instance is ready to be used (it's possible that it is still being created/loaded and 
-		// its delleting was called, we need to wait until it is ready to be used so we can safelly delete it
+		// its deletion was requested, we need to wait until it is ready to be used so we can safelly delete it
 		if (!_releaseRequest.instance->IsReady())
 		{
 			// Ignore this instance until it's ready to be used
@@ -147,6 +147,9 @@ void PacketResourceManager::Update()
 		{
 			// Remove this resource watch (not enabled on release and non-edit builds)
 			m_ResourceWatcherPtr->RemoveWatch(deletionRequest.resource.get());
+
+			// Set pending deletion for this resource
+			deletionRequest.resource->SetPendingDeletion();
 
 			// Add this object into the deletion queue, takes ownership
 			m_ResourceDeleter.DeleteObject(deletionRequest.resource, deletionRequest.resource->GetFactoryPtr(), deletionRequest.deleteSync);
@@ -271,6 +274,21 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
 	// implementation of the file notification system by the current operation system, to prevent this we need to check 3 
 	// locations so we can be sure we won't be updating a resource when it is already being updated, those locations are: 
 	// ReplaceQueue, DeletionQueue and if the current resource status inside the ResourceStorage is ready.
+
+	// Check if this resource ignore physical data changes
+	if (_resource->IgnorePhysicalDataChanges())
+	{
+		return;
+	}
+
+	// Check if this resource is pending deletion
+	if (!_resource->IsPendingDeletion())
+	{
+		// We can't proceed with this resource on its current status
+		std::cout << "Found file modification event on file: \"" << _resource->GetHash().GetPath().String() << "\", but the resource is pending deletion, ignoring this!" << std::endl;
+
+		return;
+	}
 
 	// Check if we already have this resource inside the replace queue (this shouldn't be slow because 
 	// we aren't supposed to have multiple resources here)

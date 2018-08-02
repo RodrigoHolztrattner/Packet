@@ -188,6 +188,16 @@ public: //////////
 		return m_ReferenceObject != nullptr && m_ReferenceObject->IsReady() && AreDependenciesFulfilled() && !m_IsLocked;
 	}
 
+	// Create a temporary reference
+	template <typename ResourceClass>
+	PacketResourceReferencePtr<ResourceClass> GetResourceReference()
+	{
+		// Increment the total number of temporary references
+		m_ReferenceObject->MakeTemporaryReference();
+
+		return PacketResourceReferencePtr<ResourceClass>(static_cast<ResourceClass*>(m_ReferenceObject));
+	}
+
 ///////////////////////
 protected: // STATUS //
 ///////////////////////

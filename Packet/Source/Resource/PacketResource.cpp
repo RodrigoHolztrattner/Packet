@@ -7,6 +7,7 @@
 #include "..\PacketReferenceManager.h"
 
 #include <cassert>
+#include <fstream>
 
 // Using namespace Peasant
 PacketUsingDevelopmentNamespace(Packet)
@@ -105,11 +106,12 @@ void PacketResourceData::DeallocateMemory()
 PacketResource::PacketResource()
 {
 	// Set the initial data
-	m_UpdateConditionFlags = 0;
+	m_IgnorePhysicalDataChanges = false;
 	m_DataValid = false;
 	m_WasSynchronized = false;
 	m_IsPersistent = false;
 	m_IsPendingReplacement = false;
+	m_IsPendingDeletion = false;
 	m_TotalDirectReferences = 0;
 	m_TotalIndirectReferences = 0;
 }
@@ -195,6 +197,11 @@ bool PacketResource::IsPendingReplacement()
 	return m_IsPendingReplacement;
 }
 
+bool PacketResource::IsPendingDeletion()
+{
+	return m_IsPendingDeletion;
+}
+
 bool PacketResource::IsReferenced()
 {
 	return m_TotalDirectReferences > 0 || m_TotalIndirectReferences > 0;
@@ -238,6 +245,11 @@ void PacketResource::SetPedingReplacement()
 	m_IsPendingReplacement = true;
 }
 
+void PacketResource::SetPendingDeletion()
+{
+	m_IsPendingDeletion = true;
+}
+
 void PacketResource::RedirectInstancesToResource(PacketResource* _newResource)
 {
 #ifndef NDEBUG
@@ -277,6 +289,11 @@ bool PacketResource::AreInstancesReadyToBeUsed()
 	}
 
 	return true;
+}
+
+bool PacketResource::IgnorePhysicalDataChanges()
+{
+	return m_IgnorePhysicalDataChanges;
 }
 
 void PacketResource::MakeInstanceReference(PacketResourceInstance* _instance)
@@ -323,6 +340,16 @@ void PacketResource::RemoveInstanceReference(PacketResourceInstance* _instance)
 #endif
 }
 
+void PacketResource::MakeTemporaryReference()
+{
+	m_TotalIndirectReferences++;
+}
+
+void PacketResource::RemoveTemporaryReference()
+{
+	m_TotalIndirectReferences--;
+}
+
 uint32_t PacketResource::GetDataSize()
 {
 	return uint32_t(m_Data.GetSize());
@@ -351,6 +378,64 @@ PacketResourceFactory* PacketResource::GetFactoryPtr()
 PacketResourceData& PacketResource::GetDataRef()
 {
 	return m_Data;
+}
+
+void PacketResource::IgnoreResourcePhysicalDataChanges()
+{
+	m_IgnorePhysicalDataChanges = true;
+}
+
+bool PacketResource::UpdateResourcePhysicalData(uint8_t* _data, uint64_t _dataSize)
+{
+	// Check the current operation mode
+	if (m_CurrentOperationMode != OperationMode::Edit)
+	{
+		std::cout << "Trying to call the method UpdateResourcePhysicalData() but the operation mode is different from the Edit mode!" << std::endl;
+
+		return false;
+	}
+
+
+#ifndef NDEBUG
+
+	// Check the size to proceed
+	if (_dataSize == 0)
+	{
+		return false;
+	}
+
+	// It's a little ugly to write directly to a file here but I think there is no reason to create another 
+	// class just to write to a file, so I'm going with the directly write option
+	{
+		// Open the file
+		std::ofstream file(m_Hash.GetPath().String(), std::ios::out);
+		if (!file)
+		{
+			return false;
+		}
+
+		// Write the data into the file
+		file.write((char*)_data, _dataSize);
+		if (!file)
+		{
+			return false;
+		}
+
+		// Close the file
+		file.close();
+	}
+
+	return true;
+
+#endif
+
+	std::cout << "Trying to call the method UpdateResourcePhysicalData() but the current build isn't a debug one!" << std::endl;
+	return false;
+}
+
+bool PacketResource::UpdateResourcePhysicalData(PacketResourceData& _data)
+{
+	return UpdateResourcePhysicalData(_data.GetData(), _data.GetSize());
 }
 
 bool PacketResource::RegisterPhysicalResourceReference(Hash _targetResourceHash, uint64_t _hashDataLocation)

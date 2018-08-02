@@ -50,6 +50,9 @@ class PacketResourceFactory;
 class PacketResourceWatcher;
 class PacketReferenceManager;
 
+template <typename ResourceClass>
+class PacketResourceReferencePtr;
+
 /*
 	=> Novos métodos:
 
@@ -131,6 +134,10 @@ public:
 	friend PacketResourceLoader;
 	friend PacketResourceDeleter;
 	friend PacketResourceWatcher;
+	friend PacketResourceInstance;
+
+	template <typename ResourceClass>
+	friend class PacketResourceReferencePtr;
 
 //////////////////
 // CONSTRUCTORS //
@@ -182,22 +189,17 @@ public: //////////
 public: // PHYSICAL DATA UPDATE //
 //////////////////////////////////
 
-	enum ResourceUpdateConditionBits
-	{
-		ResourceUpdateOnRelease = 1 << 0
-
-	};
-	typedef uint32_t ResourceUpdateConditionFlags;
-
-	// TODO: 
-	void RegisterUpdateCondition(ResourceUpdateConditionFlags _updateFlags);
+	// This method will set this resource to ignore physical changes on its data, if the resource file happens to be 
+	// modified or any call to UpdateResourcePhysicalData() method won't be resulting in the destruction of this 
+	// resource and in a creation of a new one, this method will only works when on edit mode for the packet system 
+	void IgnoreResourcePhysicalDataChanges();
 
 	// Update this resource physical data, overwritting it. This method will only works if the packet system is operating on 
-	// edit mode, by default calling this method will result in a future deletion of this resource object and in a future 
-	// creation of a new resource object with the updated data, if the user needs to update the data at runtime multiple times
-	// is recomended to batch multiple "data updates" and call this method once in a while (only call this method when there is 
+	// edit mode, by default calling this method will result in a future deletion of this resource object and in a creation
+	// of a new resource object with the updated data, if the user needs to update the data at runtime multiple times is 
+	// recomended to batch multiple "data updates" and call this method once in a while (only call this method when there is 
 	// a real need to actually save the data)
-	bool UpdateResourcePhysicalData(uint8_t* _data, uint32_t _dataSize);
+	bool UpdateResourcePhysicalData(uint8_t* _data, uint64_t _dataSize);
 	bool UpdateResourcePhysicalData(PacketResourceData& _data);
 
 ////////////////////////////////////////
@@ -232,6 +234,9 @@ public: // STATUS //
 	// Return if this object is pending replacement
 	bool IsPendingReplacement();
 
+	// Return if this object is pending deletion
+	bool IsPendingDeletion();
+
 	// Return if this object is referenced
 	bool IsReferenced();
 	bool IsDirectlyReferenced();
@@ -247,6 +252,10 @@ protected: // INSTANCE REFERENCING //
 	// Make a instance reference this object / remove reference 
 	void MakeInstanceReference(PacketResourceInstance* _instance);
 	void RemoveInstanceReference(PacketResourceInstance* _instance);
+
+	// Make/remove a temporary reference
+	void MakeTemporaryReference();
+	void RemoveTemporaryReference();
 
 /////////////////////////
 protected: // INTERNAL //
@@ -266,6 +275,9 @@ protected: // INTERNAL //
 	// Set that this resource is pending replacement
 	void SetPedingReplacement();
 
+	// Set that this resource is pending deletion
+	void SetPendingDeletion();
+
 	// Make all instances that depends on this resource to point to another resource, decrementing the total 
 	// number of references to zero, this method must be called when inside the update phase on the resource 
 	// manager so no race conditions will happen. This method will only do something when on debug builds
@@ -275,6 +287,9 @@ protected: // INTERNAL //
 	// to be used, this method only works on debug builds and it's not intended to be used on release builds, 
 	// also this method must be called when inside the update method on the PacketResourceManager class
 	bool AreInstancesReadyToBeUsed();
+
+	// Return if this resource ignore physical data changes
+	bool IgnorePhysicalDataChanges();
 
 	// Return the data reference
 	PacketResourceData& GetDataRef();
@@ -288,6 +303,8 @@ private: //////
 	bool m_WasSynchronized;
 	bool m_IsPersistent;
 	bool m_IsPendingReplacement;
+	bool m_IgnorePhysicalDataChanges;
+	bool m_IsPendingDeletion;
 
 	// The total number of direct and indirect references
 	std::atomic<uint32_t> m_TotalDirectReferences;
@@ -296,9 +313,6 @@ private: //////
 	// The resource data and hash
 	PacketResourceData m_Data;
 	Hash m_Hash;
-
-	// The resource update condition flags
-	ResourceUpdateConditionFlags m_UpdateConditionFlags;
 
 	// A pointer to the resource factory, the reference manager and the file loader
 	PacketResourceFactory* m_FactoryPtr;
@@ -318,6 +332,66 @@ private: //////
 	std::mutex m_InstanceVectorMutex;
 
 #endif
+};
+
+// The temporary resource reference type
+template <typename ResourceClass>
+class PacketResourceReferencePtr
+{
+	// Friend classes
+	friend PacketResource;
+	friend PacketResourceInstance;
+
+protected:
+
+	// Constructor used by the resource class
+	PacketResourceReferencePtr(ResourceClass* _resource) : m_ResourceObject(_resource) {}
+
+public:
+
+	// Default constructor
+	PacketResourceReferencePtr() : m_ResourceObject(nullptr) {}
+
+	// Copy constructor disabled
+	PacketResourceReferencePtr(const PacketResourceReferencePtr&) = delete;
+
+	// Move operator
+	PacketResourceReferencePtr& operator=(PacketResourceReferencePtr&& _other)
+	{
+		// Set the pointer
+		m_ResourceObject = _other.m_ResourceObject;
+		_other.m_ResourceObject = nullptr;
+	}
+
+	// Our move copy operator (same as above)
+	PacketResourceReferencePtr(PacketResourceReferencePtr&& _other)
+	{
+		// Set the pointer
+		m_ResourceObject = _other.m_ResourceObject;
+		_other.m_ResourceObject = nullptr;
+	}
+
+	// Operator to use this as a pointer to the resource object
+	ResourceClass* operator->() const
+	{
+		return m_ResourceObject;
+	}
+
+	// Destructor
+	~PacketResourceReferencePtr()
+	{
+		// If the resource object is valid
+		if (m_ResourceObject != nullptr)
+		{
+			m_ResourceObject->RemoveTemporaryReference();
+			m_ResourceObject = nullptr;
+		}
+	}
+
+private:
+
+	// The resource object
+	ResourceClass* m_ResourceObject = nullptr;
 };
 
 // Packet

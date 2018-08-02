@@ -40,6 +40,9 @@ PacketDevelopmentNamespaceBegin(Packet)
 // FORWARDING //
 ////////////////
 
+// Classes we know
+class PacketReferenceManager;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketResourceLoader
 ////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +64,7 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketResourceLoader(PacketFileLoader* _fileLoaderPtr);
+	PacketResourceLoader(PacketFileLoader* _fileLoaderPtr, PacketReferenceManager* _referenceManager, OperationMode _operationMode);
 	~PacketResourceLoader();
 
 //////////////////
@@ -92,8 +95,11 @@ private: //////
 	// The object synchronization queue (callable only if the object was loaded)
 	moodycamel::ReaderWriterQueue<PacketResource*> m_SynchronizationQueue;
 
-	// The packet file loader ptr
+	// The packet file loader ptr, the reference manager ptr and the current operation mode
 	PacketFileLoader* m_FileLoaderPtr;
+	PacketReferenceManager* m_ReferenceManagerPtr;
+	OperationMode m_OperationMode;
+
 };
 
 // Packet
