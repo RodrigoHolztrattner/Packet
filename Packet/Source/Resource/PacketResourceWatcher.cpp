@@ -92,7 +92,7 @@ bool PacketResourceWatcher::WatchResource(PacketResource* _resource)
 		watchedDir.watchID = m_ResourceFileWatcher.addWatch(path.parent_path().string(), &m_ResourceWatcherListener);
 
 		// Insert it
-		m_WatchedDirectories.insert(std::make_pair(pathHash, watchedDir));
+		m_WatchedDirectories.insert({ pathHash, watchedDir });
 
 		// Update the iterator
 		iter = m_WatchedDirectories.find(pathHash);
@@ -102,7 +102,7 @@ bool PacketResourceWatcher::WatchResource(PacketResource* _resource)
 	auto filename = path.filename();
 
 	// Insert the resource into the watched resources
-	iter->second.watchedResources.insert(std::make_pair(Hash(filename.string()).GetHashValue(), _resource));
+	iter->second.watchedResources.insert({ Hash(filename.string()).GetHashValue(), _resource });
 	
 	return true;
 }

@@ -175,7 +175,7 @@ void PacketCondensedModeFileLoader::ProcessPacketData()
 			mappedFileInfo.readerIndex = uint16_t(m_FileReaders.size());
 
 			// Insert it
-			m_MappedInternalFileInfos.insert(std::make_pair(internalFileInfo.hash.GetHashValue(), mappedFileInfo));
+			m_MappedInternalFileInfos.insert({ internalFileInfo.hash.GetHashValue(), mappedFileInfo });
 		}
 
 		// Insert the file reader into our vector

@@ -52,7 +52,7 @@ void PacketScanner::Scan(std::string _packetDirectory)
 					_currentNode->files.push_back(relativePath);
 
 					// Insert into the file map
-					m_Files.insert(std::make_pair(relativePath, relativePath));
+					m_Files.insert({ relativePath, relativePath });
 				}
 			}
 			// Folder
@@ -66,7 +66,7 @@ void PacketScanner::Scan(std::string _packetDirectory)
 				_currentNode->children.push_back(folderNode);
 
 				// Insert into the folder map
-				m_Folders.insert(std::make_pair(relativePath, relativePath));
+				m_Folders.insert({ relativePath, relativePath });
 			}
 		}
 
@@ -107,7 +107,7 @@ std::vector<std::string> PacketScanner::CheckForHashCollisions()
 		else
 		{
 			// Insert the new key
-			fileMaps.insert(std::make_pair(fileHash, file.second));
+			fileMaps.insert({ fileHash, file.second });
 		}
 	}
 
@@ -141,7 +141,7 @@ std::vector<std::pair<std::string, std::vector<std::pair<Hash, std::string>>>> P
 			Hash fileHash = Hash(file);
 
 			// Insert it on our output vector
-			fileVector.push_back(std::make_pair(fileHash, file));
+			fileVector.push_back({ fileHash, file });
 		}
 
 		// Insert the folder pair into the output vector

@@ -282,7 +282,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
 	}
 
 	// Check if this resource is pending deletion
-	if (!_resource->IsPendingDeletion())
+	if (_resource->IsPendingDeletion())
 	{
 		// We can't proceed with this resource on its current status
 		std::cout << "Found file modification event on file: \"" << _resource->GetHash().GetPath().String() << "\", but the resource is pending deletion, ignoring this!" << std::endl;
