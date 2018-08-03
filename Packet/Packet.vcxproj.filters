@@ -1,146 +1,116 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Packet.cpp" />
-    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcher.cpp">
-      <Filter>FileWatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherLinux.cpp">
-      <Filter>FileWatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherOSX.cpp">
-      <Filter>FileWatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherWin32.cpp">
-      <Filter>FileWatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PacketCondensedModeFileLoader.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PacketCondenser.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PacketEditModeFileLoader.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PacketReferenceManager.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PacketScanner.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PacketSystem.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Resource\PacketResource.cpp">
-      <Filter>Source\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Resource\PacketResourceDeleter.cpp">
-      <Filter>Source\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Resource\PacketResourceFactory.cpp">
-      <Filter>Source\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Resource\PacketResourceHolder.cpp">
-      <Filter>Source\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Resource\PacketResourceInstance.cpp">
-      <Filter>Source\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Resource\PacketResourceLoader.cpp">
-      <Filter>Source\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Resource\PacketResourceManager.cpp">
-      <Filter>Source\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Resource\PacketResourceStorage.cpp">
-      <Filter>Source\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Resource\PacketResourceWatcher.cpp">
-      <Filter>Source\Resource</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Packet.h" />
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcher.h">
-      <Filter>FileWatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherImpl.h">
-      <Filter>FileWatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherLinux.h">
-      <Filter>FileWatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherOSX.h">
-      <Filter>FileWatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherWin32.h">
-      <Filter>FileWatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\PacketCondensedModeFileLoader.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\PacketCondenser.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\PacketConfig.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\PacketEditModeFileLoader.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\PacketReferenceManager.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\PacketScanner.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketMultipleQueue.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketResource.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketResourceDeleter.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketResourceFactory.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketResourceHolder.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketResourceInstance.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketResourceLoader.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketResourceManager.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketResourceStorage.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\PacketSystem.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Resource\PacketResourceWatcher.h">
-      <Filter>Source\Resource</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="FileWatcher">
       <UniqueIdentifier>{3fedb0bc-172c-4db6-b6fd-4b85a6ee669f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source">
-      <UniqueIdentifier>{1ce112e8-9dee-413d-a98d-07309bb2ff54}</UniqueIdentifier>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{d687d5e6-5ad5-4127-ae53-47a6e3dcc2c6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Resource">
-      <UniqueIdentifier>{ab0c86e8-2355-44ac-85e0-64b87f1590ce}</UniqueIdentifier>
-    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PacketCondensedModeFileLoader.cpp" />
+    <ClCompile Include="PacketCondenser.cpp" />
+    <ClCompile Include="PacketEditModeFileLoader.cpp" />
+    <ClCompile Include="PacketReferenceManager.cpp" />
+    <ClCompile Include="PacketScanner.cpp" />
+    <ClCompile Include="PacketSystem.cpp" />
+    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher.cpp">
+      <Filter>FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\FileWatcher\FileWatcherLinux.cpp">
+      <Filter>FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\FileWatcher\FileWatcherOSX.cpp">
+      <Filter>FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\FileWatcher\FileWatcherWin32.cpp">
+      <Filter>FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PacketResource.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PacketResourceDeleter.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PacketResourceFactory.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PacketResourceHolder.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PacketResourceInstance.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PacketResourceLoader.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PacketResourceManager.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PacketResourceStorage.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PacketResourceWatcher.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Packet.h" />
+    <ClInclude Include="PacketCondensedModeFileLoader.h" />
+    <ClInclude Include="PacketCondenser.h" />
+    <ClInclude Include="PacketConfig.h" />
+    <ClInclude Include="PacketEditModeFileLoader.h" />
+    <ClInclude Include="PacketReferenceManager.h" />
+    <ClInclude Include="PacketScanner.h" />
+    <ClInclude Include="PacketSystem.h" />
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher.h">
+      <Filter>FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcherImpl.h">
+      <Filter>FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcherLinux.h">
+      <Filter>FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcherOSX.h">
+      <Filter>FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcherWin32.h">
+      <Filter>FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketMultipleQueue.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketResource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketResourceDeleter.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketResourceFactory.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketResourceHolder.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketResourceInstance.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketResourceLoader.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketResourceManager.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketResourceStorage.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PacketResourceWatcher.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

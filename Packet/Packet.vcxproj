@@ -26,13 +26,13 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -89,7 +89,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\json\single_include;$(ProjectDir)\ThirdParty\cereal\include;$(ProjectDir)\ThirdParty\FileWatcher;$(ProjectDir)\Source;$(ProjectDir)\ThirdParty\readerwriterqueue</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
@@ -124,7 +124,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\json\single_include;$(ProjectDir)\ThirdParty\cereal\include;$(ProjectDir)\ThirdParty\FileWatcher;$(ProjectDir)\Source;$(ProjectDir)\ThirdParty\readerwriterqueue</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
     </ClCompile>
@@ -154,54 +154,53 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Packet.cpp" />
-    <ClCompile Include="Source\PacketCondensedModeFileLoader.cpp" />
-    <ClCompile Include="Source\PacketCondenser.cpp" />
-    <ClCompile Include="Source\PacketEditModeFileLoader.cpp" />
-    <ClCompile Include="Source\PacketReferenceManager.cpp" />
-    <ClCompile Include="Source\PacketScanner.cpp" />
-    <ClCompile Include="Source\PacketSystem.cpp" />
-    <ClCompile Include="Source\Resource\PacketResource.cpp" />
-    <ClCompile Include="Source\Resource\PacketResourceDeleter.cpp" />
-    <ClCompile Include="Source\Resource\PacketResourceFactory.cpp" />
-    <ClCompile Include="Source\Resource\PacketResourceHolder.cpp" />
-    <ClCompile Include="Source\Resource\PacketResourceInstance.cpp" />
-    <ClCompile Include="Source\Resource\PacketResourceLoader.cpp" />
-    <ClCompile Include="Source\Resource\PacketResourceManager.cpp" />
-    <ClCompile Include="Source\Resource\PacketResourceStorage.cpp" />
-    <ClCompile Include="Source\Resource\PacketResourceWatcher.cpp" />
-    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcher.cpp" />
-    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherLinux.cpp" />
-    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherOSX.cpp" />
-    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherWin32.cpp" />
+    <None Include="..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PacketCondensedModeFileLoader.cpp" />
+    <ClCompile Include="PacketCondenser.cpp" />
+    <ClCompile Include="PacketEditModeFileLoader.cpp" />
+    <ClCompile Include="PacketReferenceManager.cpp" />
+    <ClCompile Include="PacketScanner.cpp" />
+    <ClCompile Include="PacketSystem.cpp" />
+    <ClCompile Include="Resource\PacketResource.cpp" />
+    <ClCompile Include="Resource\PacketResourceDeleter.cpp" />
+    <ClCompile Include="Resource\PacketResourceFactory.cpp" />
+    <ClCompile Include="Resource\PacketResourceHolder.cpp" />
+    <ClCompile Include="Resource\PacketResourceInstance.cpp" />
+    <ClCompile Include="Resource\PacketResourceLoader.cpp" />
+    <ClCompile Include="Resource\PacketResourceManager.cpp" />
+    <ClCompile Include="Resource\PacketResourceStorage.cpp" />
+    <ClCompile Include="Resource\PacketResourceWatcher.cpp" />
+    <ClCompile Include="ThirdParty\FileWatcher\FileWatcher.cpp" />
+    <ClCompile Include="ThirdParty\FileWatcher\FileWatcherLinux.cpp" />
+    <ClCompile Include="ThirdParty\FileWatcher\FileWatcherOSX.cpp" />
+    <ClCompile Include="ThirdParty\FileWatcher\FileWatcherWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Packet.h" />
-    <ClInclude Include="Source\PacketCondensedModeFileLoader.h" />
-    <ClInclude Include="Source\PacketCondenser.h" />
-    <ClInclude Include="Source\PacketConfig.h" />
-    <ClInclude Include="Source\PacketEditModeFileLoader.h" />
-    <ClInclude Include="Source\PacketReferenceManager.h" />
-    <ClInclude Include="Source\PacketScanner.h" />
-    <ClInclude Include="Source\PacketSystem.h" />
-    <ClInclude Include="Source\Resource\PacketMultipleQueue.h" />
-    <ClInclude Include="Source\Resource\PacketResource.h" />
-    <ClInclude Include="Source\Resource\PacketResourceDeleter.h" />
-    <ClInclude Include="Source\Resource\PacketResourceFactory.h" />
-    <ClInclude Include="Source\Resource\PacketResourceHolder.h" />
-    <ClInclude Include="Source\Resource\PacketResourceInstance.h" />
-    <ClInclude Include="Source\Resource\PacketResourceLoader.h" />
-    <ClInclude Include="Source\Resource\PacketResourceManager.h" />
-    <ClInclude Include="Source\Resource\PacketResourceStorage.h" />
-    <ClInclude Include="Source\Resource\PacketResourceWatcher.h" />
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcher.h" />
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherImpl.h" />
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherLinux.h" />
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherOSX.h" />
-    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher\FileWatcherWin32.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\README.md" />
+    <ClInclude Include="PacketCondensedModeFileLoader.h" />
+    <ClInclude Include="PacketCondenser.h" />
+    <ClInclude Include="PacketConfig.h" />
+    <ClInclude Include="PacketEditModeFileLoader.h" />
+    <ClInclude Include="PacketReferenceManager.h" />
+    <ClInclude Include="PacketScanner.h" />
+    <ClInclude Include="PacketSystem.h" />
+    <ClInclude Include="Resource\PacketMultipleQueue.h" />
+    <ClInclude Include="Resource\PacketResource.h" />
+    <ClInclude Include="Resource\PacketResourceDeleter.h" />
+    <ClInclude Include="Resource\PacketResourceFactory.h" />
+    <ClInclude Include="Resource\PacketResourceHolder.h" />
+    <ClInclude Include="Resource\PacketResourceInstance.h" />
+    <ClInclude Include="Resource\PacketResourceLoader.h" />
+    <ClInclude Include="Resource\PacketResourceManager.h" />
+    <ClInclude Include="Resource\PacketResourceStorage.h" />
+    <ClInclude Include="Resource\PacketResourceWatcher.h" />
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcher.h" />
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcherImpl.h" />
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcherLinux.h" />
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcherOSX.h" />
+    <ClInclude Include="ThirdParty\FileWatcher\FileWatcherWin32.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
