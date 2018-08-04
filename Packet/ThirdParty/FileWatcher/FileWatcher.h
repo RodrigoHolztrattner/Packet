@@ -35,7 +35,7 @@
 #include <string>
 #include <stdexcept>
 
-namespace FW
+namespace FWPacket
 {
 	/// Type for a string
 	typedef std::string String;
@@ -138,6 +138,6 @@ namespace FW
 
 	};//class FileWatchListener
 
-};//namespace FW
+};//namespace FWPacket
 
 #endif//_FW_FILEWATCHER_H_

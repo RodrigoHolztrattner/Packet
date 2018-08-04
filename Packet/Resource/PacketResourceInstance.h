@@ -101,6 +101,12 @@ struct PacketResourceInstancePtr
 		return static_cast<InstanceClass*>(m_ResourceInstance.get());
 	}
 
+	// Instance class operator
+	operator InstanceClass&()
+	{
+		return *static_cast<InstanceClass*>(m_ResourceInstance.get());
+	}
+
 	// Bool operator so we can use it on boolean expressions directly
 	operator bool() const
 	{

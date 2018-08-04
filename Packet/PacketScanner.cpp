@@ -163,10 +163,10 @@ std::vector<std::pair<std::string, std::vector<std::pair<Hash, std::string>>>> P
 
 uint32_t PacketScanner::GetTotalFolderNumber()
 {
-	return m_Folders.size();
+	return uint32_t(m_Folders.size());
 }
 
 uint32_t PacketScanner::GetTotalFileNumber()
 {
-	return m_Files.size();
+	return uint32_t(m_Files.size());
 }

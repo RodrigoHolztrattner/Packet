@@ -42,7 +42,7 @@
 #	define FILEWATCHER_PLATFORM FILEWATCHER_PLATFORM_LINUX
 #endif
 
-namespace FW
+namespace FWPacket
 {
 	struct WatchStruct;
 
@@ -74,6 +74,6 @@ namespace FW
 		virtual void handleAction(WatchStruct* watch, const String& filename, unsigned long action) = 0;
 
 	};//end FileWatcherImpl
-};//namespace FW
+};//namespace FWPacket
 
 #endif//_FW_FILEWATCHERIMPL_H_

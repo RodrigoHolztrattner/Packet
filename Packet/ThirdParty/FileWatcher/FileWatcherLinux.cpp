@@ -35,7 +35,7 @@
 
 #define BUFF_SIZE ((sizeof(struct inotify_event)+FILENAME_MAX)*1024)
 
-namespace FW
+namespace FWPacket
 {
 
 	struct WatchStruct
@@ -180,6 +180,6 @@ namespace FW
 		}
 	}
 
-};//namespace FW
+};//namespace FWPacket
 
 #endif//FILEWATCHER_PLATFORM_LINUX

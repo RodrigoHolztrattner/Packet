@@ -35,7 +35,7 @@
 #include <map>
 #include <sys/types.h>
 
-namespace FW
+namespace FWPacket
 {
 	/// Implementation for OSX based on kqueue.
 	/// @class FileWatcherOSX
@@ -82,7 +82,7 @@ namespace FW
 
 	};//end FileWatcherOSX
 
-};//namespace FW
+};//namespace FWPacket
 
 #endif//__APPLE_CC__
 

@@ -109,7 +109,7 @@ bool PacketEditModeFileLoader::ConstructPacket()
 	for (auto& folderInfo : fileTree)
 	{
 		// Process this folder info
-		auto condensedFiles = m_PacketCondenser.CondenseFolder(m_PacketFolderPath, condensedFileInfos.size(), folderInfo.second);
+		auto condensedFiles = m_PacketCondenser.CondenseFolder(m_PacketFolderPath, uint32_t(condensedFileInfos.size()), folderInfo.second);
 
 		// Merge the vectors
 		condensedFileInfos.insert(condensedFileInfos.end(), condensedFiles.begin(), condensedFiles.end());
@@ -137,7 +137,7 @@ bool PacketEditModeFileLoader::ConstructPacket()
 
 		// Setup the condensed header info
 		CondensedHeaderInfo condensedHeader;
-		condensedHeader.totalInfos = condensedFileInfos.size();
+		condensedHeader.totalInfos = uint32_t(condensedFileInfos.size());
 		condensedHeader.saveTime = uint64_t(std::chrono::system_clock::now().time_since_epoch().count());
 		condensedHeader.majorVersion = CondensedMajorVersion;
 		condensedHeader.minorVersion = CondensedMinorVersion;

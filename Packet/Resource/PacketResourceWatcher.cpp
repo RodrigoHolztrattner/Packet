@@ -29,7 +29,7 @@ PacketResourceWatcher::~PacketResourceWatcher()
 {
 }
 
-void PacketResourceWatcher::HandleFileAction(FW::WatchID _watchid, const FW::String& _dir, const FW::String& _filename, FW::Action _action)
+void PacketResourceWatcher::HandleFileAction(FWPacket::WatchID _watchid, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action)
 {
 	// Check if we have a watch on this directory
 	auto iter = m_WatchedDirectories.find(Hash(_dir).GetHashValue());
@@ -51,11 +51,11 @@ void PacketResourceWatcher::HandleFileAction(FW::WatchID _watchid, const FW::Str
 	// Check what action happened
 	switch (_action)
 	{
-	case FW::Actions::Add:
+	case FWPacket::Actions::Add:
 		break;
-	case FW::Actions::Delete:
+	case FWPacket::Actions::Delete:
 		break;
-	case FW::Actions::Modified:
+	case FWPacket::Actions::Modified:
 
 		// Call the callback method
 		m_ResourceDataChangedCallback(resource);

@@ -144,7 +144,7 @@ void PacketResourceManager::Update()
 	}, false);
 
 	// For each resource on our deletion queue (do it backwards to easy deletion)
-	for (int i = m_DeletionQueue.size() - 1; i >= 0; i--)
+	for (int i = int(m_DeletionQueue.size()) - 1; i >= 0; i--)
 	{
 		// Get the deletion request
 		auto& deletionRequest = m_DeletionQueue[i];
@@ -168,7 +168,7 @@ void PacketResourceManager::Update()
 	}
 
 	// Process all construct objects (do it backwards to easy deletion)
-	for (int i = m_ConstructQueue.size() - 1; i >= 0; i--)
+	for (int i = int(m_ConstructQueue.size()) - 1; i >= 0; i--)
 	{
 		// Get the instance
 		PacketResourceInstance* instance = m_ConstructQueue[i];
@@ -189,7 +189,7 @@ void PacketResourceManager::Update()
 
 	// For each resource on the replacement queue (there should be none here when not on debug builds)
 	// (do it backwards to easy deletion)
-	for (int i = m_ReplaceQueue.size() - 1; i >= 0; i--)
+	for (int i = int(m_ReplaceQueue.size()) - 1; i >= 0; i--)
 	{
 		// Get the resource
 		PacketResource* resource = m_ReplaceQueue[i];

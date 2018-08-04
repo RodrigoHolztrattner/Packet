@@ -157,7 +157,7 @@ public: //////////
 	template<typename FactoryClass>
 	FactoryClass* GetFactoryPtr()
 	{
-		return reinterpret_cast<FactoryClass*>(m_Factory);
+		return reinterpret_cast<FactoryClass*>(m_FactoryPtr);
 	}
 
 //////////////////////////////////
@@ -357,10 +357,33 @@ public:
 		_other.m_ResourceObject = nullptr;
 	}
 
+	// Reset this pointer, unlinking it
+	void Reset()
+	{
+		// If the resource object is valid
+		if (m_ResourceObject != nullptr)
+		{
+			m_ResourceObject->RemoveTemporaryReference();
+			m_ResourceObject = nullptr;
+		}
+	}
+
 	// Operator to use this as a pointer to the resource object
 	ResourceClass* operator->() const
 	{
 		return m_ResourceObject;
+	}
+
+	// The get method
+	ResourceClass* Get()
+	{
+		return m_ResourceObject;
+	}
+
+	// Return if this is valid
+	bool IsValid()
+	{
+		return m_ResourceObject != nullptr;
 	}
 
 	// Destructor

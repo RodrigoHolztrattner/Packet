@@ -132,7 +132,7 @@ public:
 		for (auto i = std::size_t{}; i < size; ++i)
 		{
 			const auto next = std::size_t(data[i] );
-			acc = (acc ^ next) * Prime;
+			acc = ResultT((acc ^ next) * Prime);
 		}
 		this->state_ = acc;
 	}
@@ -144,7 +144,7 @@ public:
 		for (auto i = std::size_t{}; data[i] != 0; ++i)
 		{
 			const auto next = std::size_t( data[i]);
-			acc = (acc ^ next) * Prime;
+			acc = ResultT((acc ^ next) * Prime);
 		}
 		this->state_ = acc;
 	}

@@ -51,13 +51,13 @@ class PacketResourceWatcher
 public:
 
 	// The watch listener object type
-	struct ResourceWatchListener : public FW::FileWatchListener
+	struct ResourceWatchListener : public FWPacket::FileWatchListener
 	{
 		// Create passing a reference to the resource watcher
 		ResourceWatchListener(PacketResourceWatcher* _packetResourceWatcher) : m_ResourceWatcherPtr(_packetResourceWatcher) {}
 
 		// Forward the file action to the resource watcher object
-		void handleFileAction(FW::WatchID _watchid, const FW::String& _dir, const FW::String& _filename, FW::Action _action) override
+		void handleFileAction(FWPacket::WatchID _watchid, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action) override
 		{
 			m_ResourceWatcherPtr->HandleFileAction(_watchid, _dir, _filename, _action);
 		}
@@ -72,7 +72,7 @@ public:
 	struct WatchedDirectory
 	{
 		// The watch ID for this directory
-		FW::WatchID watchID;
+		FWPacket::WatchID watchID;
 
 		// All watched resources inside this directory
 		std::map<HashPrimitive, PacketResource*> watchedResources;
@@ -112,7 +112,7 @@ public: //////////
 protected:
 
 	// The handle file action method
-	void HandleFileAction(FW::WatchID _watchid, const FW::String& _dir, const FW::String& _filename, FW::Action _action);
+	void HandleFileAction(FWPacket::WatchID _watchid, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action);
 
 ///////////////
 // VARIABLES //
@@ -122,7 +122,7 @@ private: //////
 	bool m_IsEnabled;
 
 	// The resource file watcher object
-	FW::FileWatcher m_ResourceFileWatcher;
+	FWPacket::FileWatcher m_ResourceFileWatcher;
 
 	// The resource watcher listener object
 	ResourceWatchListener m_ResourceWatcherListener;

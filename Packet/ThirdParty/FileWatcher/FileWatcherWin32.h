@@ -35,7 +35,7 @@
 
 #include <map>
 
-namespace FW
+namespace FWPacket
 {
 	/// Implementation for Win32 based on ReadDirectoryChangesW.
 	/// @class FileWatcherWin32
@@ -78,7 +78,7 @@ namespace FW
 
 	};//end FileWatcherWin32
 
-};//namespace FW
+};//namespace FWPacket
 
 #endif//FILEWATCHER_PLATFORM_WIN32
 
