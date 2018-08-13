@@ -66,7 +66,7 @@ void PacketResourceInstance::InstanceUnlink(std::unique_ptr<PacketResourceInstan
 	m_ResourceManagerPtr->ReleaseObject(_instanceUniquePtr, m_FactoryPtr, m_ReferenceObject->GetBuildInfo().asyncResourceObjectDeletion);
 }
 
-PacketResource* PacketResourceInstance::GetObjectPtr()
+PacketResource* PacketResourceInstance::GetResource()
 {
 	assert(m_ReferenceObject != nullptr);
 	return m_ReferenceObject;

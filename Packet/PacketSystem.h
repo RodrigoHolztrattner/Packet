@@ -62,7 +62,8 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketSystem(ThreadIndexRetrieveMethod _threadIndexMethod = nullptr, uint32_t _totalWorkerThreads = 1);
+	PacketSystem();
+	PacketSystem(ThreadIndexRetrieveMethod _threadIndexMethod, uint32_t _totalWorkerThreads);
 	~PacketSystem();
 
 //////////////////

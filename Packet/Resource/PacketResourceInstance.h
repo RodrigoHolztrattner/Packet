@@ -224,8 +224,16 @@ protected: // EXTERNAL USE //
 	// and in the future making this instance to be released
 	void InstanceUnlink(std::unique_ptr<PacketResourceInstance>& _instanceUniquePtr);
 
-	// Return the object ptr
-	PacketResource* GetObjectPtr();
+	// Return the resource
+	PacketResource* GetResource();
+
+	// Return the resource
+	template<typename ResourceClass>
+	PacketResource* GetResource()
+	{
+		assert(m_ReferenceObject != nullptr);
+		return reinterpret_cast<ResourceClass*>(m_ReferenceObject);
+	}
 
 	// Return the object factory casting to the given template typeclass
 	template<typename FactoryClass>

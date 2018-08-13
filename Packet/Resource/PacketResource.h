@@ -126,6 +126,10 @@ protected: //////////
 	// The OnLoad() method (asynchronous method)
 	virtual bool OnLoad(PacketResourceData& _data, uint32_t _buildFlags, uint32_t _flags) = 0;
 
+	// The OnCreation() method (asynchronous method), called only when creating a resource that doesn't exist, to
+	// use this method the user must explicity set the build info to create the resource
+	virtual bool OnCreation() { return true; }
+
 	// The OnDelete() method (asynchronous method)
 	virtual bool OnDelete(PacketResourceData&) = 0;
 
@@ -236,8 +240,9 @@ protected: // INSTANCE REFERENCING //
 protected: // INTERNAL //
 /////////////////////////
 
-	// Begin load, deletion, synchronize and desynchronize methods
+	// Begin load, creation, deletion, synchronize and desynchronize methods
 	bool BeginLoad(bool _isPersistent);
+	bool BeginCreation(bool _isPersistent);
 	bool BeginDelete();
 	bool BeginSynchronization();
 	bool BeginDesynchronization();
@@ -280,13 +285,14 @@ protected: // INTERNAL //
 // VARIABLES //
 private: //////
 
-	// If this object was loaded, if the data is valid and if this object was synchronized
+	// Status
 	bool m_DataValid;
 	bool m_WasSynchronized;
 	bool m_IsPersistent;
 	bool m_IsPendingReplacement;
 	bool m_IgnorePhysicalDataChanges;
 	bool m_IsPendingDeletion;
+	bool m_WasCreated;
 
 	// The total number of direct and indirect references
 	std::atomic<uint32_t> m_TotalDirectReferences;

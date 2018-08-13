@@ -113,6 +113,7 @@ PacketResource::PacketResource()
 	m_IsPersistent = false;
 	m_IsPendingReplacement = false;
 	m_IsPendingDeletion = false;
+	m_WasCreated = false;
 	m_TotalDirectReferences = 0;
 	m_TotalIndirectReferences = 0;
 }
@@ -126,7 +127,7 @@ PacketResource::~PacketResource()
 bool PacketResource::BeginLoad(bool _isPersistent)
 {
 	// Check if the data is valid
-	if (m_Data.GetSize() == 0)
+	if (!m_WasCreated || (m_WasCreated && m_Data.GetSize() == 0))
 	{
 		return false;
 	}
@@ -140,8 +141,25 @@ bool PacketResource::BeginLoad(bool _isPersistent)
 		return false;
 	}
 
-	// Set data valid and loaded
-	m_DataValid = true;
+	// Set data valid if this object wasn't created
+	if (!m_WasCreated)
+	{
+		m_DataValid = true;
+	}
+
+	return true;
+}
+
+bool PacketResource::BeginCreation(bool _isPersistent)
+{
+	// Set if this object is persistent
+	m_IsPersistent = _isPersistent;
+
+	// Call the OnCreation() method
+	if (!OnCreation())
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -150,8 +168,8 @@ bool PacketResource::BeginDelete()
 {
 	assert(!m_WasSynchronized);
 
-	// Check if we have some data to delete
-	if (m_Data.GetSize() == 0)
+	// Check if we have some data to delete (ignore this if this resource was created)
+	if (!m_WasCreated || (m_WasCreated && m_Data.GetSize() == 0))
 	{
 		return false;
 	}
@@ -165,8 +183,8 @@ bool PacketResource::BeginDelete()
 		return false;
 	}
 
-	// The data must still be valid
-	if (m_Data.GetSize() == 0)
+	// The data must still be valid (ignore this if this resource was created)
+	if (!m_WasCreated || (m_WasCreated && m_Data.GetSize() == 0))
 	{
 		return false;
 	}
@@ -202,7 +220,7 @@ bool PacketResource::BeginDesynchronization()
 
 bool PacketResource::IsReady()
 {
-	return m_DataValid && m_WasSynchronized;
+	return (m_DataValid && m_WasSynchronized) || m_WasCreated;
 }
 
 bool PacketResource::IsPendingReplacement()

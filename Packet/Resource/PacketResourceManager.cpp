@@ -120,7 +120,7 @@ void PacketResourceManager::Update()
 		}
 
 		// Get a short variable to the instance object
-		auto* object = _releaseRequest.instance->GetObjectPtr();
+		auto* object = _releaseRequest.instance->GetResource();
 
 		// Remove the instance reference from this object
 		object->RemoveInstanceReference(_releaseRequest.instance.get());
@@ -174,7 +174,7 @@ void PacketResourceManager::Update()
 		PacketResourceInstance* instance = m_ConstructQueue[i];
 
 		// Get the resource reference
-		auto* resource = instance->GetObjectPtr();
+		auto* resource = instance->GetResource();
 
 		// Check if the internal object was loaded (and synchronized) and this instance is ready to be constructed
 		if (resource->IsReady())

@@ -61,11 +61,14 @@ void PacketResourceDeleter::DeleteObjectAuxiliar()
 
 		// Call the OnDelete() method for this object (to release the data)
 		bool result = deleteRequest.object->BeginDelete();
+		assert(result);
 
-		// Release the object data using its factory (this is safe because we are using the resource allocator)
-		deleteRequest.factory->DeallocateData(deleteRequest.object->GetDataRef());
-
-		assert(result == true);
+		// If this object wasn't created
+		if (!deleteRequest.object->GetBuildInfo().createResourceIfInexistent)
+		{
+			// Release the object data using its factory (this is safe because we are using the resource allocator)
+			deleteRequest.factory->DeallocateData(deleteRequest.object->GetDataRef());
+		}
 
 		// Check if the factory should delete this object synchronous
 		if (!deleteRequest.deleteSync)

@@ -53,25 +53,35 @@ bool PacketCondensedModeFileLoader::FileExist(Hash _fileHash)
 
 uint64_t PacketCondensedModeFileLoader::GetFileSize(Hash _fileHash)
 {
+
+#ifndef NDEBUG
+
 	// If the file exist
-	if (FileExist(_fileHash))
+	if (!FileExist(_fileHash))
 	{
-		// Get the file info and return the size
-		auto iter = m_MappedInternalFileInfos.find(_fileHash);
-		return iter->second.info.size;
+		// Invalid file
+		return 0;
 	}
 
-	// Invalid file
-	return 0;
+#endif
+
+	// Get the file info and return the size
+	auto iter = m_MappedInternalFileInfos.find(_fileHash);
+	return iter->second.info.size;
 }
 
 bool PacketCondensedModeFileLoader::GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash)
 {
+
+#ifndef NDEBUG
+
 	// If the file doesn't exist
 	if (!FileExist(_fileHash))
 	{
 		return false;
 	}
+
+#endif
 
 	// Get the file info
 	MappedInternalFileInfo& mappedFileInfo = m_MappedInternalFileInfos.find(_fileHash)->second;

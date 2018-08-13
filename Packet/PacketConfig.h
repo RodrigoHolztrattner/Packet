@@ -207,45 +207,61 @@ struct PacketLogger
 // The resource build info
 struct PacketResourceBuildInfo
 {
-	PacketResourceBuildInfo() : 
-		buildFlags(0), 
-		flags(0), 
-		asyncInstanceConstruct(true), 
-		asyncResourceObjectDeletion(true) {}
+	PacketResourceBuildInfo() {}
 	PacketResourceBuildInfo(uint32_t _buildFlags) : 
-		buildFlags(_buildFlags), 
-		flags(0), 
-		asyncInstanceConstruct(true), 
-		asyncResourceObjectDeletion(true) {}
+		buildFlags(_buildFlags) {}
 	PacketResourceBuildInfo(uint32_t _buildFlags, uint32_t _flags) : 
 		buildFlags(_buildFlags), 
-		flags(_flags), 
-		asyncInstanceConstruct(true), 
-		asyncResourceObjectDeletion(true) {}
+		flags(_flags) {}
 	PacketResourceBuildInfo(uint32_t _buildFlags, uint32_t _flags, bool _asyncInstanceConstruct) :
 		buildFlags(_buildFlags),
 		flags(_flags),
-		asyncInstanceConstruct(_asyncInstanceConstruct),
-		asyncResourceObjectDeletion(true) {}
+		asyncInstanceConstruct(_asyncInstanceConstruct) {}
 	PacketResourceBuildInfo(uint32_t _buildFlags, uint32_t _flags, bool _asyncInstanceConstruct, bool _asyncResourceObjectDeletion) :
 		buildFlags(_buildFlags), 
 		flags(_flags), 
 		asyncInstanceConstruct(_asyncInstanceConstruct),
 		asyncResourceObjectDeletion(_asyncResourceObjectDeletion) {}
+	PacketResourceBuildInfo(uint32_t _buildFlags, 
+		uint32_t _flags, 
+		bool _asyncInstanceConstruct, 
+		bool _asyncResourceObjectDeletion, 
+		bool _createResourceIfInexistent, 
+		bool _createdResourceShouldLoad, 
+		bool _createdResourceAutoSave) :
+		buildFlags(_buildFlags),
+		flags(_flags),
+		asyncInstanceConstruct(_asyncInstanceConstruct),
+		asyncResourceObjectDeletion(_asyncResourceObjectDeletion),
+		createResourceIfInexistent(_createResourceIfInexistent),
+		createdResourceShouldLoad(_createdResourceShouldLoad),
+		createdResourceAutoSave(_createdResourceAutoSave) {}
 
 	// The build flags (resource with different build flags and equal hash objects are considered different between each other)
-	uint32_t buildFlags;
+	uint32_t buildFlags = 0;
 
 	// The normal flags (resource with different normal flags and equal hash objects are considered equal between each other)
-	uint32_t flags;
+	uint32_t flags = 0;
 
-	// If the instance object can have its OnConstruct() method called asynchronous (without being sure if that will 
+	// If the Instance Object can have its OnConstruct() method called asynchronous (without being sure if that will 
 	// happen inside the update phase of the resource manager)
 	bool asyncInstanceConstruct = true;
 
-	// If the resource object can be deleted aynchronous (without being sure if that will happen inside the update 
+	// If the Resource Object can be deleted aynchronous (without being sure if that will happen inside the update 
 	// phase of the resource manager)
 	bool asyncResourceObjectDeletion = true;
+
+	// If the Resource Object should be created if its file doesn't exist, this will only work on Edit mode, this won't call the
+	// factory AllocateData() and DeallocateData() methods as the resource data won't be managed by this library
+	bool createResourceIfInexistent = false;
+
+	// In case we should create the resource if its file doesn't exist, if we should call the OnLoad() method after the 
+	// OnCreation() one (only works on Edit mode)
+	bool createdResourceShouldLoad = false;
+
+	// In case we should create the resource, if it should be saved right before unloading it from memory, creating a file
+	// (only works on Edit mode)
+	bool createdResourceAutoSave = false;
 };
 
 // The path type

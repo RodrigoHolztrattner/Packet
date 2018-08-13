@@ -15,6 +15,12 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
+PacketSystem::PacketSystem()
+{
+	// Set the initial data
+	m_TotalWorkerThreads = 1;
+}
+
 PacketSystem::PacketSystem(ThreadIndexRetrieveMethod _threadIndexMethod, uint32_t _totalWorkerThreads)
 {
 	// Set the initial data

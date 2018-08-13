@@ -4,40 +4,249 @@ Packet
 =====
 
 
-Packet is a C++ virtual file system library built primary for games, it allows any application to generate and use a *bundle* to store and access resources efficiently. The main characteristics are:
+Packet is a C++ resource management library built primary for games. When developing it my focus was to achieve a high performatic system while at the same time allowing all the usual functionalities that a library like this should have. 
 
- * Simple, every important functionality is located in 3 classes only.
- * Fast, it has 2 ways of interaction, the first one allows the user to view and edit the *bundle* as a virtual system (create directories, files, delete, move, etc). the second one operates as a read-only mode but it is optimized for fast file fetching.
- * Customizable, all the loading features can be modified, you can use your favourite memory allocation system or threaded job loaders.
+It uses two operation modes, a not-so-fast **edit** mode and the fast-and-optimized **condensed** mode, the first one allows the user to manager all of its resource files normally as if they were located physically on a "data" folder, the second one will compress those physical files into huge condensed ones, providing a much more faster access but removing any editing functionality.
 
-# How It Works
+I've being using this library internally for my projects but I decided to share it. Right now it has those characteristics:
 
-- You will start creating a main packet object (and its respective file).
-- The packet object has an internal iterator object, you are going to use it for any virtual-system related methods like `MakeDir`, `Seek`, `Put`, `Get`, `Delete`, etc.
-- As files are being added, the packet file will create fragments, those fragments are used to distribute the internal resource data into several pieces, so you will never have a huge one-only file with 20GB or more.
-- When there is no need for modifying the virtual system structure anymore, all resources can be accessed using a read-only way that is optmized for speed (compile-time hashing and less map lookups) that accepts the filepath as input, like *"/images/test.png"*. 
-- There is an `Optimize` method that will (hopefully) reduces the total of fragmented data inside the fragments.
-
-> It's important to notice that the **only thread-safe** method is the load one from the PacketFile class, using multiple threads for every other method will cause undefined behaviour.
-> Take a look at the Fast File Loading section for more details.
+ * Two operation modes, **edit** (not really fast) and **condensed** (fast and furious)
+ * Asynchronous loading (with some guaranted synchronous methods if the user needs synchronization)
+ * Hot-reload when on **edit** mode
+ * Creation of bundle-like files that are used on the **condensed** mode
+ * Allows the user to manage how the resource and data memory allocation/deallocation will happen
+ * Reference counting lifetime for resources
+ * Resource dependency management (intra-resource dependency checks and corrections, explained below)
 
 # Dependencies
 
-* The current only depenency is the [JSON for Modern C++](https://github.com/nlohmann/json) library as we store some of the headers using readable JSON text files.
+Those are all the external libraries used here, they are located on the ThirdParty folder so including them shouldn't be a problem.
+
+ - [JSON for Modern C++](https://github.com/nlohmann/json) used when creating resource-dependency files.
+ - [Compile Time Type Information for C++](https://github.com/Manu343726/ctti) to deal with factory classes in a nicer way.
+ - [simplefilewatcher](https://code.google.com/archive/p/simplefilewatcher/) so we can detect file changes on the fly.
+ - [A single-producer, single-consumer lock-free queue for C++](https://github.com/cameron314/readerwriterqueue) the library name says everything.
 
 # Install
 
-Just copy & paste every *.h* and *.cpp* from the root folder into your project. To use the library just include the **Packet.h** as it includes
-every other file needed.
+The library itself is a Visual Studio 2017 project, but it should be compatible with any common C++ compiler although I have only tested it on Windows.
 
-The project was built using the Visual Studio 2017 and should work properly just by opening its solution file. The main file located here is an example application that simulates the virtual file system with console commands.
+# Definitions
 
-The entire solution was made using pure C++ so if you want you can just copy-paste the files and use them in your project. Just remember the only dependency: [JSON for Modern C++](https://github.com/nlohmann/json).
+- A **Resource** is an object that has its lifetime managed by the total number of instances and indirect references to it (also a resource can be marked to be permanent), it provides creation, loading, unloading 
+and destruction methods to deal with the resource data, only one resource of each type can exist at the same time.
+- A **ResourceReferencePtr<>** retains a temporary reference to a resource that will prevent it from being deleted even if all of its intances are released, the ideia is that this should be used when the user needs 
+access to this resource in the future but it can't ensure that its instances won't be release until there. This object don't need to be release from the same threads that requested it so this is really usefull when 
+using a different thread for rendering purposes or constructing a command queue that will be processed by the render thread, destructing this reference later.
+- An **ResourceInstance** works like a reference to a resource (they are unique to each request) but they can also own other instances and depend on their initialization to be fully initialized. When requesting a 
+resource instance the user has the option to pass a *ResourceBuildInfo* structure that will be explained further below. When the user needs to request an instance it should use a specialized pointer class called 
+*ResourceInstancePtr*.
+- An **ResourceInstancePtr<>** class works like a std::unique_ptr that points to a resource instance, it should be used in conjunction with move semantics, to check if it is valid the user can just do a simple if(pointer) ..., 
+also it will auto release its instance object if it goes out of scope.
+- A **ResourceFactory** is an interface class that is responsable for managing the creation and destruction of resources, instances and the resource data itself, each type of resource should have a factory associated with it.
+- A **Hash** is an object that holds info about a resource path, also it has an internal identifier (the hash value itself) that is used to perform fast map-find operations when running on *condensed* mode.
+- A **ResourceData** is an object that holds the resource data and expose its allocation and deallocation methods, so the user can use it as a base class and implement a new one using different allocation rules, by 
+default it uses the standard allocation/deallocation methods (new and delete).
+
+# General Rules
+
+ * Always use the *ResourceReferencePtr* and *ResourceInstancePtr* to hold instances and references instead using their direct raw pointers, those especialized pointers should be used in conjunction with move semantics.
+ * The user **can't** request *resource instances* or *resource references* when the packet system is being updated, there are some exceptions to this that I will explain further below but the user must ensure that the update 
+phase will taken place alone, on its holy moment, without interruptions.
+ * A *resource reference pointer* should be used when the user want's to ensure that a *resource* will be valid until this pointer is destructed, try to always use it when using multiple threads to ensure no race conditions 
+will ever exist.
 
 # Getting Started
 
-Let's start by creating our packet object. First we will need to provide the name and the maximum fragment size we are going to use.
-For this guide/examples the packet name will be **"wonderland"** and **67108864** (64mb) will be used as our maximum fragment size.
+All important classes, definitions, enums, etc are included on the *Packet.h* file, so when the user wants to use this library this is the file that should be included.
+
+### Creating the Packet System Object
+
+There are 2 options when creating the main system object:
+
+The first one should be used when the user will never attempt to request resource instances from different threads, if is guaranteed that it will only happen inside the same thread this should be your choice.
+
+The second one should be used when the user will attempt to request resource instances from multiple threads, internally we will create *n* queues where *n* is equal to < total_number_of_threads > so each thread will 
+use its own queue, also the user must provide a valid method (with this signature: *std::function<uint32_t()>*) to retrieve the current thread index (an index in range from 0 to n-1).
+
+```c++
+Packet::System* packetSystem = new Packet::System();
+```
+```c++
+Packet::System* packetSystem = new Packet::System(<thread_index_retrival_method>, <total_number_of_threads>);
+```
+
+### Structuring a Resource Class
+
+Here I will give an example of how to create your resource class, there are some methods that you must override but otherwise you are free to do anything you want
+
+The resource constructor is always called when inside the update phase so calling it is considered synchronous but its destruction is by default asynchronous, this can be changed when requesting
+a *resource instance* for this resource by passing a the build info parameter with different arguments.
+
+Those are the virtual methods that you should override:
+
+* When a resource is being loaded this method will be called asynchronous (by an internal loading thread).
+```c++
+virtual bool OnLoad(Packet::ResourceData& _data, uint32_t _buildFlags, uint32_t _flags) = 0;
+```
+
+---
+
+* After the resource was loaded, on the next update phase for the packet system this method will be called, here the user can synchronize the already processed resource data with the
+application, if no synchronization is needed just return true here.
+```c++
+virtual bool OnSynchronization() = 0;
+```
+
+---
+
+* Right after the resource was marked to deletion (when inside the update phase for the packet system) this method will be called (synchronous) so the user can perform any pre-deletion
+action that needs to be synchronized. Again this can be ignored if no synchronization is needed.
+```c++
+virtual bool OnDesynchronization() = 0;
+```
+
+---
+
+* Right before a resource destruction occur, this method will be called so the user can perform any action with the current data, it will remain valid until this method returns.
+```c++
+virtual bool OnDelete(Packet::ResourceData& _data) = 0;
+```
+
+---
+
+* This method is only called when on Edit mode and **if** the *createResourceIfInexistent* build info parameter was set to true, so if the user tried to load a resource that doesn't 
+exist the load thread will call this method (asynchronous), here the user is supposed to create and manage its own resource data.
+```c++
+virtual bool OnCreation() { return true; }
+```
+
+A simple example can be seen below:
+
+```c++
+class MyResource : public Packet::Resource
+{
+protected:
+
+  // The OnLoad() method (asynchronous method)
+  bool OnLoad(Packet::ResourceData& _data, uint32_t _buildFlags, uint32_t _flags) override
+  {
+    // Use the methods _data.GetData() and _data.GetSize() to use the resource data here, don't forget the flags
+    m_ResourceData.Initialize(_data.GetData(), _data.GetSize());
+
+    return true;
+  }
+
+  // The OnDelete() method (asynchronous method)
+  bool OnDelete(Packet::ResourceData& _data) override
+  {
+    // Shutdown any internal data, here the Packet::ResourceData can still be used
+    m_ResourceData.Shutdown();
+
+    return true;
+  }
+
+  // The OnSynchronization() method (synchronous method when calling the update() method)
+  bool OnSynchronization() override
+  {
+    // This method is synchronized with the update phase for the packet system
+    Globals::GPU::SynchronizeResource(this, &m_ResourceData);
+
+    return true;
+  }
+
+  // The OnDesynchronization() method (synchronous method when calling the update() method)
+  bool OnDesynchronization() override
+  {
+    // This methos is synchronized with the update phase too
+    Globals::GPU::DesynchronizeResource(this);
+
+    return true;
+  }
+
+private:
+
+  // Material shader hashes
+  MyResourceData m_ResourceData;
+};
+```
+
+### Structuring a Resource Instance Class
+
+A resource instance works like a reference to a resource object but at the same time each instance can have its own data, this is really usefull when for example, 
+loading a skeleton resource (for animation) that contains info about each bone and also a GPU vertex buffer, so each instance can have its own bone transform matrix
+that is maintained and update separated from the resource object itself.
+
+The instance constructor is called right before its request (by the calling thread), its destructor is synchronized with the update phase for the packet system.
+An instance can own other instances, in this case the user can register a dependency between those instances, only when all dependent instances are fully constructed
+the method *OnDependenciesFulfilled()* (expalined below) will be called.
+
+Those are the virtual methods that the user must override:
+
+* This method is called when inside the update phase by default, the user can allows it to be asynchronous by setting true on the *asyncInstanceConstruct* build 
+info parameter when requesting the instance.
+```c++
+virtual void OnConstruct() = 0;
+```
+
+---
+
+* This method is called whan all instances that this one depends on are constructed, this is called when inside the update phase. If there are no dependencies it 
+will be called right after the *OnConstruct()* method.
+```c++
+virtual void OnDependenciesFulfilled() = 0;
+```
+
+---
+
+* This method will be only called when on Edit mode and if the resource that this instance reference was reconstructed, at this state this instance already points
+to the new resource so its data must be reconstructed using it.
+```c++
+virtual void OnReset() = 0;
+```
+
+A simple example can be seen below:
+
+```c++
+class MyInstance : public Packet::ResourceInstance
+{
+public:
+
+  MaterialInstance(Packet::Hash& _hash, Packet::ResourceManager* _resourceManager, Packet::ResourceFactory* _factoryPtr) :
+    Packet::ResourceInstance(_hash, _resourceManager, _factoryPtr)
+  {
+  }
+
+protected:
+
+  void OnConstruct() override
+  {
+    // Here the resource data can be accessed using the GetResource() method
+    m_InstanceData.Build(static_cast<MyResource*>(GetResource()));
+  }
+
+  void OnDependenciesFulfilled() override
+  {
+    // Called when all instances that we depends on are constructed
+    // ...  
+  }
+
+  void OnReset() override
+  {
+    // Reconstruct this instance data, here the new resource is already valid (just use GetResource())
+    m_InstanceData.Reset(static_cast<MyResource*>(GetResource()));
+  }
+
+private:
+
+  MyInstanceData m_InstanceData;
+};
+```
+
+### Creating Factories
+
+Factories are a nicer way to provide much more flexibility when constructing 
+
 
 ### Creating the Packet Object
 
