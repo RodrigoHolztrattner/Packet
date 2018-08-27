@@ -8,7 +8,7 @@ Packet is a C++ resource management library built primary for games. When develo
 
 It uses two operation modes, a not-so-fast **edit** mode and the fast-and-optimized **condensed** mode, the first one allows the user to manager all of its resource files normally as if they were located physically on a "data" folder, the second one will compress those physical files into huge condensed ones, providing a much more faster access but removing any editing functionality.
 
-I've being using this library internally for my projects but I decided to share it. Right now it has those characteristics:
+I've being using this library internally for my projects but I decided to share it. I have a few additions planned to the future, right now it has those characteristics:
 
  * Two operation modes, **edit** (not really fast) and **condensed** (fast and furious)
  * Asynchronous loading (with some guaranted synchronous methods if the user needs synchronization)
@@ -32,6 +32,17 @@ Those are all the external libraries used here, they are located on the ThirdPar
 The library itself is a Visual Studio 2017 project, but it should be compatible with any common C++ compiler although I have only tested it on Windows.
 
 # Definitions
+
+### Operation Modes
+
+- The **edit** mode will allow you to access almost all functionalities without focusing alot on performance and optimizations, using it will enable you to manage your resource files as you would normally do (using
+raw files directly on the current resource folder, the library won't be using the compressed data used on *condensed* mode), also you will be able to use the hot-reload feature (editing a resource at runtime can be 
+handled, creating a new resource and swapping both pointers when everything is ready), In addition to that the library itself will perform some sanity checks to ensure there are no invalid resources trying to be 
+used or if any operation would fail. In this mode the user can generate the compressed data user for the *condensed* mode (I will touch this further below).
+- The **condensed** mode will operate only on compressed data, this mode will disable alot of features and checks, its use is focused when shipping you application (or building it on release mode) so there are no needs
+to edit resources on-the-fly or perform validation checks, using this will be much more fast then its conterpart mode because .... hash bla bla
+
+### Library Classes
 
 - A **Resource** is an object that has its lifetime managed by the total number of instances and indirect references to it (also a resource can be marked to be permanent), it provides creation, loading, unloading 
 and destruction methods to deal with the resource data, only one resource of each type can exist at the same time.
@@ -60,11 +71,12 @@ will ever exist.
 
 All important classes, definitions, enums, etc are included on the *Packet.h* file, so when the user wants to use this library this is the file that should be included.
 
-### Creating the Packet System Object
+Currently I'm using this library intensely on my [Vulkan rendering engine](https://github.com/RodrigoHolztrattner/WonderlandProject/tree/master/WonderlandProject/Engine/Resource) if you need some guidance.
 
-There are 2 options when creating the main system object:
+### Creating and Initializing the Packet System Object
 
-The first one should be used when the user will never attempt to request resource instances from different threads, if is guaranteed that it will only happen inside the same thread this should be your choice.
+The packet system class has 2 constructors: The first one should be used when the user will never attempt to request resource instances from different threads, 
+if is guaranteed that it will only happen inside the same thread this should be your choice.
 
 The second one should be used when the user will attempt to request resource instances from multiple threads, internally we will create *n* queues where *n* is equal to < total_number_of_threads > so each thread will 
 use its own queue, also the user must provide a valid method (with this signature: *std::function<uint32_t()>*) to retrieve the current thread index (an index in range from 0 to n-1).
@@ -75,6 +87,91 @@ Packet::System* packetSystem = new Packet::System();
 ```c++
 Packet::System* packetSystem = new Packet::System(<thread_index_retrival_method>, <total_number_of_threads>);
 ```
+
+Now to initialize it you have to indicate what mode it will operate (*edit* or *condensed*) and what is the main resource path for your application (all resource paths will be relative
+to this path). For example:
+
+```c++
+if (!packetSystem->Initialize(Packet::OperationMode::Edit, "Data"))
+{
+    // Handle the problem
+    // ...
+}
+```
+
+### Creating the Condensed File
+
+To operate using the *condensed* mode you first need to generate the condensed files, this can be achieved by calling the *ConstructPacket()* method like this:
+
+```c++
+if(!packetSystem->ConstructPacket())
+{
+    // Handle the problem
+    // ...
+}
+```
+
+This method will take each file inside the data folder (the initialization path) and join them together (ignoring extensions used internally) in multiple condensed files.
+In the future I plan to support merging two condensed packs of files together so things like updating a game files (because of a new patch) will be possible.
+
+### Updating the Packet System
+
+There is an update method that must be called on your logic frame (update frame) so the packet system can do its job, when this update is running you must **ensure** no
+resource request will be done (except requests that are done by a resource instance being constructed).
+
+```c++
+packetSystem->Update();
+```
+
+### Checking if a Resource Exist
+
+To check if a resource exist you must call the *FileExist()* method:
+
+```c++
+bool fileExist = packetSystem->FileExist("resource-path.extension");
+```
+
+### Registering a Factory Class
+
+For each type of resource that you want to use you must register a corresponding factory class, the class creation will be addressed further on. This factory class
+will be used when creating and destructing objects relationed with the given resource. For now you must use your own class (inheriting it from my interface) and it 
+should be passed as an unique_ptr:
+
+```c++
+packetSystem->RegisterResourceFactory<MyResource>(std::make_unique<MyFactory>());
+```
+
+### Requesting a Resource Instance
+
+Requesting a resource instance is really simple, just call the *RequestResource()* and it will process your request on the next *Update()* call, here you must use
+a *Packet::ResourceInstancePtr* object that will hold a reference to the instance object:
+
+```c++
+Packet::ResourceInstancePtr<MyResource> myResourceInstance;
+
+bool requestResult = packetSystem->RequestResource<MyResource>(myResourceInstance, "resource-path.extension");
+```
+
+Optionally here you can pass a *ResourceBuildInfo* structure with more detailed info about how to load and handle this resource request, I explain about each possible
+option further below.
+
+### Requesting a Resource Reference
+
+To request a resource reference you must call the *GetResourceReference<>()* method from a valid resource instance object, this will create, register and return a valid
+*Packet::ResourceReferencePtr* that should be used to hold the reference itself:
+
+```c++
+Packet::ResourceReferencePtr<MyResource> myResourceReference;
+myResourceReference = myResourceInstance->GetResourceReference<MyResource>();
+```
+
+Remember that this reference must not be used instead of a instance one, a reference is aimed to be used when the resource access must be done by a separated thread and
+during this time you can ensure that the initial instance will exist, a reference will prevent the resource from being deallocated.
+
+# Resource Related Classes
+
+Here I will give some examples on how to create and structure all classes that you need to create to integrate this library into your application, you can check [my resource/instance/factory implementations in my other project](https://github.com/RodrigoHolztrattner/WonderlandProject/tree/master/WonderlandProject/Engine/Resource)
+instead reading all the future sections.
 
 ### Structuring a Resource Class
 
@@ -212,7 +309,7 @@ class MyInstance : public Packet::ResourceInstance
 {
 public:
 
-  MaterialInstance(Packet::Hash& _hash, Packet::ResourceManager* _resourceManager, Packet::ResourceFactory* _factoryPtr) :
+  MyInstance(Packet::Hash& _hash, Packet::ResourceManager* _resourceManager, Packet::ResourceFactory* _factoryPtr) :
     Packet::ResourceInstance(_hash, _resourceManager, _factoryPtr)
   {
   }
@@ -243,195 +340,154 @@ private:
 };
 ```
 
-### Creating Factories
+### Structuring a Factory Class
 
-Factories are a nicer way to provide much more flexibility when constructing 
+Factories are a nicer way to provide much more flexibility when constructing resource related objects (resources, resource instances and resource data), the user can use
+them to provide custom memory allocation features or insert custom data when allocating them.
 
+Those are the virtual methods that the user must override:
 
-### Creating the Packet Object
-
-To create our packet object we will just allocate memory for it and initialize using the `InitializeEmpty` method:
+* Called right after a new instance is requested (from the packet system). The user must return a valid unique_ptr for a new instance.
 ```c++
-Packet::Object* packetObject = new Packet::Object();
-if (!packetObject->InitializeEmpty("Wonderland", 67108864))
+virtual std::unique_ptr<Packet::ResourceInstance> RequestInstance(Packet::Hash _hash, Packet::ResourceManager* _resourceManager) = 0;
+```
+
+---
+
+* When a instance is being released, called only when inside the update phase for the packet system. The user must release the unique_ptr object.
+```c++
+virtual void ReleaseInstance(std::unique_ptr<Packet::ResourceInstance>& _instance) = 0;
+```
+
+---
+
+* When a new resource object must be created, called only when inside the update phase for the packet system. The user must return a valid unique_ptr for a new resource object.
+```c++
+virtual std::unique_ptr<Packet::Resource> RequestObject() = 0;
+```
+
+---
+
+* When a new resource object must be released, called only when inside the update phase for the packet system. The user must release the unique_ptr object.
+```c++
+virtual void ReleaseObject(std::unique_ptr<Packet::Resource>& _object) = 0;
+```
+
+---
+
+* When a resource data must be allocated, called asynchronous by the loading thread. The user must allocate the data for the *Packet::ResourceData* input parameter.
+```c++
+virtual bool AllocateData(Packet::ResourceData& _resourceDataRef, uint64_t _total) = 0;
+```
+
+---
+
+* When a resource data must be deallocated, called asynchronous by the deletion thread. The user must deallocate the data for the *Packet::ResourceData* input parameter.
+```c++
+virtual void DeallocateData(Packet::ResourceData& _data) = 0;
+```
+
+A simple example can be seen below:
+
+```c++
+class MyFactory : public Packet::ResourceFactory
 {
-	return false;
-}
+public:
+
+  // Request a new instance
+  std::unique_ptr<Packet::ResourceInstance> RequestInstance(Packet::Hash _hash, Packet::ResourceManager* _resourceManager) override
+  {
+	return std::unique_ptr<Packet::ResourceInstance>(new MyInstance(_hash, _resourceManager, this));
+  }
+
+  // Release a instance
+  void ReleaseInstance(std::unique_ptr<Packet::ResourceInstance>& _instance) override
+  {
+	_instance.reset();
+  }
+
+  // Request a new object
+  std::unique_ptr<Packet::Resource> RequestObject() override
+  {
+	return std::unique_ptr<Packet::Resource>(new MyResource());
+  }
+
+  // Release an object
+  void ReleaseObject(std::unique_ptr<Packet::Resource>& _object) override
+  {
+	_object.reset();
+  }
+
+  // Allocates the given amount of data for the resource creation
+  bool AllocateData(Packet::ResourceData& _resourceDataRef, uint64_t _total) override
+  {
+	// By default this use the standard allocator
+	_data.AllocateMemory(_total);
+
+	return true;
+  }
+
+  // Deallocates the given data from the resource
+  void DeallocateData(Packet::ResourceData& _data) override
+  {
+	// By default this use the standard allocator
+	_data.DeallocateMemory();
+  }
+};
 ```
 
-Now with the packet object we can start doing interesting things.
+### Using Different Resource Build Info Parameters
 
-### Getting the Iterator
+There is a build info object that can be passed when requesting a new *resource instance*, this object can influence in many aspects for this request, its parameters are:
 
-The iterator is responsible for all virtual file-system related methods, we will need to adquire a reference to it to continue:
-
+**Build Flags** are passed to the resource *OnLoad()* method, **two same resources with different build flags are considered different from each other by the system**, 
+requesting the same resource (same *hash*) but with different build flags will result in multiple resource creations, this can be usefull when you need to request a shader
+for example and must compile it using custom flags that influences directly the code (like using a "super fragment shader" and fetching those flags to determine wich 
+rendering features must be used, then compiling the shader with the respective defines set).
 ```c++
-auto packetIterator = packetObject->GetIterator();
+uint32_t buildFlags = 0;
 ```
 
-### Creating Directories
-
-To create directories you just need to use specify the new directory name or the path to the new directory.
-
+**Flags** are passed to the resource *OnLoad()* method, differently from the *build flags*, using different flags **does not** make resources with the same hash different 
+from each other, they are like normal flags, you can use they for whatever you want.
 ```c++
-packetIterator.MakeDir("resources");
-packetIterator.MakeDir("resources/images");
+uint32_t flags = 0;
 ```
 
-### Seeking
-
-Now we need a way to move inside the virtual file system, just use the `Seek` method for it.
-
+**Async Instance Construct** (by default true) when set specifies that when requesting a new *resource instance*, if the *resource* already exist and is ready to be used this
+new instance can have its *OnConstruct()* method called right after the request call (by the requesting thread), if this parameter is false this will only happens when inside 
+the update phase for the packet system.
 ```c++
-packetIterator.Seek("resources");
-packetIterator.Seek("images");
-packetIterator.Seek(".."); // Back to resources
-packetIterator.Seek(".."); // Back to root
-packetIterator.Seek("resources/images");
+bool asyncInstanceConstruct = true;
 ```
 
-### Listing
-
-To get a list of all folders and files you can use the `List` method, it will return all folders and files from the current location (or from the given one).
-
+**Async Resource Object Deletion** (by default true) sets if the *resource* object, when marked to deletion, can be released by its factory method *ReleaseObject()* asynchronous, 
+in other words if this method can be called by the deletion thread or if it should be called only when doing the update phase for the packet system.
 ```c++
-packetIterator.List();
-packetIterator.List("resources/images");
+bool asyncResourceObjectDeletion = true;
 ```
 
-### Inserting Files and Data
-
-You can insert any external file using the `Put` method, the first argument is always the *filepath* and the second (optional) is the *internal path* (with name) the file will be put.
-This method can be used with a data ptr (you need to inform the size too)
-
+**Create Resource if Inexistent** (by default false) sets if in the case there isn't a valid resource with the given hash, a resource object should be created anyway, this **only**
+works when on *edit* mode and if that happen a call to the *OnCreation()* method will be made instead calling *OnLoad()*. This resource won't call its factory methods *AllocateData()* 
+and *DeallocateData()*, the user is responsible for managing the data itself on this case. 
 ```c++
-packetIterator.Put("assets/textures/icon.jpg");
-packetIterator.Put("assets/textures/icon.jpg", "resources/images/iconInput.jpg");
-packetIterator.Put(validUnsignedCharData, dataSize);
-packetIterator.Put(validUnsignedCharData, dataSize, "resources/images/iconInput.jpg");
+bool createResourceIfInexistent = false;
 ```
 
-### Getting Files and Data
-
-To get a file from the virtual system, there is the `Get` method that receives the *path to the file* you want as the first argument and (optionally) the *output path* (including the name) where it will be located.
-This same method can be used with a valid data ptr.
-
+**Created Resource Should Load** (by default false) when true will enforce a call to the resource *OnLoad()* method when creating a new one (using the *createResourceIfInexistent* 
+parameter) right after the *OnCreation()* call.
 ```c++
-packetIterator.Get("resources/images/icon.jpg");
-packetIterator.Get("resources/images/icon.jpg", "assets/icons/iconOutput.jpg"); 
-packetIterator.Get("resources/images/icon.jpg", validUnsignedCharDataPtr); 
+bool createdResourceShouldLoad = false;
 ```
 
-### Deleting Files and Folders
-
-To delete a file or a folder, just use the `Delete` method.
-
+**Created Resource Should Auto Save** (by default false) when true and when on *edit* mode will make a created resource be saved with its creation hash value when it goes out of scope
+(released by having no instances or references).
 ```c++
-packetIterator.Delete("resources");
-packetIterator.Delete("resources/images");
-packetIterator.Delete("resources/images/icon.jpg");
+bool createdResourceAutoSave = false;
 ```
 
-### Fast File Loading
+---
+---
+---
 
-We can use a `PacketFile` object to load file\data much faster then using the iterator methods.
-This should only be used when the packet object is not being modified.
-
-> When using the iterator, each string is parsed and hashed multiple times, causing a considerable overhead
-> that could be noticeable for real time applications (games for example), the method that is described here
-> uses **compiler-time hashing** and only do **two std::map lookups**.
-
-To initialize the packet file and get a reference to it, we first need to provide our main packet object to
-initialize a `PacketFileManager`. Using this manager we can request references to any file inside our
-"bundle".
-
-```c++
-Packet::FileManager* fileManager = new Packet::FileManager(&packetObject);
-```
-
-Requesting a file is simple, we need to provide the file reference object, the file name and the load operating mode (**OnRequest**, **OnProcess** or **Assync**).
-It's possible to determine if the memory allocation for the loading phase should be delayed until the real loading starts (more noticeable when the loading is assync), by default this is set to false.
-
-*This method is thread-safe and allows multiple worker thread access.*
-
-```c++
-Packet::FileReference fileReference;
-fileManager->RequestReference(&fileReference, "resources/images/icon.jpg", PacketFile::DispatchType::Assync);
-```
-
-> - OnRequest should be used when the file must be loaded on the current thread and inside the current request call.
-> - OnProcess means that you need to call the **ProcessQueues** method first to start the loading process of all files inside the current load queue.
-> - If Assync was your choice, the file will be loaded by a dedicated thread some time after the **ProcessQueues** method was called.
->
-> It's possible to derive the PacketFile class to override the memory allocation and deallocation methods.
-
-The file manager should be updated every frame (in real time situations) or at least when there is a new file inside the loading queue. For this
-remember to use the **ProcessQueues** method.
-
-```c++
-fileManager->ProcessQueues();
-```
-
-When the file reference isn't needed anymore, you can release it using the **ReleaseReference** method:
-
-*This method is thread-safe and allows multiple worker thread access.*
-
-```c++
-fileManager->ReleaseReference(&fileReference);
-```
-
-If you are using a workspace with multiple worker threads, there is the possibility to enable the multiple-queue mode, so, each thread
-will have its own request queue and the synchronization will occur on the ProcessQueue method, for this just register the total number
-of worker threads (the maximum number established) and the method to retrieve the thread index (inside the range from 0 to the total number
-of worket threads).
-
-```c++
-// We will allocate 4 worker threads for the system, the other parameter is a lambda function
-fileManager->UseThreadedQueue(4, []() 
-{
-    // Using my other library (Peon) for this example
-    return Peon::GetCurrentWorkerIndex();
-});
-```
-
-### Error Handling
-
-If something wrong occurs you can retrieve an error object that contains the current operation status and any error code:
-
-```c++
-// Acquire the error object
-auto errorObject = packetIterator.GetError();
-
-// Print the current error code and message into the default output
-errorObject.PrintInfo();
-```
-
-Alternatively you can get the error info and handle it by yourself. 
-
-```c++
-uint32_t errorCode;         
-std::string errorString;
-
-// Acquire the error info
-errorObject.GetInfo(errorCode, errorString);
-```
-
-### Other
-
-There is an `Optimize` method that will try to defragment our packet fragment files.
-This method can take a while to conclude depending on the number of files your packet bundle has.
-```c++
-packetIterator.Optimize();
-```
-
-You can retrieve the current internal path (after using `Seek`) using the `GetCurrentPath` method like this:
-
-```c++
-std::string currentPath = packetIterator.GetCurrentPath();
-```
-
------
------
------
-
-### Oops, a wild dinosaur appeared and stole the rest of this introduction, we will try to update this as soon as possible.
+### Oops, a wild dinosaur appeared and stole the rest of this introduction, I will try to update this as soon as possible.
