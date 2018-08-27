@@ -6,7 +6,7 @@ Packet
 
 Packet is a C++ resource management library built primary for games. When developing it my focus was to achieve a high performatic system while at the same time allowing all the usual functionalities that a library like this should have. 
 
-It uses two operation modes, a not-so-fast **edit** mode and the fast-and-optimized **condensed** mode, the first one allows the user to manager all of its resource files normally as if they were located physically on a "data" folder, the second one will compress those physical files into huge condensed ones, providing a much more faster access but removing any editing functionality.
+It uses two operation modes, a not-so-fast **edit** mode and the fast-and-optimized **condensed** mode, the first one allows the user to manager all of its resource files normally as if they were located physically on a "data" folder, the second one will use a merged/compressed version of those physical files, providing a much more faster access but removing any editing functionality.
 
 I've being using this library internally for my projects but I decided to share it. I have a few additions planned to the future, right now it has those characteristics:
 
