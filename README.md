@@ -6,9 +6,9 @@ Packet
 
 Packet is a C++ resource management library built primary for games. When developing it my focus was to achieve a high performatic system while at the same time allowing all the usual functionalities that a library like this should have. 
 
-It uses two operation modes, a not-so-fast **edit** mode and the fast-and-optimized **condensed** mode, the first one allows the user to manager all of its resource files normally as if they were located physically on a "data" folder, the second one will use a merged/compressed version of those physical files, providing a much more faster access but removing any editing functionality.
+It uses two operation modes, a not-so-fast **edit** mode and the fast-and-optimized **condensed** mode, the first allows the user to manage all of its resource files normally as if they were located physically on a "data" folder, the second will use a merged/compressed version of those physical files, providing a much faster access but removing any editing functionality.
 
-I've being using this library internally for my projects but I decided to share it. I have a few additions planned to the future, right now it has those characteristics:
+I've been using this library internally for my projects but I decided to share it. I have a few additions planned to the future, right now it has this characteristics:
 
  * Two operation modes, **edit** (not really fast) and **condensed** (fast and furious)
  * Asynchronous loading (with some guaranted synchronous methods if the user needs synchronization)
@@ -20,7 +20,7 @@ I've being using this library internally for my projects but I decided to share 
 
 # Dependencies
 
-Those are all the external libraries used here, they are located on the ThirdParty folder so including them shouldn't be a problem.
+These are all the external libraries used here, they are located on the ThirdParty folder so including them shouldn't be a problem.
 
  - [JSON for Modern C++](https://github.com/nlohmann/json) used when creating resource-dependency files.
  - [Compile Time Type Information for C++](https://github.com/Manu343726/ctti) to deal with factory classes in a nicer way.
@@ -37,17 +37,17 @@ The library itself is a Visual Studio 2017 project, but it should be compatible 
 
 - The **edit** mode will allow you to access almost all functionalities without focusing alot on performance and optimizations, using it will enable you to manage your resource files as you would normally do (using
 raw files directly on the current resource folder, the library won't be using the compressed data used on *condensed* mode), also you will be able to use the hot-reload feature (editing a resource at runtime can be 
-handled, creating a new resource and swapping both pointers when everything is ready), In addition to that the library itself will perform some sanity checks to ensure there are no invalid resources trying to be 
+handled, creating a new resource and swapping both pointers when everything is ready), In addition to that, the library itself will perform some sanity checks to ensure there are no invalid resources trying to be 
 used or if any operation would fail. In this mode the user can generate the compressed data user for the *condensed* mode (I will touch this further below).
-- The **condensed** mode will operate only on compressed data, this mode will disable alot of features and checks, its use is focused when shipping you application (or building it on release mode) so there are no needs
-to edit resources on-the-fly or perform validation checks, using this will be much more fast then its conterpart mode because .... hash bla bla
+- The **condensed** mode will operate only on compressed data, this mode will disable alot of features and checks, its use is focused when shipping your application (or building it on release mode) so there are no needs
+to edit resources on-the-fly or perform validation checks, using this will be much faster then its conterpart mode.
 
 ### Library Classes
 
 - A **Resource** is an object that has its lifetime managed by the total number of instances and indirect references to it (also a resource can be marked to be permanent), it provides creation, loading, unloading 
 and destruction methods to deal with the resource data, only one resource of each type can exist at the same time.
 - A **ResourceReferencePtr<>** retains a temporary reference to a resource that will prevent it from being deleted even if all of its intances are released, the ideia is that this should be used when the user needs 
-access to this resource in the future but it can't ensure that its instances won't be release until there. This object don't need to be release from the same threads that requested it so this is really usefull when 
+access to this resource in the future but it can't ensure that its instances won't be release until there. This object doesn't need to be release from the same threads that requested it so this is really usefull when 
 using a different thread for rendering purposes or constructing a command queue that will be processed by the render thread, destructing this reference later.
 - An **ResourceInstance** works like a reference to a resource (they are unique to each request) but they can also own other instances and depend on their initialization to be fully initialized. When requesting a 
 resource instance the user has the option to pass a *ResourceBuildInfo* structure that will be explained further below. When the user needs to request an instance it should use a specialized pointer class called 
@@ -63,8 +63,8 @@ default it uses the standard allocation/deallocation methods (new and delete).
 
  * Always use the *ResourceReferencePtr* and *ResourceInstancePtr* to hold instances and references instead using their direct raw pointers, those especialized pointers should be used in conjunction with move semantics.
  * The user **can't** request *resource instances* or *resource references* when the packet system is being updated, there are some exceptions to this that I will explain further below but the user must ensure that the update 
-phase will taken place alone, on its holy moment, without interruptions.
- * A *resource reference pointer* should be used when the user want's to ensure that a *resource* will be valid until this pointer is destructed, try to always use it when using multiple threads to ensure no race conditions 
+phase will take place alone, on its holy moment, without interruptions.
+ * A *resource reference pointer* should be used when the user wants to ensure that a *resource* will be valid until this pointer is destructed, try to always use it when using multiple threads to ensure no race conditions 
 will ever exist.
 
 # Getting Started
@@ -76,7 +76,7 @@ Currently I'm using this library intensely on my [Vulkan rendering engine](https
 ### Creating and Initializing the Packet System Object
 
 The packet system class has 2 constructors: The first one should be used when the user will never attempt to request resource instances from different threads, 
-if is guaranteed that it will only happen inside the same thread this should be your choice.
+if it's guaranteed that it will only happen inside the same thread this should be your choice.
 
 The second one should be used when the user will attempt to request resource instances from multiple threads, internally we will create *n* queues where *n* is equal to < total_number_of_threads > so each thread will 
 use its own queue, also the user must provide a valid method (with this signature: *std::function<uint32_t()>*) to retrieve the current thread index (an index in range from 0 to n-1).
@@ -162,6 +162,7 @@ To request a resource reference you must call the *GetResourceReference<>()* met
 
 ```c++
 Packet::ResourceReferencePtr<MyResource> myResourceReference;
+
 myResourceReference = myResourceInstance->GetResourceReference<MyResource>();
 ```
 
@@ -171,16 +172,16 @@ during this time you can ensure that the initial instance will exist, a referenc
 # Resource Related Classes
 
 Here I will give some examples on how to create and structure all classes that you need to create to integrate this library into your application, you can check [my resource/instance/factory implementations in my other project](https://github.com/RodrigoHolztrattner/WonderlandProject/tree/master/WonderlandProject/Engine/Resource)
-instead reading all the future sections.
+instead of reading all the next sections.
 
 ### Structuring a Resource Class
 
-Here I will give an example of how to create your resource class, there are some methods that you must override but otherwise you are free to do anything you want
+Here I will give an example of how to create your resource class, there are some methods that you must override but otherwise you are free to do anything you want.
 
 The resource constructor is always called when inside the update phase so calling it is considered synchronous but its destruction is by default asynchronous, this can be changed when requesting
 a *resource instance* for this resource by passing a the build info parameter with different arguments.
 
-Those are the virtual methods that you should override:
+These are the virtual methods that you should override:
 
 * When a resource is being loaded this method will be called asynchronous (by an internal loading thread).
 ```c++
@@ -270,7 +271,7 @@ private:
 
 ### Structuring a Resource Instance Class
 
-A resource instance works like a reference to a resource object but at the same time each instance can have its own data, this is really usefull when for example, 
+A resource instance works like a reference to a resource object but at the same time each instance can have its own data, this is really usefull when, for example, 
 loading a skeleton resource (for animation) that contains info about each bone and also a GPU vertex buffer, so each instance can have its own bone transform matrix
 that is maintained and update separated from the resource object itself.
 
@@ -278,9 +279,9 @@ The instance constructor is called right before its request (by the calling thre
 An instance can own other instances, in this case the user can register a dependency between those instances, only when all dependent instances are fully constructed
 the method *OnDependenciesFulfilled()* (expalined below) will be called.
 
-Those are the virtual methods that the user must override:
+These are the virtual methods that the user must override:
 
-* This method is called when inside the update phase by default, the user can allows it to be asynchronous by setting true on the *asyncInstanceConstruct* build 
+* This method is called when inside the update phase by default, the user can allow it to be asynchronous by setting true on the *asyncInstanceConstruct* build 
 info parameter when requesting the instance.
 ```c++
 virtual void OnConstruct() = 0;
@@ -296,7 +297,7 @@ virtual void OnDependenciesFulfilled() = 0;
 
 ---
 
-* This method will be only called when on Edit mode and if the resource that this instance reference was reconstructed, at this state this instance already points
+* This method will be only called when on *edit* mode and if the resource that this instance reference was reconstructed, at this state this instance already points
 to the new resource so its data must be reconstructed using it.
 ```c++
 virtual void OnReset() = 0;
@@ -345,7 +346,7 @@ private:
 Factories are a nicer way to provide much more flexibility when constructing resource related objects (resources, resource instances and resource data), the user can use
 them to provide custom memory allocation features or insert custom data when allocating them.
 
-Those are the virtual methods that the user must override:
+These are the virtual methods that the user must override:
 
 * Called right after a new instance is requested (from the packet system). The user must return a valid unique_ptr for a new instance.
 ```c++
@@ -449,13 +450,13 @@ uint32_t buildFlags = 0;
 ```
 
 **Flags** are passed to the resource *OnLoad()* method, differently from the *build flags*, using different flags **does not** make resources with the same hash different 
-from each other, they are like normal flags, you can use they for whatever you want.
+from each other, they are like normal flags, you can use them for whatever you want.
 ```c++
 uint32_t flags = 0;
 ```
 
-**Async Instance Construct** (by default true) when set specifies that when requesting a new *resource instance*, if the *resource* already exist and is ready to be used this
-new instance can have its *OnConstruct()* method called right after the request call (by the requesting thread), if this parameter is false this will only happens when inside 
+**Async Instance Construct** (by default true) when set, it specifies that when requesting a new *resource instance*, if the *resource* already exists and it's ready to be used, this
+new instance will have its *OnConstruct()* method called right after the request call (by the requesting thread). If the parameter is false this will only happens when inside 
 the update phase for the packet system.
 ```c++
 bool asyncInstanceConstruct = true;
@@ -467,20 +468,20 @@ in other words if this method can be called by the deletion thread or if it shou
 bool asyncResourceObjectDeletion = true;
 ```
 
-**Create Resource if Inexistent** (by default false) sets if in the case there isn't a valid resource with the given hash, a resource object should be created anyway, this **only**
+**Create Resource if Inexistent** (by default false) sets that if there isn't a valid resource with the given hash, a resource object should be created anyway, this **only**
 works when on *edit* mode and if that happen a call to the *OnCreation()* method will be made instead calling *OnLoad()*. This resource won't call its factory methods *AllocateData()* 
 and *DeallocateData()*, the user is responsible for managing the data itself on this case. 
 ```c++
 bool createResourceIfInexistent = false;
 ```
 
-**Created Resource Should Load** (by default false) when true will enforce a call to the resource *OnLoad()* method when creating a new one (using the *createResourceIfInexistent* 
+**Created Resource Should Load** (by default false) when true, it will enforce a call to the resource *OnLoad()* method when creating a new one (using the *createResourceIfInexistent* 
 parameter) right after the *OnCreation()* call.
 ```c++
 bool createdResourceShouldLoad = false;
 ```
 
-**Created Resource Should Auto Save** (by default false) when true and when on *edit* mode will make a created resource be saved with its creation hash value when it goes out of scope
+**Created Resource Should Auto Save** (by default false) when true and when on *edit* mode, it will make a created resource be saved with its creation hash value when it goes out of scope
 (released by having no instances or references).
 ```c++
 bool createdResourceAutoSave = false;
@@ -489,5 +490,3 @@ bool createdResourceAutoSave = false;
 ---
 ---
 ---
-
-### Oops, a wild dinosaur appeared and stole the rest of this introduction, I will try to update this as soon as possible.
