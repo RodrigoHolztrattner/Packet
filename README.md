@@ -16,7 +16,7 @@ I've been using this library internally for my projects but I decided to share i
  * Creation of bundle-like files that are used on the **condensed** mode
  * Allows the user to manage how the resource and data memory allocation/deallocation will happen
  * Reference counting lifetime for resources
- * Resource dependency management (intra-resource dependency checks and corrections, explained below)
+ * Resource dependency management (intra-resource dependency checks and corrections, explained below) (still need to write about this here!)
 
 # Dependencies
 
