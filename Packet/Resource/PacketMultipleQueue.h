@@ -89,7 +89,7 @@ public:
 	}
 
 	// Return a vector with all objects (this requires synchronization and isn't thread safe)
-	std::vector<ObjectType> GetAll()
+	std::vector<ObjectType> GetAll(bool _clear = false)
 	{
 		// Lock our mutex (only one thread allowed from there)
 		std::lock_guard<std::mutex> guard(m_Mutex);
@@ -195,7 +195,7 @@ public:
 				auto& threadedQueue = m_ThreadedRequestQueues[i];
 
 				// Clear this request queue
-				if (_clear) threadedQueue.clear();
+				threadedQueue.clear();
 			}
 		}
 	}
