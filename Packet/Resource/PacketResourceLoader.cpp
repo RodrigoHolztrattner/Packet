@@ -69,7 +69,7 @@ void PacketResourceLoader::LoadObjectAuxiliar()
 		if (m_OperationMode != OperationMode::Edit || !loadData.object->GetBuildInfo().createResourceIfInexistent)
 		{
 			// Check if the resource exist
-			if (m_FileLoaderPtr->FileExist(loadData.hash))
+			if (!m_FileLoaderPtr->FileExist(loadData.hash))
 			{
 				// Error validating this resource references, we will continue but keep in mind that this resource needs to update it references hashes
 				m_LoggerPtr->LogError(std::string("Trying to load a resource but it doesn't exist, path: \"")

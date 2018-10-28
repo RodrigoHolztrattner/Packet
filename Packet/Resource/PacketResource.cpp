@@ -127,10 +127,13 @@ PacketResource::~PacketResource()
 bool PacketResource::BeginLoad(bool _isPersistent)
 {
 	// Check if the data is valid
-	if (!m_WasCreated || (m_WasCreated && m_Data.GetSize() == 0))
+	if (m_Data.GetSize() == 0)
 	{
 		return false;
 	}
+
+	// Set the data is valid
+	m_DataValid = true;
 
 	// Set if this object is persistent
 	m_IsPersistent = _isPersistent;
@@ -141,11 +144,8 @@ bool PacketResource::BeginLoad(bool _isPersistent)
 		return false;
 	}
 
-	// Set data valid if this object wasn't created
-	if (!m_WasCreated)
-	{
-		m_DataValid = true;
-	}
+	// Set created to true
+	m_WasCreated = true;
 
 	return true;
 }
@@ -188,6 +188,9 @@ bool PacketResource::BeginDelete()
 	{
 		return false;
 	}
+
+	// Set created to false
+	m_WasCreated = false;
 
 	return true;
 }
