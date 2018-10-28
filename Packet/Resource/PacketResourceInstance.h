@@ -229,7 +229,7 @@ protected: // EXTERNAL USE //
 
 	// Return the resource
 	template<typename ResourceClass>
-	PacketResource* GetResource()
+	ResourceClass* GetResource()
 	{
 		assert(m_ReferenceObject != nullptr);
 		return reinterpret_cast<ResourceClass*>(m_ReferenceObject);
