@@ -29,12 +29,14 @@ PacketResourceInstance::~PacketResourceInstance()
 {
 }
 
-bool PacketResourceInstance::IsReady()
+bool PacketResourceInstance::IsReady(bool _ignoreUserFlag)
 {
 	// We only need to check if we are locked and if the reference object is pending replacement, if we are unlocked the reference object
 	// is valid (so no need to check the resource ptr) and it is ready to be used, the only case it won't be ok for us is if it's pending
 	// replacement, in this case we shouldn't use it until the resource is totally replaced
-	return !m_IsLocked && !m_ReferenceObject->IsPendingReplacement();
+	return !m_IsLocked 
+		&& !m_ReferenceObject->IsPendingReplacement() 
+		&& (_ignoreUserFlag || (m_ReferenceObject->HasUserFlag() && m_ReferenceObject->GetUserFlag()));
 }
 
 void PacketResourceInstance::AddInstanceDependency(PacketResourceInstance& _instance)

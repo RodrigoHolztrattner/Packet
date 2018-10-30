@@ -224,6 +224,26 @@ public: // STATUS //
 	// Return if this object is persistent (if it won't be released when it's reference count reaches 0)
 	bool IsPersistent();
 
+///////////////////////
+public: // USER FLAG //
+///////////////////////
+
+	// Set that this resource uses a user flag, this flag will be used when checking if this resource is ready to be used, use
+	// this if you have some kind of post-process after the synchronization call that you must ensure it's completed before 
+	// using the resource.
+	// Caution is advised here because the packet system will check if this flag is set when deallocating the resource. It's
+	// important to set this flag, finishing the resource building process, or you could be left with a stalled resource.
+	void RegisterUserFlag();
+
+	// Set the user flag
+	void SetUserFlag();
+
+	// Return if this resource has a user flag
+	bool HasUserFlag();
+
+	// Return the user flag
+	bool GetUserFlag();
+
 /////////////////////////////////////
 protected: // INSTANCE REFERENCING //
 /////////////////////////////////////
@@ -293,6 +313,8 @@ private: //////
 	bool m_IgnorePhysicalDataChanges;
 	bool m_IsPendingDeletion;
 	bool m_WasCreated;
+	bool m_HasUserFlag;
+	bool m_UserFlag;
 
 	// The total number of direct and indirect references
 	std::atomic<uint32_t> m_TotalDirectReferences;

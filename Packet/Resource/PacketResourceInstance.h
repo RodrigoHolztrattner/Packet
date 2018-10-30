@@ -178,7 +178,8 @@ public: //////////
 	// This method will return true if first, this instance is linked with its owning ptr (I really hope you are calling this 
 	// using the instance ptr object or we will probably have some problems!), if the target resource was created, loaded and 
 	// synchronized, and third if this instance was constructed with all of its dependencies fulfilled
-	bool IsReady();
+	// There is an optional parameter to not check the custom user flag, this should only be used for internal purposes
+	bool IsReady(bool _ignoreUserFlag = false);
 
 	// Create a temporary reference
 	template <typename ResourceClass>

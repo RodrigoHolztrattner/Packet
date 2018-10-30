@@ -114,6 +114,8 @@ PacketResource::PacketResource()
 	m_IsPendingReplacement = false;
 	m_IsPendingDeletion = false;
 	m_WasCreated = false;
+	m_HasUserFlag = false;
+	m_UserFlag = false;
 	m_TotalDirectReferences = 0;
 	m_TotalIndirectReferences = 0;
 }
@@ -254,6 +256,26 @@ bool PacketResource::IsIndirectlyReferenced()
 bool PacketResource::IsPersistent()
 {
 	return m_IsPersistent;
+}
+
+void PacketResource::RegisterUserFlag()
+{
+	m_HasUserFlag = true;
+}
+
+void PacketResource::SetUserFlag()
+{
+	m_UserFlag = true;
+}
+
+bool PacketResource::HasUserFlag()
+{
+	return m_HasUserFlag;
+}
+
+bool PacketResource::GetUserFlag()
+{
+	return m_UserFlag;
 }
 
 Hash& PacketResource::GetHash()
