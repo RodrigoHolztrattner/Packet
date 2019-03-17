@@ -416,13 +416,13 @@ public:
 public: //////////
 
 	// Check if a given file exist
-	virtual bool FileExist(Hash _fileHash) = 0;
+	virtual bool FileExist(Hash _fileHash) const = 0;
 
 	// Return a file size
-	virtual uint64_t GetFileSize(Hash _fileHash) = 0;
+	virtual uint64_t GetFileSize(Hash _fileHash) const = 0;
 
 	// Get the file data
-	virtual bool GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash) = 0;
+	virtual bool GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash) const = 0;
 
 	// Pack all files
 	virtual bool ConstructPacket() = 0;

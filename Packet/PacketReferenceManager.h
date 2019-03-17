@@ -88,7 +88,7 @@ public: //////////
 	// Clear all references for the given file, deleting the reference file
 	void ClearFileReferences(std::string _filePath);
 
-	// This method will validade the given file references, checking if they exist and optionally 
+	// This method will validate the given file references, checking if they exist and optionally 
 	// will try to fix if there are missing files, we can set to only fix the file references if 
 	// all of them are valid or can be fixed
 	bool ValidateFileReferences(std::string _filePath, ReferenceFixer _fixer = ReferenceFixer::None, bool _allOrNothing = true);

@@ -1,0 +1,3 @@
+C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/json-populate.dir
+C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/ALL_BUILD.dir
+C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/ZERO_CHECK.dir

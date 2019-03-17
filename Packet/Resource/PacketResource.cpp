@@ -370,6 +370,23 @@ bool PacketResource::IgnorePhysicalDataChanges()
 	return m_IgnorePhysicalDataChanges;
 }
 
+PacketResource::ConstructPhase PacketResource::GetNextConstructPhase()
+{
+    // Check if the current index is still valid
+    if (m_CurrentConstructPhaseIndex >= GetTotalConstructPhases())
+    {
+        return ConstructPhase::None;
+    }
+
+    // Get the phase from the parent instance class
+    ConstructPhase currentPhase = GetConstructPhaseForIndex(m_CurrentConstructPhaseIndex);
+
+    // Increment the phase index
+    m_CurrentConstructPhaseIndex++;
+
+    return currentPhase;
+}
+
 void PacketResource::MakeInstanceReference(PacketResourceInstance* _instance)
 {
 	// Increment the total number of references

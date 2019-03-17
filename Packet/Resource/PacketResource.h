@@ -111,6 +111,14 @@ public:
 	template <typename ResourceClass>
 	friend class PacketResourceReferencePtr;
 
+    enum class ConstructPhase
+    {
+        None,
+        Synchronous,
+        Asynchronous,
+        External
+    };
+
 //////////////////
 // CONSTRUCTORS //
 public: //////////
@@ -139,6 +147,17 @@ protected: //////////
 	// The OnDesynchronization() method (synchronous method when calling the update() method)
 	virtual bool OnDesynchronization() = 0;
 
+    // Return the amount of construct phases this instance have
+    virtual uint32_t GetTotalConstructPhases() { return 0; }
+
+    // Return the construct phase type for the given index
+    virtual ConstructPhase GetConstructPhaseForIndex(uint32_t _index) { return ConstructPhase::None; }
+
+    //
+    virtual void OnSynchronousConstruct() {};
+    virtual void OnAsynchronousConstruct() {};
+    virtual void OnExternalConstruct() {};
+
 //////////////////
 // MAIN METHODS //
 public: //////////
@@ -163,6 +182,14 @@ public: //////////
 	{
 		return reinterpret_cast<FactoryClass*>(m_FactoryPtr);
 	}
+
+/////////////////////////////////
+public: // CONSTRUCTION PHASES //
+/////////////////////////////////
+
+    // Return the next construct phase, incrementing the phase index afterwards, returns 'None'
+    // if there isn't any available phase
+    ConstructPhase GetNextConstructPhase();
 
 //////////////////////////////////
 public: // PHYSICAL DATA UPDATE //
@@ -315,6 +342,9 @@ private: //////
 	bool m_WasCreated;
 	bool m_HasUserFlag;
 	bool m_UserFlag;
+
+    // This is the index of the current construct phase
+    uint32_t m_CurrentConstructPhaseIndex = 0;
 
 	// The total number of direct and indirect references
 	std::atomic<uint32_t> m_TotalDirectReferences;

@@ -1,0 +1,934 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D477C220-A353-3F9C-96EE-92A45C9D3D5F}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>json-populate</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\bb63bd1a639f455f0f09267889a98d73\json-populate-mkdir.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating directories for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-src
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-build
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-mkdir.rule;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating directories for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-src
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-build
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-mkdir.rule;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Creating directories for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-src
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-build
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-mkdir.rule;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Creating directories for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-src
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-build
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-mkdir.rule;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\bb63bd1a639f455f0f09267889a98d73\json-populate-download.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing download step (git clone) for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp/json-populate-gitclone.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-download.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\json-populate-gitinfo.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing download step (git clone) for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp/json-populate-gitclone.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-download.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\json-populate-gitinfo.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Performing download step (git clone) for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp/json-populate-gitclone.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-download.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\json-populate-gitinfo.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Performing download step (git clone) for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp/json-populate-gitclone.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-download.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\json-populate-gitinfo.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\bb63bd1a639f455f0f09267889a98d73\json-populate-update.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing update step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-src
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp/json-populate-gitupdate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-update.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing update step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-src
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp/json-populate-gitupdate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-update.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Performing update step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-src
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp/json-populate-gitupdate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-update.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Performing update step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-src
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -P C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/tmp/json-populate-gitupdate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-update.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\bb63bd1a639f455f0f09267889a98d73\json-populate-patch.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No patch step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-patch
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-patch.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">No patch step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-patch
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-patch.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">No patch step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-patch
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-patch.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">No patch step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-patch
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-patch.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\bb63bd1a639f455f0f09267889a98d73\json-populate-configure.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No configure step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-configure.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\tmp\json-populate-cfgcmd.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">No configure step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-configure.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\tmp\json-populate-cfgcmd.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">No configure step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-configure.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\tmp\json-populate-cfgcmd.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">No configure step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-configure.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\tmp\json-populate-cfgcmd.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\bb63bd1a639f455f0f09267889a98d73\json-populate-build.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No build step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-build.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">No build step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-build.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">No build step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-build.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">No build step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-build.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\bb63bd1a639f455f0f09267889a98d73\json-populate-install.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No install step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-install.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">No install step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-install.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">No install step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-install.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">No install step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-install.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\bb63bd1a639f455f0f09267889a98d73\json-populate-test.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No test step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-test.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-test</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">No test step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-test.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-test</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">No test step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-test.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-test</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">No test step for 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+cd C:\Users\rodri\Documents\Packet\build\_deps\json-build
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/bb63bd1a639f455f0f09267889a98d73/json-populate-test.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-test</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\77c324e17e4f0c48844933845fd9e64b\json-populate-complete.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Completed 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/$(Configuration)/json-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/77c324e17e4f0c48844933845fd9e64b/json-populate-complete.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-test;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\$(Configuration)\json-populate-complete</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Completed 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/$(Configuration)/json-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/77c324e17e4f0c48844933845fd9e64b/json-populate-complete.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-test;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\$(Configuration)\json-populate-complete</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Completed 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/$(Configuration)/json-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/77c324e17e4f0c48844933845fd9e64b/json-populate-complete.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-test;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\$(Configuration)\json-populate-complete</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Completed 'json-populate'</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/$(Configuration)/json-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/json-populate-prefix/src/json-populate-stamp/$(Configuration)/json-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/77c324e17e4f0c48844933845fd9e64b/json-populate-complete.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-mkdir;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-download;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-update;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-patch;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-configure;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-build;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-install;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\src\json-populate-stamp\$(Configuration)\json-populate-test;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\$(Configuration)\json-populate-complete</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\1e6a5c0a146afcd70edf438557bd9090\json-populate.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"></Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/1e6a5c0a146afcd70edf438557bd9090/json-populate.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\$(Configuration)\json-populate-complete;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\json-populate</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'"></Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/1e6a5c0a146afcd70edf438557bd9090/json-populate.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\$(Configuration)\json-populate-complete;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\json-populate</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'"></Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/1e6a5c0a146afcd70edf438557bd9090/json-populate.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\$(Configuration)\json-populate-complete;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\json-populate</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'"></Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/1e6a5c0a146afcd70edf438557bd9090/json-populate.rule;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\$(Configuration)\json-populate-complete;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\json-populate</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/rodri/Documents/Packet/build/_deps/json-subbuild -BC:/Users/rodri/Documents/Packet/build/_deps/json-subbuild --check-stamp-file C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\ExternalProject.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\RepositoryInfo.txt.in;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\3.13.0-rc1\CMakeSystem.cmake;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeLists.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\tmp\json-populate-cfgcmd.txt.in;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/rodri/Documents/Packet/build/_deps/json-subbuild -BC:/Users/rodri/Documents/Packet/build/_deps/json-subbuild --check-stamp-file C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\ExternalProject.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\RepositoryInfo.txt.in;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\3.13.0-rc1\CMakeSystem.cmake;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeLists.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\tmp\json-populate-cfgcmd.txt.in;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/rodri/Documents/Packet/build/_deps/json-subbuild -BC:/Users/rodri/Documents/Packet/build/_deps/json-subbuild --check-stamp-file C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\ExternalProject.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\RepositoryInfo.txt.in;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\3.13.0-rc1\CMakeSystem.cmake;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeLists.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\tmp\json-populate-cfgcmd.txt.in;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/rodri/Documents/Packet/build/_deps/json-subbuild -BC:/Users/rodri/Documents/Packet/build/_deps/json-subbuild --check-stamp-file C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/rodri/Documents/Packet/build/_deps/json-subbuild/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\ExternalProject.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.13\Modules\RepositoryInfo.txt.in;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\3.13.0-rc1\CMakeSystem.cmake;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeLists.txt;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\json-populate-prefix\tmp\json-populate-cfgcmd.txt.in;C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\CMakeFiles\json-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\rodri\Documents\Packet\build\_deps\json-subbuild\ZERO_CHECK.vcxproj">
+      <Project>{86844438-E104-31FF-B33D-31E61A9832EB}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -40,7 +40,7 @@ PacketCondensedModeFileLoader::~PacketCondensedModeFileLoader()
 	}
 }
 
-bool PacketCondensedModeFileLoader::FileExist(Hash _fileHash)
+bool PacketCondensedModeFileLoader::FileExist(Hash _fileHash) const
 {
 	// Check if we have this file inside our mapped files
 	if (m_MappedInternalFileInfos.find(_fileHash) != m_MappedInternalFileInfos.end())
@@ -51,7 +51,7 @@ bool PacketCondensedModeFileLoader::FileExist(Hash _fileHash)
 	return false;
 }
 
-uint64_t PacketCondensedModeFileLoader::GetFileSize(Hash _fileHash)
+uint64_t PacketCondensedModeFileLoader::GetFileSize(Hash _fileHash) const
 {
 
 #ifndef NDEBUG
@@ -70,7 +70,7 @@ uint64_t PacketCondensedModeFileLoader::GetFileSize(Hash _fileHash)
 	return iter->second.info.size;
 }
 
-bool PacketCondensedModeFileLoader::GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash)
+bool PacketCondensedModeFileLoader::GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash) const
 {
 
 #ifndef NDEBUG
@@ -84,7 +84,7 @@ bool PacketCondensedModeFileLoader::GetFileData(uint8_t* _dataOut, uint64_t _buf
 #endif
 
 	// Get the file info
-	MappedInternalFileInfo& mappedFileInfo = m_MappedInternalFileInfos.find(_fileHash)->second;
+    const MappedInternalFileInfo& mappedFileInfo = m_MappedInternalFileInfos.find(_fileHash)->second;
 
 	// Check if the file reader is valid
 	if (mappedFileInfo.readerIndex < 0 || mappedFileInfo.readerIndex >= m_FileReaders.size())

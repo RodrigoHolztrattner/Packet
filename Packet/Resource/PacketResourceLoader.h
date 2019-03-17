@@ -71,21 +71,21 @@ public: //////////
 public: //////////
 
 	// Load a new object
-	bool LoadObject(PacketResource* _object, Hash _hash, bool _isPermanent);
+    PacketResource* LoadObject(PacketResourceInstance* _issuingInstance, Hash _hash, bool _isPermanent);
 
 	// The update method
 	void Update();
 
 private:
 
-	// The auxiliar load method
+	// The auxiliary load method
 	void LoadObjectAuxiliar();
 
 ///////////////
 // VARIABLES //
 private: //////
 
-	// The auxiliar thread
+	// The auxiliary thread
 	std::thread m_AuxiliarThread;
 
 	// The object queue

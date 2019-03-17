@@ -107,6 +107,12 @@ struct PacketResourceInstancePtr
 		return *static_cast<InstanceClass*>(m_ResourceInstance.get());
 	}
 
+    // Return the underlying instance object
+    PacketResourceInstance* Get() const
+    {
+        return m_ResourceInstance;
+    }
+
 	// Bool operator so we can use it on boolean expressions directly
 	operator bool() const
 	{
@@ -129,7 +135,7 @@ protected:
 
 	// This method is called by a resource manager object (our only friended class) and will set our 
 	// instance pointer to reference a valid instance object, creating a link
-	void InstanceLink(std::unique_ptr<PacketResourceInstance>& _instancePtr)
+	void InstanceLink(std::unique_ptr<PacketResourceInstance> _instancePtr)
 	{
 		m_ResourceInstance = std::move(_instancePtr);
 	}
@@ -255,7 +261,7 @@ protected:
 	// that is being replaced by a newer version, its ensured that this will only be called when 
 	// all dependencies for this instance are fulfilled, also if there is another instance that 
 	// depends on this one, it's ensured that this instance was also constructed and ready, 
-	// recursivelly
+	// recursively
 	void ResetInstance();
 
 	// Set the peasant object reference

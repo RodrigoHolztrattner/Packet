@@ -13,6 +13,8 @@
 #include "PacketResourceDeleter.h"
 #include "PacketResourceStorage.h"
 
+#include "concurrentqueue.h"
+
 #include <cstdint>
 #include <vector>
 #include <thread>
@@ -123,7 +125,37 @@ public: //////////
 // MAIN METHODS //
 protected: ///////
 
-	// Request an object for the given instance and resource hash
+    template <typename ResourceInstance>
+    bool RequestResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+                         Hash _hash, 
+                         bool _isPersistent,
+                         PacketResourceBuildInfo _resourceBuildInfo)
+    {
+        // Check if a resource with the given hash exist
+        if (!m_FileLoaderPtr->FileExist(_hash))
+        {
+            // The file doesn't exist
+            m_Logger->LogError(std::string("Trying to load file at path: \"")
+                               .append(_hash.GetPath())
+                               .append("\" and hash: ")
+                               .append(std::to_string(_hash.GetHashValue()))
+                               .append(" but it doesn't exist on our database!")
+                               .c_str());
+
+            return false;
+        }
+
+        // Create a new resource instance object
+        std::unique_ptr<PacketResourceInstance> newInstance = std::make_unique<PacketResourceInstance>(_hash, this);
+
+        // Link the new instance with the instance ptr, takes ownership from the unique_ptr
+        _instancePtr.InstanceLink(std::move(newInstance));
+
+        // Add this new instance to our evaluation queue
+        m_InstancesPendingEvaluation.enqueue({ _instancePtr.Get(), _resourceBuildInfo, _hash, _isPersistent });
+    }
+
+    // Request an object for the given instance and resource hash
 	template <typename ResourceInstance, typename ResourceFactory>
 	bool RequestResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr, Hash _hash, ResourceFactory* _factoryPtr, bool _isPersistent, PacketResourceBuildInfo _resourceBuildInfo)
 	{
@@ -181,6 +213,9 @@ protected: ///////
 	// The update method, process all requests
 	void Update();
 
+    // The asynchronous resource process method
+    void AsynchronousResourceProcessment();
+
 protected:
 
 	// This method is called when a resource file is modified, its execution will happen when inside the 
@@ -199,8 +234,21 @@ protected:
 ///////////////
 // VARIABLES //
 private: //////
+    
+    // Our concurrent queues
+    moodycamel::ConcurrentQueue<std::tuple<PacketResourceInstance*, PacketResourceBuildInfo, Hash, bool>> m_InstancesPendingEvaluation;
+    moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingSynchronousConstruction;
+    moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingAsynchronousConstruction;
+    moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingExternalConstruction;
 
-	// The mutex we will use to secure thread safety
+    std::vector<PacketResourceInstance*> m_InstancesWaitingForResourceConstruction;
+
+
+    moodycamel::ConcurrentQueue<PacketResourceInstance*> m_InstancesPendingRelease;
+    moodycamel::ConcurrentQueue<PacketResourceInstance*> m_ResourcesPendingDeletion;
+
+    // Our mutexes
+    std::mutex m_StorageMutex;
 	std::mutex m_Mutex;
 
 	// The resource loader and deleter

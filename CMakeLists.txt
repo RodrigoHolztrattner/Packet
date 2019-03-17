@@ -52,6 +52,12 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/nlohmann/json
 )
 
+# Concurrent queue
+FetchContent_Declare(
+  concurrentqueue
+  GIT_REPOSITORY https://github.com/cameron314/concurrentqueue#moodycamelconcurrentqueue
+)
+
 FetchContent_GetProperties(ctti)
 if(NOT ctti_POPULATED)
   PrintFetchMessage("CTTI")
@@ -63,6 +69,12 @@ FetchContent_GetProperties(json)
 if(NOT json_POPULATED)
   PrintFetchMessage("Nlohmann JSON")
   FetchContent_Populate(json)
+endif()
+
+FetchContent_GetProperties(concurrentqueue)
+if(NOT concurrentqueue_POPULATED)
+  PrintFetchMessage("moodycamel::ConcurrentQueue")
+  FetchContent_Populate(concurrentqueue)
 endif()
 
 ###########
@@ -98,6 +110,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER Packet/Packet.h)
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/Packet/ThirdParty/FileWatcher")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/Packet/ThirdParty/FileWatcher")
 target_include_directories(${PROJECT_NAME} PUBLIC ${ctti_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${json_SOURCE_DIR}/single_include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${concurrentqueue_SOURCE_DIR})
 
 ###########
 # INSTALL #

@@ -255,6 +255,123 @@ void PacketResourceManager::Update()
 	m_InUpdatePhase = false;
 }
 
+void PacketResourceManager::AsynchronousResourceProcessment()
+{
+    ////////////////////////
+    // EVALUATE INSTANCES //
+    ////////////////////////
+    while (true)
+    {
+        // If we have pending instances
+        std::tuple<PacketResourceInstance*, PacketResourceBuildInfo, Hash, bool> instanceTuple;
+        if (!m_InstancesPendingEvaluation.try_dequeue(instanceTuple))
+        {
+            break;
+        }
+
+        // Get the info
+        auto[instance, buildInfo, hash, isPermanent] = instanceTuple;
+
+        // Check if we need to create and load this resource
+        PacketResource* resource = m_ResourceStoragePtr->FindObject(hash, buildInfo.buildFlags);
+        if (resource == nullptr)
+        {
+            // Load this resource
+            resource = m_ResourceLoader.LoadObject(instance, hash, isPermanent);
+            assert(resource != nullptr);
+        }
+
+        // Make the instance reference it
+        resource->MakeInstanceReference(instance);
+
+        // Call the construct method for this instance
+        instance->BeginConstruction();
+
+        // Insert this instance into the wait vector
+        m_InstancesWaitingForResourceConstruction.push_back(instance);
+
+        // Check if this resource have any type of synchronization phase
+        if (resource->GetTotalConstructPhases() > 0)
+        {
+            // Get the next construct phase
+            auto constructPhase = resource->GetNextConstructPhase();
+
+            // If it's asynchronous 
+            if (constructPhase == PacketResource::ConstructPhase::Asynchronous)
+            {
+                m_ResourcesPendingAsynchronousConstruction.enqueue(resource);
+            }
+            // If it's synchronous 
+            else if (constructPhase == PacketResource::ConstructPhase::Synchronous)
+            {
+                m_ResourcesPendingSynchronousConstruction.enqueue(resource);
+            }
+            // If it's external 
+            else if (constructPhase == PacketResource::ConstructPhase::External)
+            {
+                m_ResourcesPendingExternalConstruction.enqueue(resource);
+            }
+        }
+    }
+
+    ///////////////////////////////
+    // ASYNCHRONOUS CONSTRUCTION //
+    ///////////////////////////////
+    while (true)
+    {
+        // If we have pending resources
+        PacketResource* resource;
+        if (!m_ResourcesPendingAsynchronousConstruction.try_dequeue(resource))
+        {
+            break;
+        }
+
+        // Call the asynchronous construct method for this resource
+        resource->OnAsynchronousConstruct();
+
+        // Get the next construct phase
+        auto constructPhase = resource->GetNextConstructPhase();
+
+        // If it's asynchronous 
+        if (constructPhase == PacketResource::ConstructPhase::Asynchronous)
+        {
+            m_ResourcesPendingAsynchronousConstruction.enqueue(resource);
+        }
+        // If it's synchronous 
+        else if (constructPhase == PacketResource::ConstructPhase::Synchronous)
+        {
+            m_ResourcesPendingSynchronousConstruction.enqueue(resource);
+        }
+        // If it's external 
+        else if (constructPhase == PacketResource::ConstructPhase::External)
+        {
+            m_ResourcesPendingExternalConstruction.enqueue(resource);
+        }
+    }
+
+    /////////////////////
+    // AWAKE INSTANCES //
+    /////////////////////
+    for (int i = m_InstancesWaitingForResourceConstruction.size() - 1; i >= 0; i++)
+    {
+        // Get this instance resource
+        PacketResource* resource = m_InstancesWaitingForResourceConstruction[i]->GetResource();
+
+        // Check if this resource is ready
+        if (resource->IsReady())
+        {
+            // Notify this instance that its resource is ready
+            // TODO: ...
+
+            // Remove this instance from the wait vector
+            m_InstancesWaitingForResourceConstruction.erase(m_InstancesWaitingForResourceConstruction.begin() + i);
+        }
+    }
+
+    // Take a little nap
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+}
+
 void PacketResourceManager::ReconstructInstance(PacketResourceInstance* _instance)
 {
 
