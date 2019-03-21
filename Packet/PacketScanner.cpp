@@ -28,10 +28,10 @@ void PacketScanner::Scan(std::string _packetDirectory)
 	m_Files.clear();
 	if (m_RootFolderNode != nullptr) delete m_RootFolderNode;
 
-	// This method will recursivelly construct the packet tree
+	// This method will recursively construct the packet tree
 	std::function<void(FolderNode*)> CreatePacketTree = [&](FolderNode* _currentNode)
 	{
-		// For each folder/file recursivelly
+		// For each folder/file recursively
 		for (auto & p : std::filesystem::directory_iterator(_currentNode->folderPath))
 		{
 			// Get the path
@@ -73,7 +73,7 @@ void PacketScanner::Scan(std::string _packetDirectory)
 		// For each child folder
 		for (auto& child : _currentNode->children)
 		{
-			// Recursivelly construct the tree
+			// Recursively construct the tree
 			CreatePacketTree(child);
 		}
 	};
@@ -86,7 +86,7 @@ void PacketScanner::Scan(std::string _packetDirectory)
 	CreatePacketTree(m_RootFolderNode);
 }
 
-std::vector<std::string> PacketScanner::CheckForHashCollisions()
+std::vector<std::string> PacketScanner::CheckForHashCollisions() const
 {
 	std::map<HashPrimitive, std::string> fileMaps;
 	std::vector<std::string> out;
@@ -114,7 +114,7 @@ std::vector<std::string> PacketScanner::CheckForHashCollisions()
 	return out;
 }
 
-std::vector<std::pair<std::string, std::vector<std::pair<Hash, std::string>>>> PacketScanner::GetFileTreeHashInfos()
+std::vector<std::pair<std::string, std::vector<std::pair<Hash, std::string>>>> PacketScanner::GetFileTreeHashInfos() const
 {
 	std::vector<std::pair<std::string, std::vector<std::pair<Hash, std::string>>>> out;
 
@@ -150,7 +150,7 @@ std::vector<std::pair<std::string, std::vector<std::pair<Hash, std::string>>>> P
 		// For each child folder
 		for (auto& childFolder : _currentNode->children)
 		{
-			// Call recursivelly this method
+			// Call recursively this method
 			ProcessUsingTree(childFolder);
 		}
 	};
@@ -161,12 +161,12 @@ std::vector<std::pair<std::string, std::vector<std::pair<Hash, std::string>>>> P
 	return out;
 }
 
-uint32_t PacketScanner::GetTotalFolderNumber()
+uint32_t PacketScanner::GetTotalFolderNumber() const
 {
 	return uint32_t(m_Folders.size());
 }
 
-uint32_t PacketScanner::GetTotalFileNumber()
+uint32_t PacketScanner::GetTotalFileNumber() const
 {
 	return uint32_t(m_Files.size());
 }

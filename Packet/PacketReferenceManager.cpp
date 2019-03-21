@@ -78,7 +78,7 @@ void PacketReferenceManager::ClearFileReferences(std::string _filePath)
 	}
 }
 
-std::vector<std::string> PacketReferenceManager::GetFileReferences(std::string _filePath)
+std::vector<std::string> PacketReferenceManager::GetFileReferences(std::string _filePath) const
 {
 	std::vector<std::string> out;
 
@@ -260,7 +260,7 @@ bool PacketReferenceManager::ValidateFileReferences(std::string _filePath, Refer
 	return true;
 }
 
-std::vector<PacketReferenceManager::FileReference> PacketReferenceManager::InternalGetFileReferences(std::string _referencePath)
+std::vector<PacketReferenceManager::FileReference> PacketReferenceManager::InternalGetFileReferences(std::string _referencePath) const
 {
 	// Read the json file
 	std::ifstream file(_referencePath, std::ios::in);
@@ -290,7 +290,7 @@ void PacketReferenceManager::InternalSaveFileReferencesVector(std::string _refer
 	MakeFileHidden(std::filesystem::path(_referencePath).wstring().c_str());
 }
 
-bool PacketReferenceManager::FileReferenceExist(std::string _referencePath, bool _create)
+bool PacketReferenceManager::FileReferenceExist(std::string _referencePath, bool _create) const
 {
 	// Check if the reference extension file already exists
 	auto p = std::filesystem::path(_referencePath);
@@ -317,7 +317,9 @@ bool PacketReferenceManager::FileReferenceExist(std::string _referencePath, bool
 	return true;
 }
 
-PacketReferenceManager::FileReference PacketReferenceManager::TryFindMatchingFileForReferenceUsingFixer(FileReference& _fileReference, ReferenceFixer _fixer)
+PacketReferenceManager::FileReference PacketReferenceManager::TryFindMatchingFileForReferenceUsingFixer(
+    FileReference& _fileReference,
+    ReferenceFixer _fixer) const
 {
 	FileReference dummyResult;
 
@@ -330,7 +332,7 @@ PacketReferenceManager::FileReference PacketReferenceManager::TryFindMatchingFil
 	// Get the reference filename
 	auto referenceFilename = std::filesystem::path(_fileReference.fileReferencePath).filename().string();
 
-	// For each folder/file recursivelly
+	// For each folder/file recursively
 	for (auto& p : std::filesystem::recursive_directory_iterator(m_PacketDirectory))
 	{
 		// Get the path

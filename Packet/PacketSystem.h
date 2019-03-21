@@ -8,8 +8,8 @@
 //////////////
 #include "PacketConfig.h"
 #include "Resource/PacketResourceManager.h"
-#include "ThirdParty/ctti//type_id.hpp"
-#include "ThirdParty/ctti//static_value.hpp"
+#include <ctti//type_id.hpp>
+#include <ctti//static_value.hpp>
 
 #include <string>
 #include <unordered_map>
@@ -63,7 +63,6 @@ public: //////////
 
 	// Constructor / destructor
 	PacketSystem();
-	PacketSystem(ThreadIndexRetrieveMethod _threadIndexMethod, uint32_t _totalWorkerThreads);
 	~PacketSystem();
 
 //////////////////
@@ -112,7 +111,7 @@ public:
 	}
 
 	// Check if a given file exist
-	bool FileExist(Hash _fileHash);
+	bool FileExist(Hash _fileHash) const;
 
 	// The update method, process all requests
 	void Update();
@@ -143,10 +142,6 @@ private:
 
 	// All registered resource factories
 	std::unordered_map<uint64_t, std::unique_ptr<PacketResourceFactory>> m_RegisteredFactories;
-
-	// The thread index retrieve method and the total number of threads
-	ThreadIndexRetrieveMethod m_ThreadIndexMethod;
-	uint32_t m_TotalWorkerThreads;
 };
 
 // Packet data explorer

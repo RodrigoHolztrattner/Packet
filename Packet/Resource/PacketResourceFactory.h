@@ -68,13 +68,13 @@ public: //////////
 	virtual std::unique_ptr<PacketResourceInstance> RequestInstance(Hash _hash, PacketResourceManager* _resourceManager) = 0;
 
 	// Release a instance
-	virtual void ReleaseInstance(std::unique_ptr<PacketResourceInstance>& _instance) = 0;
+	virtual void ReleaseInstance(std::unique_ptr<PacketResourceInstance> _instance) = 0;
 
 	// Request a new object
 	virtual std::unique_ptr<PacketResource> RequestObject() = 0;
 	
 	// Release an object
-	virtual void ReleaseObject(std::unique_ptr<PacketResource>& _object) = 0;
+	virtual void ReleaseObject(std::unique_ptr<PacketResource> _object) = 0;
 
 	// Allocates the given amount of data for the resource creation
 	virtual bool AllocateData(PacketResourceData& _resourceDataRef, uint64_t _total) = 0;

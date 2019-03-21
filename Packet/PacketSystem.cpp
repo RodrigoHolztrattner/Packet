@@ -18,14 +18,7 @@ PacketUsingDevelopmentNamespace(Packet)
 PacketSystem::PacketSystem()
 {
 	// Set the initial data
-	m_TotalWorkerThreads = 1;
-}
-
-PacketSystem::PacketSystem(ThreadIndexRetrieveMethod _threadIndexMethod, uint32_t _totalWorkerThreads)
-{
-	// Set the initial data
-	m_ThreadIndexMethod = _threadIndexMethod;
-	m_TotalWorkerThreads = _totalWorkerThreads;
+	// ...
 }
 
 PacketSystem::~PacketSystem()
@@ -68,14 +61,12 @@ bool PacketSystem::Initialize(OperationMode _operationMode, std::string _packetM
 		m_FileLoader.get(), 
 		m_ReferenceManager.get(), 
 		m_ResourceWatcher.get(), 
-		m_Logger.get(), 
-		m_TotalWorkerThreads,
-		m_ThreadIndexMethod);
+		m_Logger.get());
 
 	return true;
 }
 
-bool PacketSystem::FileExist(Hash _fileHash)
+bool PacketSystem::FileExist(Hash _fileHash) const
 {
 	return m_FileLoader->FileExist(_fileHash);
 }

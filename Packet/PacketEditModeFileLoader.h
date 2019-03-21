@@ -59,13 +59,13 @@ public: //////////
 public: //////////
 
 	// Check if a given file exist
-	bool FileExist(Hash _fileHash) override;
+	bool FileExist(Hash _fileHash) const override;
 
 	// Return a file size
-	uint64_t GetFileSize(Hash _fileHash) override;
+	uint64_t GetFileSize(Hash _fileHash) const override;
 
 	// Get the file data
-	bool GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash) override;
+	bool GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash) const override;
 
 	// Pack all files
 	bool ConstructPacket() override;

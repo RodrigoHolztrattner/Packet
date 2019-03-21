@@ -63,7 +63,7 @@ struct PacketResourceInstancePtr
 	// The destructor must unlink with the resource instance
 	~PacketResourceInstancePtr()
 	{
-		// Check if the resoruce instance is valid (only invalid if someone took the ownership using a 
+		// Check if the resource instance is valid (only invalid if someone took the ownership using a 
 		// move semantic, if we never initialized a resource instance with it or if we manually reseted
 		// this pointer)
 		if (m_ResourceInstance != nullptr)
@@ -185,12 +185,14 @@ public: //////////
 	// using the instance ptr object or we will probably have some problems!), if the target resource was created, loaded and 
 	// synchronized, and third if this instance was constructed with all of its dependencies fulfilled
 	// There is an optional parameter to not check the custom user flag, this should only be used for internal purposes
-	bool IsReady(bool _ignoreUserFlag = false);
+	bool IsReady(bool _ignoreUserFlag = false) const;
 
 	// Create a temporary reference
 	template <typename ResourceClass>
-	PacketResourceReferencePtr<ResourceClass> GetResourceReference()
+	PacketResourceReferencePtr<ResourceClass> GetResourceReference() const
 	{
+        std::lock_guard<std::mutex> lock(m_SafetyMutex);
+
 		// Increment the total number of temporary references
 		m_ReferenceObject->MakeTemporaryReference();
 
@@ -202,10 +204,10 @@ protected: // STATUS //
 ///////////////////////
 
 	// Return if all dependencies are fulfilled
-	bool AreDependenciesFulfilled();
+	bool AreDependenciesFulfilled() const;
 
 	// Return if this instance is locked
-	bool IsLocked();
+	bool IsLocked() const;
 
 //////////////////////////////////
 protected: // SELF INTERNAL USE //
@@ -216,7 +218,7 @@ protected: // SELF INTERNAL USE //
 
 	// Return if in case this instance has another one that depends on it, if this one is locked. In case there is no
 	// dependency, return false
-	bool InstanceDependencyIsLocked();
+	bool InstanceDependencyIsLocked() const;
 
 private:
 
@@ -227,24 +229,26 @@ private:
 protected: // EXTERNAL USE //
 /////////////////////////////
 
-	// This method must be called from a instance ptr and will cause us to unlink from it, setting this instance to unnused 
+	// This method must be called from a instance ptr and will cause us to unlink from it, setting this instance to unused 
 	// and in the future making this instance to be released
-	void InstanceUnlink(std::unique_ptr<PacketResourceInstance>& _instanceUniquePtr);
+	void InstanceUnlink(std::unique_ptr<PacketResourceInstance> _instanceUniquePtr);
 
 	// Return the resource
-	PacketResource* GetResource();
+	PacketResource* GetResource() const;
 
 	// Return the resource
 	template<typename ResourceClass>
-	ResourceClass* GetResource()
+	ResourceClass* GetResource() const
 	{
+        std::lock_guard<std::mutex> lock(m_SafetyMutex);
+
 		assert(m_ReferenceObject != nullptr);
 		return reinterpret_cast<ResourceClass*>(m_ReferenceObject);
 	}
 
 	// Return the object factory casting to the given template typeclass
 	template<typename FactoryClass>
-	FactoryClass* GetFactoryPtr()
+	FactoryClass* GetFactoryPtr() const
 	{
 		return m_ReferenceObject->GetFactoryPtr<FactoryClass>();
 	}
@@ -267,6 +271,10 @@ protected:
 	// Set the peasant object reference
 	void SetObjectReference(PacketResource* _objectReference);
 
+    // Lock and unlock this instance usage, preventing concurrent access
+    void LockUsage();
+    void UnlockUsage();
+
 /////////////////////
 // VIRTUAL METHODS //
 protected: //////////
@@ -283,7 +291,7 @@ protected: //////////
 	// this one it will be put on locked state until this instance is reconstructed.
 	// It's ensured that this will only be called when all dependencies for this instance are fulfilled, 
 	// also if there is another instance that depends on this one, it's ensured that this instance was 
-	// also constructed and ready, recursivelly
+	// also constructed and ready, recursively
 	virtual void OnReset() = 0;
 
 ///////////////
@@ -295,6 +303,9 @@ private: //////
 
 	// If this instance is locked
 	bool m_IsLocked;
+
+    // The safety mutex used to lock the access to this instance if modifications are being made
+    mutable std::mutex m_SafetyMutex;
 
 	// The object we are referencing
 	PacketResource* m_ReferenceObject;

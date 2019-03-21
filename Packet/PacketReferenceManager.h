@@ -7,7 +7,7 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "ThirdParty/json/nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 #include <string>
 #include <vector>
@@ -94,25 +94,32 @@ public: //////////
 	bool ValidateFileReferences(std::string _filePath, ReferenceFixer _fixer = ReferenceFixer::None, bool _allOrNothing = true);
 
 	// This method will return all references that a given file has
-	std::vector<std::string> GetFileReferences(std::string _filePath);
+	std::vector<std::string> GetFileReferences(std::string _filePath) const;
 
 private:
 
-	// Check if a reference file exist, opitionally create it
-	bool FileReferenceExist(std::string _referencePath, bool _create = false);
+	// Check if a reference file exist, optionally create it
+	bool FileReferenceExist(std::string _referencePath, bool _create = false) const;
 
 	// This method will return all file references
-	std::vector<FileReference> InternalGetFileReferences(std::string _referencePath);
+	std::vector<FileReference> InternalGetFileReferences(std::string _referencePath) const;
 
 	// This method will save the file reference vector
-	void InternalSaveFileReferencesVector(std::string _referencePath, std::vector<FileReference>& _referencesVector);
+    void InternalSaveFileReferencesVector(
+        std::string _referencePath,
+        std::vector<FileReference>& _referencesVector);
 
 	// This method will try to find a file inside the packet directories that match the given reference 
 	// using a fixer
-	FileReference TryFindMatchingFileForReferenceUsingFixer(FileReference& _fileReference, ReferenceFixer _fixer);
+    FileReference TryFindMatchingFileForReferenceUsingFixer(
+        FileReference& _fileReference,
+        ReferenceFixer _fixer) const;
 
 	// This method will update an owner file with its updated references
-	bool UpdateOwnerFileWithUpdatedReferences(std::string _filePath, std::vector<FileReference>& _oldReferences, std::vector<FileReference>& _newReferences);
+    bool UpdateOwnerFileWithUpdatedReferences(
+        std::string _filePath,
+        std::vector<FileReference>& _oldReferences,
+        std::vector<FileReference>& _newReferences);
 
 ///////////////
 // VARIABLES //

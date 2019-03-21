@@ -7,7 +7,6 @@
 // INCLUDES //
 //////////////
 #include "..\PacketConfig.h"
-#include "..\ThirdParty\readerwriterqueue\readerwriterqueue.h"
 
 #include <thread>
 
@@ -41,29 +40,23 @@ PacketDevelopmentNamespaceBegin(Packet)
 // Classes we know
 class PacketReferenceManager;
 class PacketResource;
+class PacketResourceFactory;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketResourceLoader
 ////////////////////////////////////////////////////////////////////////////////
 class PacketResourceLoader
 {
-public:
-
-	// The load data
-	struct LoadData
-	{
-		// The object, the hash and if it is permanent
-		PacketResource* object;
-		Hash hash;
-		bool isPermanent;
-	};
 
 //////////////////
 // CONSTRUCTORS //
 public: //////////
 
 	// Constructor / destructor
-	PacketResourceLoader(PacketFileLoader* _fileLoaderPtr, PacketReferenceManager* _referenceManager, PacketLogger* _loggerPtr, OperationMode _operationMode);
+	PacketResourceLoader(PacketFileLoader* _fileLoaderPtr,
+                         PacketReferenceManager* _referenceManager,
+                         PacketLogger* _loggerPtr, 
+                         OperationMode _operationMode);
 	~PacketResourceLoader();
 
 //////////////////
@@ -71,28 +64,14 @@ public: //////////
 public: //////////
 
 	// Load a new object
-    PacketResource* LoadObject(PacketResourceInstance* _issuingInstance, Hash _hash, bool _isPermanent);
-
-	// The update method
-	void Update();
-
-private:
-
-	// The auxiliary load method
-	void LoadObjectAuxiliar();
+    std::unique_ptr<PacketResource> LoadObject(PacketResourceFactory* _resourceFactory,
+                                               Hash _hash, 
+                                               PacketResourceBuildInfo _buildInfo,
+                                               bool _isPermanent) const;
 
 ///////////////
 // VARIABLES //
 private: //////
-
-	// The auxiliary thread
-	std::thread m_AuxiliarThread;
-
-	// The object queue
-	moodycamel::ReaderWriterQueue<LoadData> m_Queue;
-
-	// The object synchronization queue (callable only if the object was loaded)
-	moodycamel::ReaderWriterQueue<PacketResource*> m_SynchronizationQueue;
 
 	// The packet file loader ptr, the reference manager ptr, the logger ptr and the current operation mode
 	PacketFileLoader* m_FileLoaderPtr;

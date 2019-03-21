@@ -18,7 +18,7 @@ PacketEditModeFileLoader::~PacketEditModeFileLoader()
 {
 }
 
-bool PacketEditModeFileLoader::FileExist(Hash _fileHash)
+bool PacketEditModeFileLoader::FileExist(Hash _fileHash) const
 {
 	// Get the path
 	auto filePath = std::filesystem::path(_fileHash.GetPath().String());
@@ -36,7 +36,7 @@ bool PacketEditModeFileLoader::FileExist(Hash _fileHash)
 	}
 }
 
-uint64_t PacketEditModeFileLoader::GetFileSize(Hash _fileHash)
+uint64_t PacketEditModeFileLoader::GetFileSize(Hash _fileHash) const
 {
 	// Get the path
 	auto filePath = std::filesystem::path(_fileHash.GetPath().String());
@@ -52,7 +52,7 @@ uint64_t PacketEditModeFileLoader::GetFileSize(Hash _fileHash)
 	return 0;
 }
 
-bool PacketEditModeFileLoader::GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash)
+bool PacketEditModeFileLoader::GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash) const
 {
 	// Open the file and check if we are ok to proceed
 	std::ifstream file(_fileHash.GetPath().String(), std::ios::binary);

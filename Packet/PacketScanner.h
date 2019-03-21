@@ -84,14 +84,14 @@ public: //////////
 
 	// This method will check if there are hash collisions between the files inside this packet, returning the
 	// path for those files
-	std::vector<std::string> CheckForHashCollisions();
+	std::vector<std::string> CheckForHashCollisions() const;
 	
 	// Return a vector of pair<folder path, vector<pair<hash, file path>>> from our already processed data
-	std::vector<std::pair<std::string, std::vector<std::pair<Hash, std::string>>>> GetFileTreeHashInfos();
+	std::vector<std::pair<std::string, std::vector<std::pair<Hash, std::string>>>> GetFileTreeHashInfos() const;
 
 	// Return the total number of folders/files
-	uint32_t GetTotalFolderNumber();
-	uint32_t GetTotalFileNumber();
+	uint32_t GetTotalFolderNumber() const;
+	uint32_t GetTotalFileNumber()   const;
 
 ///////////////
 // VARIABLES //

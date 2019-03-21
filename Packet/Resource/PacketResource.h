@@ -76,10 +76,10 @@ struct PacketResourceData
 	PacketResourceData(PacketResourceData&& _other);
 
 	// Return the data
-	uint8_t* GetData();
+	uint8_t* GetData() const;
 
 	// Return the size
-	uint64_t GetSize();
+	uint64_t GetSize() const;
 
 	// Allocates memory for this object
 	virtual bool AllocateMemory(uint64_t _total);
@@ -111,14 +111,6 @@ public:
 	template <typename ResourceClass>
 	friend class PacketResourceReferencePtr;
 
-    enum class ConstructPhase
-    {
-        None,
-        Synchronous,
-        Asynchronous,
-        External
-    };
-
 //////////////////
 // CONSTRUCTORS //
 public: //////////
@@ -135,7 +127,7 @@ protected: //////////
 	virtual bool OnLoad(PacketResourceData& _data, uint32_t _buildFlags, uint32_t _flags) = 0;
 
 	// The OnCreation() method (asynchronous method), called only when creating a resource that doesn't exist, to
-	// use this method the user must explicity set the build info to create the resource
+	// use this method the user must explicit set the build info to create the resource
 	virtual bool OnCreation() { return true; }
 
 	// The OnDelete() method (asynchronous method)
@@ -147,15 +139,11 @@ protected: //////////
 	// The OnDesynchronization() method (synchronous method when calling the update() method)
 	virtual bool OnDesynchronization() = 0;
 
-    // Return the amount of construct phases this instance have
-    virtual uint32_t GetTotalConstructPhases() { return 0; }
-
-    // Return the construct phase type for the given index
-    virtual ConstructPhase GetConstructPhaseForIndex(uint32_t _index) { return ConstructPhase::None; }
+    // Return if this resource requires an external construct phase
+    virtual bool RequiresExternalConstructPhase() const { return false; }
 
     //
-    virtual void OnSynchronousConstruct() {};
-    virtual void OnAsynchronousConstruct() {};
+    virtual void OnConstruct() {};
     virtual void OnExternalConstruct() {};
 
 //////////////////
@@ -163,33 +151,25 @@ protected: //////////
 public: //////////
 
 	// Return the resource hash
-	Hash& GetHash();
+    Hash GetHash() const;
 
 	// Return the data size
-	uint32_t GetDataSize();
+	uint32_t GetDataSize() const;
 
 	// Return the total number of instances that directly or indirectly references this resource
-	uint32_t GetTotalNumberReferences();
-	uint32_t GetTotalNumberDirectReferences();
-	uint32_t GetTotalNumberIndirectReferences();
+	uint32_t GetTotalNumberReferences()         const;
+	uint32_t GetTotalNumberDirectReferences()   const;
+	uint32_t GetTotalNumberIndirectReferences() const;
 
 	// Return the object factory without cast
-	PacketResourceFactory* GetFactoryPtr();
+	PacketResourceFactory* GetFactoryPtr() const;
 
 	// Return the object factory casting to the given template typeclass
 	template<typename FactoryClass>
-	FactoryClass* GetFactoryPtr()
+	FactoryClass* GetFactoryPtr() const
 	{
 		return reinterpret_cast<FactoryClass*>(m_FactoryPtr);
 	}
-
-/////////////////////////////////
-public: // CONSTRUCTION PHASES //
-/////////////////////////////////
-
-    // Return the next construct phase, incrementing the phase index afterwards, returns 'None'
-    // if there isn't any available phase
-    ConstructPhase GetNextConstructPhase();
 
 //////////////////////////////////
 public: // PHYSICAL DATA UPDATE //
@@ -200,10 +180,10 @@ public: // PHYSICAL DATA UPDATE //
 	// resource and in a creation of a new one, this method will only works when on edit mode for the packet system 
 	void IgnoreResourcePhysicalDataChanges();
 
-	// Update this resource physical data, overwritting it. This method will only works if the packet system is operating on 
+	// Update this resource physical data, overwriting it. This method will only works if the packet system is operating on 
 	// edit mode, by default calling this method will result in a future deletion of this resource object and in a creation
 	// of a new resource object with the updated data, if the user needs to update the data at runtime multiple times is 
-	// recomended to batch multiple "data updates" and call this method once in a while (only call this method when there is 
+	// recommended to batch multiple "data updates" and call this method once in a while (only call this method when there is 
 	// a real need to actually save the data)
 	bool UpdateResourcePhysicalData(uint8_t* _data, uint64_t _dataSize);
 	bool UpdateResourcePhysicalData(PacketResourceData& _data);
@@ -235,21 +215,18 @@ public: // STATUS //
 ////////////////////
 
 	// Return if this object is ready to be used
-	bool IsReady();
-
-	// Return if this object is pending replacement
-	bool IsPendingReplacement();
+	bool IsReady() const;
 
 	// Return if this object is pending deletion
-	bool IsPendingDeletion();
+	bool IsPendingDeletion() const;
 
 	// Return if this object is referenced
-	bool IsReferenced();
-	bool IsDirectlyReferenced();
-	bool IsIndirectlyReferenced();
+	bool IsReferenced()           const;
+	bool IsDirectlyReferenced()   const;
+	bool IsIndirectlyReferenced() const;
 
 	// Return if this object is persistent (if it won't be released when it's reference count reaches 0)
-	bool IsPersistent();
+	bool IsPersistent() const;
 
 ///////////////////////
 public: // USER FLAG //
@@ -266,10 +243,10 @@ public: // USER FLAG //
 	void SetUserFlag();
 
 	// Return if this resource has a user flag
-	bool HasUserFlag();
+	bool HasUserFlag() const;
 
 	// Return the user flag
-	bool GetUserFlag();
+	bool GetUserFlag() const;
 
 /////////////////////////////////////
 protected: // INSTANCE REFERENCING //
@@ -303,9 +280,6 @@ protected: // INTERNAL //
 	// Set the build info
 	void SetBuildInfo(PacketResourceBuildInfo _buildInfo);
 
-	// Set that this resource is pending replacement
-	void SetPedingReplacement();
-
 	// Set that this resource is pending deletion
 	void SetPendingDeletion();
 
@@ -317,16 +291,22 @@ protected: // INTERNAL //
 	// This method will check if all instances that depends on this resource are totally constructed and ready
 	// to be used, this method only works on debug builds and it's not intended to be used on release builds, 
 	// also this method must be called when inside the update method on the PacketResourceManager class
-	bool AreInstancesReadyToBeUsed();
+	bool AreInstancesReadyToBeUsed() const;
 
 	// Return if this resource ignore physical data changes
-	bool IgnorePhysicalDataChanges();
+	bool IgnorePhysicalDataChanges() const;
 
 	// Return the build info
-	PacketResourceBuildInfo& GetBuildInfo();
+    const PacketResourceBuildInfo& GetBuildInfo() const;
 
-	// Return the data reference
-	PacketResourceData& GetDataRef();
+	// Return the data reference, non const because this should be used to externally release the data (factory)
+    PacketResourceData& GetDataRef();
+
+    // Increment the number of direct references
+    void IncrementNumberDirectReferences();
+
+    // Decrement the number of direct references
+    void DecrementNumberDirectReferences();
 
 ///////////////
 // VARIABLES //
@@ -336,7 +316,6 @@ private: //////
 	bool m_DataValid;
 	bool m_WasSynchronized;
 	bool m_IsPersistent;
-	bool m_IsPendingReplacement;
 	bool m_IgnorePhysicalDataChanges;
 	bool m_IsPendingDeletion;
 	bool m_WasCreated;

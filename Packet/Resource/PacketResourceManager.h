@@ -116,9 +116,7 @@ public: //////////
 		PacketFileLoader* _fileLoaderPtr, 
 		PacketReferenceManager* _referenceManager, 
 		PacketResourceWatcher* _resourceWatcherPtr, 
-		PacketLogger* _loggerPtr, 
-		uint32_t _workerThreads, 
-		ThreadIndexRetrieveMethod _threadIndexMethod);
+		PacketLogger* _loggerPtr);
 	~PacketResourceManager();
 	
 //////////////////
@@ -127,6 +125,7 @@ protected: ///////
 
     template <typename ResourceInstance>
     bool RequestResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+                         PacketResourceFactory* _factoryPtr, 
                          Hash _hash, 
                          bool _isPersistent,
                          PacketResourceBuildInfo _resourceBuildInfo)
@@ -146,13 +145,13 @@ protected: ///////
         }
 
         // Create a new resource instance object
-        std::unique_ptr<PacketResourceInstance> newInstance = std::make_unique<PacketResourceInstance>(_hash, this);
+        std::unique_ptr<PacketResourceInstance> newInstance = _factoryPtr->RequestInstance(_hash, this);
 
         // Link the new instance with the instance ptr, takes ownership from the unique_ptr
         _instancePtr.InstanceLink(std::move(newInstance));
 
         // Add this new instance to our evaluation queue
-        m_InstancesPendingEvaluation.enqueue({ _instancePtr.Get(), _resourceBuildInfo, _hash, _isPersistent });
+        m_InstancesPendingEvaluation.enqueue({ _instancePtr.Get(), _factoryPtr, _resourceBuildInfo, _hash, _isPersistent });
     }
 
     // Request an object for the given instance and resource hash
@@ -224,7 +223,7 @@ protected:
 
 	// Release an object instance, this method must be called only by a packet resource instance ptr when it is deleted without
 	// being moved to another variable using move semantics
-	void ReleaseObject(std::unique_ptr<PacketResourceInstance>& _instance, PacketResourceFactory* _factoryPtr, bool _allowAsynchronousDeletion = false);
+	void ReleaseObject(std::unique_ptr<PacketResourceInstance> _instance);
 
 	// This method must be called by a instance object that needs to be reconstructed, this method must be
 	// called when doing the update phase here on this class (doesn't need to be called necessarilly inside
@@ -234,18 +233,24 @@ protected:
 ///////////////
 // VARIABLES //
 private: //////
+
+    typedef std::tuple<PacketResourceInstance*, PacketResourceFactory*, PacketResourceBuildInfo, Hash, bool> InstanceEvaluationData;
     
-    // Our concurrent queues
-    moodycamel::ConcurrentQueue<std::tuple<PacketResourceInstance*, PacketResourceBuildInfo, Hash, bool>> m_InstancesPendingEvaluation;
-    moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingSynchronousConstruction;
-    moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingAsynchronousConstruction;
+    // Instance queues/vectors
+    moodycamel::ConcurrentQueue<InstanceEvaluationData>                  m_InstancesPendingEvaluation;
+    std::vector<PacketResourceInstance*>                                 m_InstancesPendingConstruction;
+    moodycamel::ConcurrentQueue<std::unique_ptr<PacketResourceInstance>> m_InstancesPendingReleaseEvaluation;
+    std::vector<std::unique_ptr<PacketResourceInstance>>                 m_InstancesPendingRelease;
+
+    // Resource queues/vector
     moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingExternalConstruction;
+    moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingPostConstruction;
+    std::vector<std::unique_ptr<PacketResource>> m_ResourcesPendingDeletion;
+    std::vector<std::pair<std::unique_ptr<PacketResource>, PacketResource*>> m_ResourcesPendingReplacement;
 
-    std::vector<PacketResourceInstance*> m_InstancesWaitingForResourceConstruction;
+    
 
 
-    moodycamel::ConcurrentQueue<PacketResourceInstance*> m_InstancesPendingRelease;
-    moodycamel::ConcurrentQueue<PacketResourceInstance*> m_ResourcesPendingDeletion;
 
     // Our mutexes
     std::mutex m_StorageMutex;
@@ -256,27 +261,19 @@ private: //////
 	PacketResourceDeleter m_ResourceDeleter;
 
 	// The object requests and the release queue
-	MultipleQueue<ObjectRequest> m_ResourceRequests;
-	MultipleQueue<ObjectRelease> m_InstanceReleases;
 
 	// The construct, deletion and replace queues
-	std::vector<PacketResourceInstance*> m_ConstructQueue;
-	std::vector<DeletionRequest> m_DeletionQueue;
-	std::vector<PacketResource*> m_ReplaceQueue;
+	
 
 	// The current operation mode
 	OperationMode m_OperationMode;
 
-	// The object storage, the file loader, the resoruce watcher, the reference manager and the logger ptrs
-	PacketResourceStorage* m_ResourceStoragePtr;
-	PacketResourceWatcher* m_ResourceWatcherPtr;
-	PacketFileLoader* m_FileLoaderPtr;
+	// The object storage, the file loader, the resource watcher, the reference manager and the logger ptrs
+	PacketResourceStorage*  m_ResourceStoragePtr;
+	PacketResourceWatcher*  m_ResourceWatcherPtr;
+	PacketFileLoader*       m_FileLoaderPtr;
 	PacketReferenceManager* m_ReferenceManagerPtr;
-	PacketLogger* m_Logger;
-
-	// If we are inside the update phase and the updating thread id (used for asserts only)
-	bool m_InUpdatePhase;
-	std::thread::id m_UpdateThreadID;
+	PacketLogger*           m_Logger;
 };
 
 // Packet

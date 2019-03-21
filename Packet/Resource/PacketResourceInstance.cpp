@@ -29,13 +29,14 @@ PacketResourceInstance::~PacketResourceInstance()
 {
 }
 
-bool PacketResourceInstance::IsReady(bool _ignoreUserFlag)
+bool PacketResourceInstance::IsReady(bool _ignoreUserFlag) const
 {
+    std::lock_guard<std::mutex> lock(m_SafetyMutex);
+
 	// We only need to check if we are locked and if the reference object is pending replacement, if we are unlocked the reference object
 	// is valid (so no need to check the resource ptr) and it is ready to be used, the only case it won't be ok for us is if it's pending
 	// replacement, in this case we shouldn't use it until the resource is totally replaced
 	return !m_IsLocked
-		&& !m_ReferenceObject->IsPendingReplacement()
 		&& (_ignoreUserFlag
 			|| (!m_ReferenceObject->HasUserFlag()
 				|| (m_ReferenceObject->HasUserFlag() && m_ReferenceObject->GetUserFlag())));
@@ -50,7 +51,7 @@ void PacketResourceInstance::AddInstanceDependency(PacketResourceInstance& _inst
 	_instance.m_LinkedInstanceDependency = this;
 }
 
-bool PacketResourceInstance::InstanceDependencyIsLocked()
+bool PacketResourceInstance::InstanceDependencyIsLocked() const
 {
 	// No dependency
 	if (m_LinkedInstanceDependency == nullptr)
@@ -61,17 +62,19 @@ bool PacketResourceInstance::InstanceDependencyIsLocked()
 	return m_LinkedInstanceDependency->IsLocked();
 }
 
-void PacketResourceInstance::InstanceUnlink(std::unique_ptr<PacketResourceInstance>& _instanceUniquePtr)
+void PacketResourceInstance::InstanceUnlink(std::unique_ptr<PacketResourceInstance> _instanceUniquePtr)
 {
 	// Set linked to false
 	m_IsLinked = false;
 	
 	// Use the resource manager to release this instance
-	m_ResourceManagerPtr->ReleaseObject(_instanceUniquePtr, m_FactoryPtr, m_ReferenceObject->GetBuildInfo().asyncResourceObjectDeletion);
+	m_ResourceManagerPtr->ReleaseObject(std::move(_instanceUniquePtr));
 }
 
-PacketResource* PacketResourceInstance::GetResource()
+PacketResource* PacketResourceInstance::GetResource() const
 {
+    std::lock_guard<std::mutex> lock(m_SafetyMutex);
+
 	assert(m_ReferenceObject != nullptr);
 	return m_ReferenceObject;
 }
@@ -81,12 +84,22 @@ void PacketResourceInstance::SetObjectReference(PacketResource* _objectReference
 	m_ReferenceObject = _objectReference;
 }
 
-bool PacketResourceInstance::AreDependenciesFulfilled()
+void PacketResourceInstance::LockUsage()
+{
+    m_SafetyMutex.lock();
+}
+
+void PacketResourceInstance::UnlockUsage()
+{
+    m_SafetyMutex.unlock();
+}
+
+bool PacketResourceInstance::AreDependenciesFulfilled() const
 {
 	return m_DependencyCount == 0;
 }
 
-bool PacketResourceInstance::IsLocked()
+bool PacketResourceInstance::IsLocked() const
 {
 	return m_IsLocked;
 }
@@ -94,7 +107,7 @@ bool PacketResourceInstance::IsLocked()
 /*
 bool PacketResourceInstance::RequestDuplicate(PacketResourceInstance& _other)
 {
-	// Check if this instance was completly loaded
+	// Check if this instance was completely loaded
 	assert(m_IsLocked || !AreDependenciesFulfilled() || !WasLoaded());
 
 	// Request a new object for this instance

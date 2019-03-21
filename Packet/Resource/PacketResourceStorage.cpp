@@ -19,7 +19,7 @@ PacketResourceStorage::~PacketResourceStorage()
 {
 }
 
-PacketResource* PacketResourceStorage::FindObject(Hash _hash, uint32_t _buildFlags)
+PacketResource* PacketResourceStorage::FindObject(Hash _hash, uint32_t _buildFlags) const
 {
 	// Check if an object with the given hash exist
 	auto iterator = m_ObjectMap.find({ _hash, _buildFlags });
@@ -31,7 +31,7 @@ PacketResource* PacketResourceStorage::FindObject(Hash _hash, uint32_t _buildFla
 	return iterator->second.get();
 }
 
-bool PacketResourceStorage::InsertObject(std::unique_ptr<PacketResource>& _object, Hash _hash, uint32_t _buildFlags)
+bool PacketResourceStorage::InsertObject(std::unique_ptr<PacketResource> _object, Hash _hash, uint32_t _buildFlags)
 {
 	// Check if an object with the given hash exist
 	auto iterator = m_ObjectMap.find({ _hash, _buildFlags });
@@ -104,7 +104,7 @@ std::unique_ptr<PacketResource> PacketResourceStorage::GetObjectOwnership(Packet
 	return std::move(objectUniquePtr);
 }
 
-std::map<std::pair<HashPrimitive, uint32_t>, std::unique_ptr<PacketResource>>& PacketResourceStorage::GetObjectMapReference()
+const std::map<std::pair<HashPrimitive, uint32_t>, std::unique_ptr<PacketResource>>& PacketResourceStorage::GetObjectMapReference() const
 {
 	return m_ObjectMap;
 }

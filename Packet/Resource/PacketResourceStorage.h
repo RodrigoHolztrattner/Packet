@@ -62,11 +62,11 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
-	// Try to find an object with the input hash, if sucessfull, return it
-	PacketResource* FindObject(Hash _hash, uint32_t _buildFlags);
+	// Try to find an object with the input hash, if successful, return it
+	PacketResource* FindObject(Hash _hash, uint32_t _buildFlags) const;
 
 	// Insert a new object
-	bool InsertObject(std::unique_ptr<PacketResource>& _object, Hash _hash, uint32_t _buildFlags);
+	bool InsertObject(std::unique_ptr<PacketResource> _object, Hash _hash, uint32_t _buildFlags);
 
 	// Replace an resource by a new one
 	std::unique_ptr<PacketResource> ReplaceObject(std::unique_ptr<PacketResource>& _object, Hash _hash, uint32_t _buildFlags);
@@ -79,7 +79,7 @@ public: //////////
 	std::unique_ptr<PacketResource> GetObjectOwnership(PacketResource* _object);
 
 	// Return a reference to our object map
-	std::map<std::pair<HashPrimitive, uint32_t>, std::unique_ptr<PacketResource>>& GetObjectMapReference();
+    const std::map<std::pair<HashPrimitive, uint32_t>, std::unique_ptr<PacketResource>>& GetObjectMapReference() const;
 
 ///////////////
 // VARIABLES //

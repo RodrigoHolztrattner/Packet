@@ -70,12 +70,12 @@ PacketResourceData::PacketResourceData(PacketResourceData&& _other)
 	m_Size = 0;
 }
 
-uint8_t* PacketResourceData::GetData()
+uint8_t* PacketResourceData::GetData() const
 {
 	return m_Data;
 }
 
-uint64_t PacketResourceData::GetSize()
+uint64_t PacketResourceData::GetSize() const
 {
 	return m_Size;
 }
@@ -111,7 +111,6 @@ PacketResource::PacketResource()
 	m_DataValid = false;
 	m_WasSynchronized = false;
 	m_IsPersistent = false;
-	m_IsPendingReplacement = false;
 	m_IsPendingDeletion = false;
 	m_WasCreated = false;
 	m_HasUserFlag = false;
@@ -223,37 +222,32 @@ bool PacketResource::BeginDesynchronization()
 	return true;
 }
 
-bool PacketResource::IsReady()
+bool PacketResource::IsReady() const
 {
 	return (m_DataValid && m_WasSynchronized) || m_WasCreated;
 }
 
-bool PacketResource::IsPendingReplacement()
-{
-	return m_IsPendingReplacement;
-}
-
-bool PacketResource::IsPendingDeletion()
+bool PacketResource::IsPendingDeletion() const
 {
 	return m_IsPendingDeletion;
 }
 
-bool PacketResource::IsReferenced()
+bool PacketResource::IsReferenced() const
 {
 	return m_TotalDirectReferences > 0 || m_TotalIndirectReferences > 0;
 }
 
-bool PacketResource::IsDirectlyReferenced()
+bool PacketResource::IsDirectlyReferenced() const
 {
 	return m_TotalDirectReferences > 0;
 }
 
-bool PacketResource::IsIndirectlyReferenced()
+bool PacketResource::IsIndirectlyReferenced() const
 {
 	return m_TotalIndirectReferences > 0;
 }
 
-bool PacketResource::IsPersistent()
+bool PacketResource::IsPersistent() const
 {
 	return m_IsPersistent;
 }
@@ -268,17 +262,17 @@ void PacketResource::SetUserFlag()
 	m_UserFlag = true;
 }
 
-bool PacketResource::HasUserFlag()
+bool PacketResource::HasUserFlag() const
 {
 	return m_HasUserFlag;
 }
 
-bool PacketResource::GetUserFlag()
+bool PacketResource::GetUserFlag() const
 {
 	return m_UserFlag;
 }
 
-Hash& PacketResource::GetHash()
+Hash PacketResource::GetHash() const
 {
 	return m_Hash;
 }
@@ -302,14 +296,9 @@ void PacketResource::SetBuildInfo(PacketResourceBuildInfo _buildInfo)
 	m_BuildInfo = _buildInfo;
 }
 
-PacketResourceBuildInfo& PacketResource::GetBuildInfo()
+const PacketResourceBuildInfo& PacketResource::GetBuildInfo() const
 {
 	return m_BuildInfo;
-}
-
-void PacketResource::SetPedingReplacement()
-{
-	m_IsPendingReplacement = true;
 }
 
 void PacketResource::SetPendingDeletion()
@@ -324,26 +313,29 @@ void PacketResource::RedirectInstancesToResource(PacketResource* _newResource)
 	// For each instance
 	for (auto* instance : m_InstancesThatUsesThisResource)
 	{
+        // Lock this instance
+        instance->LockUsage();
+
 		// Set the object reference
 		_newResource->MakeInstanceReference(instance);
 
 		// Reset this instance
 		instance->ResetInstance();
+
+        // Unlock the instance
+        instance->UnlockUsage();
+
+        // Decrement the number of direct references
+        m_TotalDirectReferences--;
 	}
 
 	// Clear the instance vector
 	m_InstancesThatUsesThisResource.clear();
 
-	// Zero the total number of direct references
-	m_TotalDirectReferences = 0;
-
 #endif
-
-	// Set is pending replacement to false
-	m_IsPendingReplacement = false;
 }
 
-bool PacketResource::AreInstancesReadyToBeUsed()
+bool PacketResource::AreInstancesReadyToBeUsed() const
 {
 #ifndef NDEBUG
 
@@ -365,26 +357,9 @@ bool PacketResource::AreInstancesReadyToBeUsed()
 	return false;
 }
 
-bool PacketResource::IgnorePhysicalDataChanges()
+bool PacketResource::IgnorePhysicalDataChanges() const
 {
 	return m_IgnorePhysicalDataChanges;
-}
-
-PacketResource::ConstructPhase PacketResource::GetNextConstructPhase()
-{
-    // Check if the current index is still valid
-    if (m_CurrentConstructPhaseIndex >= GetTotalConstructPhases())
-    {
-        return ConstructPhase::None;
-    }
-
-    // Get the phase from the parent instance class
-    ConstructPhase currentPhase = GetConstructPhaseForIndex(m_CurrentConstructPhaseIndex);
-
-    // Increment the phase index
-    m_CurrentConstructPhaseIndex++;
-
-    return currentPhase;
 }
 
 void PacketResource::MakeInstanceReference(PacketResourceInstance* _instance)
@@ -441,27 +416,27 @@ void PacketResource::RemoveTemporaryReference()
 	m_TotalIndirectReferences--;
 }
 
-uint32_t PacketResource::GetDataSize()
+uint32_t PacketResource::GetDataSize() const
 {
 	return uint32_t(m_Data.GetSize());
 }
 
-uint32_t PacketResource::GetTotalNumberReferences()
+uint32_t PacketResource::GetTotalNumberReferences() const
 {
 	return m_TotalDirectReferences + m_TotalIndirectReferences;
 }
 
-uint32_t PacketResource::GetTotalNumberDirectReferences()
+uint32_t PacketResource::GetTotalNumberDirectReferences() const
 {
 	return m_TotalDirectReferences;
 }
 
-uint32_t PacketResource::GetTotalNumberIndirectReferences()
+uint32_t PacketResource::GetTotalNumberIndirectReferences() const
 {
 	return m_TotalIndirectReferences;
 }
 
-PacketResourceFactory* PacketResource::GetFactoryPtr()
+PacketResourceFactory* PacketResource::GetFactoryPtr() const
 {
 	return m_FactoryPtr;
 }
@@ -469,6 +444,16 @@ PacketResourceFactory* PacketResource::GetFactoryPtr()
 PacketResourceData& PacketResource::GetDataRef()
 {
 	return m_Data;
+}
+
+void PacketResource::IncrementNumberDirectReferences()
+{
+    m_TotalDirectReferences++;
+}
+
+void PacketResource::DecrementNumberDirectReferences()
+{
+    m_TotalDirectReferences--;
 }
 
 void PacketResource::IgnoreResourcePhysicalDataChanges()
