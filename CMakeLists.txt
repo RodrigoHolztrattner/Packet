@@ -154,7 +154,12 @@ project(${TEST_PROJECT_NAME} VERSION 1.0.0 DESCRIPTION "blob")
 SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc")
 SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od")
 
-add_executable(${TEST_PROJECT_NAME} Tests/TestMain.cpp)
+add_executable(${TEST_PROJECT_NAME} 
+Tests/TestMain.cpp
+Tests/MyResource.cpp
+Tests/MyInstance.cpp
+Tests/MyFactory.cpp)
+
 target_include_directories(${TEST_PROJECT_NAME} PUBLIC ${catch2_SOURCE_DIR}/single_include)
 
 # Link agains our packet library
