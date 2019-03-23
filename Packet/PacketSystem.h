@@ -77,21 +77,14 @@ public: //////////
 
 public:
 
-	// Register a resource factory (takes ownership over the unique_ptr)
-	template <typename ResourceClass, typename ResourceFactoryClass>
-	void RegisterResourceFactory(std::unique_ptr<ResourceFactoryClass>& _factoryPtr)
-	{
-		assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) == m_RegisteredFactories.end());
-		m_RegisteredFactories.insert({ ctti::type_id<ResourceClass>().hash(), std::move(_factoryPtr )});
-	}
-
-	// Register a resource factory (takes ownership over the unique_ptr)
-	template <typename ResourceClass, typename ResourceFactoryClass>
-	void RegisterResourceFactory(std::unique_ptr<ResourceFactoryClass>&& _factoryPtr)
-	{
-		assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) == m_RegisteredFactories.end());
-		m_RegisteredFactories.insert({ ctti::type_id<ResourceClass>().hash(), std::move(_factoryPtr) });
-	}
+    // Register a resource factory
+    template <typename ResourceFactoryClass, typename ResourceClass, typename ... Args>
+    void RegisterResourceFactory(Args && ... args)
+    {
+        assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) == m_RegisteredFactories.end());
+        m_RegisteredFactories.insert({ ctti::type_id<ResourceClass>().hash(),
+                                     std::make_unique<ResourceFactoryClass>(std::forward<Args>(args) ...)});
+    }
 
 	// Request an object for the given instance and resource hash
 	template <typename ResourceClass, typename ResourceInstance>

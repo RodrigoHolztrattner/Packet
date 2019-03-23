@@ -174,7 +174,7 @@ SCENARIO("Instances can request resources if they exist", "[instance]")
         bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
         REQUIRE(initializationResult == true);
 
-        packetSystem.RegisterResourceFactory<MyResource>(std::make_unique<MyFactory>());
+        packetSystem.RegisterResourceFactory<MyFactory, MyResource>();
 
         AND_GIVEN("A previously created resource file")
         {
