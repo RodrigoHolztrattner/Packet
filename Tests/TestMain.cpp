@@ -42,9 +42,7 @@ public:
 
 class MyInstance : public Packet::ResourceInstance
 {
-    //////////////////
-    // CONSTRUCTORS //
-public: //////////
+public:
 
     MyInstance(Packet::Hash& _hash, 
                Packet::ResourceManager* _resourceManager,
@@ -78,8 +76,6 @@ public:
 
     MyFactory() : Packet::ResourceFactory()
     {
-        // Set the initial data
-        // ...
     }
 
     ~MyFactory()
@@ -119,7 +115,8 @@ public:
     }
 };
 
-static std::string ResourceDirectory = "Data";
+#define ResourceDirectory    std::string("Data")
+#define MaximumTimeoutWaitMS long long(5000)
 
 bool CreateResourceFile(std::string _filename = ResourceDirectory + "/dummy.txt", uint32_t _amountToWrite = 100)
 {
@@ -141,30 +138,82 @@ bool CreateResourceFile(std::string _filename = ResourceDirectory + "/dummy.txt"
     return false;
 }
 
-TEST_CASE("vectors can be sized and resized", "[vector]") 
+SCENARIO("Packet system can be initialized", "[system]")
 {
-    Packet::System packetSystem;
-    std::string resourcePath = ResourceDirectory + "/dummy.txt";
-
+    GIVEN("A non initialized packet system")
     {
-        bool resourceCreationResult = CreateResourceFile(resourcePath);
-        REQUIRE(resourceCreationResult == true);
+        Packet::System packetSystem;
+
+        WHEN("It's initialized in edit mode") 
+        {
+            bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
+
+            THEN("It must have been initialized successfully") 
+            {
+                REQUIRE(initializationResult == true);
+            }
+        }
+
+        WHEN("It's initialized in condensed mode") 
+        {
+            bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Condensed, ResourceDirectory);
+
+            THEN("It must have been initialized successfully") 
+            {
+                REQUIRE(initializationResult == true);
+            }
+        }
     }
+}
 
+SCENARIO("Instances can request resources if they exist", "[instance]")
+{
+    GIVEN("A packet system initialized on edit mode and a registered with a MyFactory type resource factory")
     {
-        bool packetSystemInitializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
-        REQUIRE(packetSystemInitializationResult == true);
+        Packet::System packetSystem;
+        bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
+        REQUIRE(initializationResult == true);
 
         packetSystem.RegisterResourceFactory<MyResource>(std::make_unique<MyFactory>());
-    }
-    
-    SECTION("resizing bigger changes size and capacity") 
-    {
-        Packet::ResourceInstancePtr<MyInstance> resourceInstance;
 
-        packetSystem.RequestResource<MyResource>(resourceInstance,
-                                                 Packet::Hash(resourcePath));
+        AND_GIVEN("A previously created resource file")
+        {
+            std::string resourcePath = ResourceDirectory + "/dummy.txt";
+            bool resourceCreationResult = CreateResourceFile(resourcePath);
+            REQUIRE(resourceCreationResult == true);
 
-        REQUIRE(packetSystem.WaitForInstance(resourceInstance.Get(), 5000) == true);
+            WHEN("An instance request that resource")
+            {
+                Packet::ResourceInstancePtr<MyInstance> resourceInstance;
+
+                bool requestResult = packetSystem.RequestResource<MyResource>(
+                    resourceInstance,
+                    Packet::Hash(resourcePath));
+
+                THEN("The request must have returned true (the resource file exist)")
+                {
+                    REQUIRE(requestResult == true);
+                }
+
+                AND_THEN("The instance must change its status to ready after some time")
+                {
+                    REQUIRE(packetSystem.WaitForInstance(resourceInstance.Get(), MaximumTimeoutWaitMS) == true);
+                }
+            }
+        }
+
+        WHEN("An instance request a resource that doesn't exist")
+        {
+            Packet::ResourceInstancePtr<MyInstance> resourceInstance;
+
+            bool requestResult = packetSystem.RequestResource<MyResource>(
+                resourceInstance,
+                Packet::Hash("bla.txt"));
+
+            THEN("The request must have returned false (the resource file doesn't exist)")
+            {
+                REQUIRE(requestResult == false);
+            }
+        }
     }
 }
