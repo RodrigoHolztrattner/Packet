@@ -1,3 +1,0 @@
-repository='https://github.com/RodrigoHolztrattner/ctti'
-module=''
-tag=''
