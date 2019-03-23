@@ -132,3 +132,35 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 add_definitions(-DUNICODE 
 	-D_UNICODE)
+
+#########
+# TESTS #
+#########
+
+# Catch2 (for tests)
+FetchContent_Declare(
+  catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2
+)
+FetchContent_GetProperties(catch2)
+if(NOT catch2_POPULATED)
+  PrintFetchMessage("Catch2")
+  FetchContent_Populate(catch2)
+endif()
+
+set(TEST_PROJECT_NAME "Tests")
+project(${TEST_PROJECT_NAME} VERSION 1.0.0 DESCRIPTION "blob")
+
+SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc")
+SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od")
+
+add_executable(${TEST_PROJECT_NAME} Tests/TestMain.cpp)
+target_include_directories(${TEST_PROJECT_NAME} PUBLIC ${catch2_SOURCE_DIR}/single_include)
+
+# Link agains our packet library
+target_link_libraries(${TEST_PROJECT_NAME} "Packet")
+
+# Request C++ 17
+set_target_properties(${TEST_PROJECT_NAME} PROPERTIES
+            CXX_STANDARD 17
+            CXX_STANDARD_REQUIRED ON)         

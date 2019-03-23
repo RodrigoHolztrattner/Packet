@@ -12,6 +12,7 @@
 #include "PacketResourceLoader.h"
 #include "PacketResourceDeleter.h"
 #include "PacketResourceStorage.h"
+#include "PacketResourceFactory.h"
 
 #include "concurrentqueue.h"
 
@@ -167,7 +168,7 @@ protected: ///////
                                 std::vector<uint8_t> _resourceData = {})
     {
         // Create a new resource instance object
-        std::unique_ptr<PacketResourceInstance> newInstance = _factoryPtr->RequestInstance(_hash, this);
+        std::unique_ptr<PacketResourceInstance> newInstance = _factoryPtr->RequestInstance(Hash(), this);
 
         // Link the new instance with the instance ptr, takes ownership from the unique_ptr
         _instancePtr.InstanceLink(std::move(newInstance));
@@ -231,7 +232,9 @@ private: //////
 
     
 
-
+    // The asynchronous management thread and the conditional to exit
+    std::thread m_AsynchronousManagementThread;
+    bool m_AsynchronousManagementThreadShouldExit = false;
 
     // Our mutexes
     std::mutex m_StorageMutex;

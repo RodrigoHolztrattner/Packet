@@ -71,7 +71,8 @@ struct PacketResourceInstancePtr
 			// The resource instance is always valid and this object deletion is happening without the
 			// packet system update active so we are free to directly do changes on the instance object.
 			// The instance unlink will take ownership over our unique_ptr
-			m_ResourceInstance->InstanceUnlink(m_ResourceInstance);
+            auto instancePtr = m_ResourceInstance.get();
+            instancePtr->InstanceUnlink(std::move(m_ResourceInstance));
 		}
 	}
 
@@ -110,7 +111,7 @@ struct PacketResourceInstancePtr
     // Return the underlying instance object
     PacketResourceInstance* Get() const
     {
-        return m_ResourceInstance;
+        return m_ResourceInstance.get();
     }
 
 	// Bool operator so we can use it on boolean expressions directly

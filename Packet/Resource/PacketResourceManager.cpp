@@ -30,10 +30,24 @@ PacketResourceManager::PacketResourceManager(OperationMode _operationMode,
         // Register the on resource data changed method for the resource watcher
         m_ResourceWatcherPtr->RegisterOnResourceDataChangedMethod(std::bind(&PacketResourceManager::OnResourceDataChanged, this, std::placeholders::_1));
     }
+
+    // Create the asynchronous thread that will process instances and resource objects
+    m_AsynchronousManagementThread = std::thread([&]()
+    {
+        while (!m_AsynchronousManagementThreadShouldExit)
+        {
+            AsynchronousResourceProcessment();
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        }
+    });
 }
 
 PacketResourceManager::~PacketResourceManager()
 {
+    // Exist from the asynchronous thread
+    m_AsynchronousManagementThreadShouldExit = true;
+    m_AsynchronousManagementThread.join();
 }
 
 void PacketResourceManager::ReleaseObject(std::unique_ptr<PacketResourceInstance> _instancePtr)
@@ -260,7 +274,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
     /////////////////////
     // AWAKE INSTANCES //
     /////////////////////
-    for (int i = static_cast<int>(m_InstancesPendingConstruction.size() - 1); i >= 0; i++)
+    for (int i = static_cast<int>(m_InstancesPendingConstruction.size() - 1); i >= 0; i--)
     {
         // Get this instance resource
         PacketResource* resource = m_InstancesPendingConstruction[i]->GetResource();

@@ -295,3 +295,4 @@ default.doxygen
 *.data
 *.files
 *.packet
+build/

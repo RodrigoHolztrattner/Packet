@@ -98,7 +98,11 @@ public:
 	bool RequestResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr, Hash _hash, PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
 	{
 		assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
-		return m_ResourceManager->RequestResource(_instancePtr, _hash, m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(), false, _resourceBuildInfo);
+		return m_ResourceManager->RequestResource(_instancePtr,
+                                                  m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(), 
+                                                  _hash, 
+                                                  false,
+                                                  _resourceBuildInfo);
 	}
 
 	// Request a permanent object for the given instance and resource hash, the object will not be deleted when it reaches 0
