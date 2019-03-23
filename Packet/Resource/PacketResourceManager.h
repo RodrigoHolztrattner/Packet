@@ -166,7 +166,7 @@ protected: ///////
     template <typename ResourceInstance>
     void RequestRuntimeResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
                                 PacketResourceFactory* _factoryPtr,
-                                PacketResourceBuildInfo _resourceBuildInfo,
+                                PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo(),
                                 std::vector<uint8_t> _resourceData = {})
     {
         // Create a new resource instance object

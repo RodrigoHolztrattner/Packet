@@ -100,6 +100,19 @@ public:
                                                   _resourceBuildInfo);
 	}
 
+    // Request an object for the given instance and resource hash
+    template <typename ResourceClass, typename ResourceInstance>
+    void RequestRuntimeResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+                                PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo(),
+                                std::vector<uint8_t> _resourceData = {})
+    {
+        assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
+        return m_ResourceManager->RequestRuntimeResource(_instancePtr,
+                                                         m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(),
+                                                         _resourceBuildInfo, 
+                                                         std::move(_resourceData));
+    }
+
 	// Request a permanent object for the given instance and resource hash, the object will not be deleted when it reaches 0
 	// references, the deletion phase will only occur in conjunction with the storage deletion
 	template <typename ResourceClass, typename ResourceInstance>

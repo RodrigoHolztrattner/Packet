@@ -48,7 +48,7 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     resource->SetBuildInfo(_buildInfo, _isRuntimeResource);
 
     // Check the operation mode to know if we should validate this resource references
-    if (m_OperationMode == OperationMode::Edit)
+    if (!_isRuntimeResource && m_OperationMode == OperationMode::Edit)
     {
         // Validate this resource file references (if they exist), also try to fix them if they are invalid
         bool validationResult = m_ReferenceManagerPtr->ValidateFileReferences(_hash.GetPath().String(), ReferenceFixer::AtLeastNameAndExtension);

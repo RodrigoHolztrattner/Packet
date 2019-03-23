@@ -25,14 +25,17 @@ PacketResourceData::PacketResourceData(uint8_t* _data, uint64_t _size) : m_Data(
 {
 }
 
-PacketResourceData::PacketResourceData(uint64_t _size)
+PacketResourceData::PacketResourceData(uint64_t _size) : m_Data(nullptr)
 {
-	// Allocate the initial memory
-	bool result = AllocateMemory(_size);
-	assert(result);
+	// Allocate the initial memory if the size isn't 0
+    if (_size != 0)
+    {
+        bool result = AllocateMemory(_size);
+        assert(result);
+    }
 }
 
-PacketResourceData::PacketResourceData(std::vector<uint8_t> _runtimeData)
+PacketResourceData::PacketResourceData(std::vector<uint8_t> _runtimeData) : m_Data(nullptr), m_Size(0)
 {
     m_RuntimeData = std::move(_runtimeData);
 }
@@ -42,8 +45,11 @@ PacketResourceData::PacketResourceData(PacketResourceData& _other)
     // Deallocate the current memory
     DeallocateMemory();
 
-    // Allocate the necessary memory
-    AllocateMemory(_other.m_Size);
+    // Allocate the necessary memory if the size isn't 0
+    if (_other.m_Size)
+    {
+        AllocateMemory(_other.m_Size);
+    } 
 
 	m_Data = _other.m_Data;
 	m_Size = _other.m_Size;
@@ -64,9 +70,12 @@ PacketResourceData& PacketResourceData::operator=(PacketResourceData&& _other)
         // Deallocate the current memory
         DeallocateMemory();
 
-        // Allocate the necessary memory
-        AllocateMemory(_other.m_Size);
-
+        // Allocate the necessary memory if the size isn't 0
+        if (_other.m_Size)
+        {
+            AllocateMemory(_other.m_Size);
+        }
+        
 		// Acquire the other resource instance ptr
         memcpy(m_Data, _other.m_Data, _other.m_Size);
 		m_Size = _other.m_Size;
@@ -156,12 +165,6 @@ PacketResource::~PacketResource()
 
 bool PacketResource::BeginLoad(bool _isPersistent)
 {
-	// Check if the data is valid
-	if (m_Data.GetSize() == 0)
-	{
-		return false;
-	}
-
 	// Set if this object is persistent
 	m_IsPermanentResource = _isPersistent;
 

@@ -42,9 +42,9 @@ SCENARIO("Packet system can be initialized", "[system]")
     }
 }
 
-SCENARIO("Instances can request resources if they exist", "[instance]")
+SCENARIO("Instances can request resources if their file exist", "[instance]")
 {
-    GIVEN("A packet system initialized on edit mode and a registered with a MyFactory type resource factory")
+    GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
     {
         Packet::System packetSystem;
         bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
@@ -93,3 +93,38 @@ SCENARIO("Instances can request resources if they exist", "[instance]")
         }
     }
 }
+
+SCENARIO("Instances can request runtime resources", "[instance]")
+{
+    GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
+    {
+        Packet::System packetSystem;
+        bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
+        REQUIRE(initializationResult == true);
+
+        packetSystem.RegisterResourceFactory<MyFactory, MyResource>();
+
+        WHEN("An instance request a runtime resource")
+        {
+            Packet::ResourceInstancePtr<MyInstance> resourceInstance;
+
+            packetSystem.RequestRuntimeResource<MyResource>(resourceInstance);
+
+            THEN("The instance must change its status to ready after some time")
+            {
+                REQUIRE(packetSystem.WaitForInstance(resourceInstance.Get(), MaximumTimeoutWaitMS) == true);
+            }
+        }
+    }
+}
+
+/*
+    - Instance pode ter um metodo que retorna um holder do seu recurso interno (incrementando a ref count?) que tenha 
+    acesso tambem a propria instance, ao fazer isso a instance ficara com lock e apenas sera unlocked quando esse objeto
+    for out of scope ou explicitamente chamarmos unlock nele.
+    - O resource tambem deve respeitar o lock e unlock?
+    - Esse objeto permite que funcoes do resource sejam chamadas usando o operador ->.
+    - Ao finalizar as edicoes, o resource deve ser colocado para edicao no manager!?
+
+    - Nao esquecer do external construct object!
+*/
