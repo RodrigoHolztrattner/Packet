@@ -147,7 +147,6 @@ PacketResource::PacketResource()
 	m_IsPermanentResource = false;
 	m_IsPendingDeletion = false;
 	m_WasCreated = false;
-	m_HasUserFlag = false;
 	m_UserFlag = false;
 	m_TotalDirectReferences = 0;
 	m_TotalIndirectReferences = 0;
@@ -275,26 +274,6 @@ bool PacketResource::IsPermanent() const
 bool PacketResource::IsRuntime()
 {
     return m_IsRuntimeResource;
-}
-
-void PacketResource::RegisterUserFlag()
-{
-	m_HasUserFlag = true;
-}
-
-void PacketResource::SetUserFlag()
-{
-	m_UserFlag = true;
-}
-
-bool PacketResource::HasUserFlag() const
-{
-	return m_HasUserFlag;
-}
-
-bool PacketResource::GetUserFlag() const
-{
-	return m_UserFlag;
 }
 
 Hash PacketResource::GetHash() const

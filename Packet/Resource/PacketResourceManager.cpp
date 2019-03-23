@@ -38,7 +38,7 @@ PacketResourceManager::~PacketResourceManager()
 
 void PacketResourceManager::ReleaseObject(std::unique_ptr<PacketResourceInstance> _instancePtr)
 {
-	// Push the new release request
+	// Push the new release request, no need to synchronize this because we use a lock-free queue
     m_InstancesPendingReleaseEvaluation.enqueue(std::move(_instancePtr));
 }
 
@@ -139,7 +139,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
     ///////////////////////////////////
     // RESOURCES PENDING REPLACEMENT //
     ///////////////////////////////////
-    for (int i = m_ResourcesPendingReplacement.size() - 1; i >= 0; i--)
+    for (int i = static_cast<int>(m_ResourcesPendingReplacement.size() - 1); i >= 0; i--)
     {
         // Get a short variable to the resource
         auto& [newResource, originalResource] = m_ResourcesPendingReplacement[i];
@@ -192,7 +192,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
     }
 
     // For each instance pending release
-    for (int i = m_InstancesPendingRelease.size() - 1; i >= 0; i--)
+    for (int i = static_cast<int>(m_InstancesPendingRelease.size() - 1); i >= 0; i--)
     {
         // Get the instance ptr
         std::unique_ptr<PacketResourceInstance>& instance = m_InstancesPendingRelease[i];
@@ -232,7 +232,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
     //////////////////////
     // DELETE RESOURCES //
     //////////////////////
-    for (int i = m_ResourcesPendingDeletion.size(); i >= 0; i--)
+    for (int i = static_cast<int>(m_ResourcesPendingDeletion.size() - 1); i >= 0; i--)
     {
         // Get a short variable to this resource
         auto& resource = m_ResourcesPendingDeletion[i];
@@ -260,7 +260,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
     /////////////////////
     // AWAKE INSTANCES //
     /////////////////////
-    for (int i = m_InstancesPendingConstruction.size() - 1; i >= 0; i++)
+    for (int i = static_cast<int>(m_InstancesPendingConstruction.size() - 1); i >= 0; i++)
     {
         // Get this instance resource
         PacketResource* resource = m_InstancesPendingConstruction[i]->GetResource();

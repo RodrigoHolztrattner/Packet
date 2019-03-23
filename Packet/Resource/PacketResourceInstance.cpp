@@ -8,10 +8,12 @@
 // Using namespace Peasant
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketResourceInstance::PacketResourceInstance(Hash& _hash, PacketResourceManager* _resourceManager, PacketResourceFactory* _factoryPtr)
+PacketResourceInstance::PacketResourceInstance(Hash& _hash, 
+                                               PacketResourceManager* _resourceManager, 
+                                               PacketResourceFactory* _factoryPtr)
 {
 	// Set linked to true
-	m_IsLinked = true;
+	m_WasLinked = true;
 
 	// Set the hash, the resource manager ptr and the factory ptr
 	m_Hash = _hash;
@@ -28,16 +30,14 @@ PacketResourceInstance::~PacketResourceInstance()
 {
 }
 
-bool PacketResourceInstance::IsReady(bool _ignoreUserFlag) const
+bool PacketResourceInstance::IsReady() const
 {
     std::lock_guard<std::mutex> lock(m_SafetyMutex);
 
 	// We only need to check if we are locked and if the reference object is pending replacement, if we are unlocked the reference object
 	// is valid (so no need to check the resource ptr) and it is ready to be used, the only case it won't be ok for us is if it's pending
 	// replacement, in this case we shouldn't use it until the resource is totally replaced
-	return (_ignoreUserFlag
-			|| (!m_ReferenceObject->HasUserFlag()
-				|| (m_ReferenceObject->HasUserFlag() && m_ReferenceObject->GetUserFlag())));
+	return m_WasConstructed && m_ReferenceObject != nullptr && m_ReferenceObject->IsReady();
 }
 
 void PacketResourceInstance::AddInstanceDependency(PacketResourceInstance& _instance)
@@ -54,7 +54,7 @@ bool PacketResourceInstance::InstanceDependencyIsReady() const
 	// No dependency
 	if (m_LinkedInstanceDependency == nullptr)
 	{
-		return false;
+		return true;
 	}
 
 	return m_LinkedInstanceDependency->IsReady();
@@ -65,7 +65,7 @@ void PacketResourceInstance::InstanceUnlink(std::unique_ptr<PacketResourceInstan
     std::lock_guard<std::mutex> lock(m_SafetyMutex);
 
 	// Set linked to false
-	m_IsLinked = false;
+	m_WasLinked = false;
 	
 	// Use the resource manager to release this instance
 	m_ResourceManagerPtr->ReleaseObject(std::move(_instanceUniquePtr));
@@ -99,17 +99,6 @@ bool PacketResourceInstance::AreDependenciesFulfilled() const
 	return m_DependencyCount == 0;
 }
 
-/*
-bool PacketResourceInstance::RequestDuplicate(PacketResourceInstance& _other)
-{
-	// Check if this instance was completely loaded
-	assert(m_IsLocked || !AreDependenciesFulfilled() || !WasLoaded());
-
-	// Request a new object for this instance
-	return m_ObjectManager->RequestObject(this, m_Hash, m_FactoryPtr, false);
-}
-*/
-
 void PacketResourceInstance::BeginConstruction()
 {
 	assert(m_DependencyCount == 0);
@@ -122,6 +111,9 @@ void PacketResourceInstance::BeginConstruction()
 	{
 		// Call the OnDependenciesFulfilled() method
 		OnDependenciesFulfilled();
+
+        // Set that this instance was constructed
+        m_WasConstructed = true;
 	}
 
 	// If some instance depends on this one
@@ -134,8 +126,9 @@ void PacketResourceInstance::BeginConstruction()
 
 void PacketResourceInstance::ResetInstance()
 {
-	// DETAIL: There is no need to check if the dependency count is zero because it 
-	// doesn't matters
+    // We should not be able to acquire a lock to the internal mutex because this
+    // method should only be called when this instance was previously locked
+    assert(!m_SafetyMutex.try_lock());
 
 	// If there is a dependency that depends on this one, reset. 
 	if (m_LinkedInstanceDependency != nullptr)
@@ -150,6 +143,10 @@ void PacketResourceInstance::ResetInstance()
 		// Make this instance be reconstructed in the future
 		m_ResourceManagerPtr->ReconstructInstance(this);
 	}
+
+    // Reset internal data
+    m_WasConstructed = false;
+    m_LinkedInstanceDependency = nullptr;
 
 	// Call the on reset virtual method
 	OnReset();
@@ -167,20 +164,8 @@ void PacketResourceInstance::FulfillDependency(PacketResourceInstance* _instance
 	{
 		// Call the OnDependenciesFulfilled() method
 		OnDependenciesFulfilled();
+
+        // Set that this instance was constructed
+        m_WasConstructed = true;
 	}
 }
-
-/* TODO: 
-- A instancia pode ser usada antes do que deveria aqui:
-
-    // Check if this instance has any dependency
-    if (m_DependencyCount == 0)
-    {
-        // Call the OnDependenciesFulfilled() method
-        OnDependenciesFulfilled();
-    }
-
-    Como ela tem dep count == 0, ela ta ready, podendo ser usada antes da funcao OnDependenciesFulfilled ter sido chamada
-
-- 
-*/

@@ -167,7 +167,9 @@ protected: ///////
 
 	// The only one allowed to create a resource instance is the PacketResourceFactory, here we will 
 	// set the hash and a pointer to the resource manager object
-	PacketResourceInstance(Hash& _hash, PacketResourceManager* _resourceManager, PacketResourceFactory* _factoryPtr);
+	PacketResourceInstance(Hash& _hash,
+                           PacketResourceManager* _resourceManager,
+                           PacketResourceFactory* _factoryPtr);
 
 	// Disable the copy constructor so we won't be making so many mistakes :)
 	PacketResourceInstance(const PacketResourceInstance& _other) = delete;
@@ -184,8 +186,7 @@ public: //////////
 	// This method will return true if first, this instance is linked with its owning ptr (I really hope you are calling this 
 	// using the instance ptr object or we will probably have some problems!), if the target resource was created, loaded and 
 	// synchronized, and third if this instance was constructed with all of its dependencies fulfilled
-	// There is an optional parameter to not check the custom user flag, this should only be used for internal purposes
-	bool IsReady(bool _ignoreUserFlag = false) const;
+	bool IsReady() const;
 
 	// Create a temporary reference
 	template <typename ResourceClass>
@@ -213,8 +214,8 @@ protected: // SELF INTERNAL USE //
 	// Add a dependency to another instance
 	void AddInstanceDependency(PacketResourceInstance& _instance);
 
-	// Return the ready status for the (if we depend on one) instance that we depend on (if we don't depend on any instance
-    // return false)
+	// Return the ready status for the instance that we are dependent (if we have one, if we don't depend
+    // on any instance return true)
 	bool InstanceDependencyIsReady() const;
 
 private:
@@ -227,7 +228,7 @@ protected: // EXTERNAL USE //
 /////////////////////////////
 
 	// This method must be called from a instance ptr and will cause us to unlink from it, setting this instance to unused 
-	// and in the future making this instance to be released
+	// and in the future making this instance be released
 	void InstanceUnlink(std::unique_ptr<PacketResourceInstance> _instanceUniquePtr);
 
 	// Return the resource
@@ -284,37 +285,28 @@ protected: //////////
 	// this instance will be constructed again, also if there is another instance that depends on 
 	// this one it will be put on locked state until this instance is reconstructed.
 	// It's ensured that this will only be called when all dependencies for this instance are fulfilled, 
-	// also if there is another instance that depends on this one, it's ensured that this instance was 
-	// also constructed and ready, recursively
+	// also if there is another instance that depends on this, it's ensured that this instance was also
+	// constructed and ready, recursively
 	virtual void OnReset() = 0;
 
 ///////////////
 // VARIABLES //
 private: //////
 
-	// If this instance is linked with its owned ptr
-	bool m_IsLinked;
-
     // The safety mutex used to lock the access to this instance if modifications are being made
     mutable std::mutex m_SafetyMutex;
 
-	// The object we are referencing
-	PacketResource* m_ReferenceObject;
+    // The instance data
+    bool                    m_WasLinked                 = false;
+    bool                    m_WasConstructed           = false;
+	PacketResource*         m_ReferenceObject          = nullptr;
+	std::atomic<uint32_t>   m_DependencyCount          = 0;
+	PacketResourceInstance* m_LinkedInstanceDependency = nullptr;
+	Hash                    m_Hash;
 
-	// The dependency count
-	std::atomic<uint32_t> m_DependencyCount;
-
-	// The instance that depends on this one
-	PacketResourceInstance* m_LinkedInstanceDependency;
-
-	// The hash object
-	Hash m_Hash;
-
-	// The resource manager reference
-	PacketResourceManager* m_ResourceManagerPtr;
-
-	// The factory ptr
-	PacketResourceFactory* m_FactoryPtr;
+	// The resource manager and factory ptrs
+	PacketResourceManager* m_ResourceManagerPtr = nullptr;
+	PacketResourceFactory* m_FactoryPtr         = nullptr;
 };
 
 // Packet
