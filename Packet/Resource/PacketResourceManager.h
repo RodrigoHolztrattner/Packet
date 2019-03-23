@@ -151,64 +151,37 @@ protected: ///////
         _instancePtr.InstanceLink(std::move(newInstance));
 
         // Add this new instance to our evaluation queue
-        m_InstancesPendingEvaluation.enqueue({ _instancePtr.Get(), _factoryPtr, _resourceBuildInfo, _hash, _isPersistent });
+        m_InstancesPendingEvaluation.enqueue({ _instancePtr.Get(), 
+                                             _factoryPtr, 
+                                             _resourceBuildInfo,
+                                             _hash,
+                                             _isPersistent,
+                                             false, 
+                                             {} });
     }
 
-    // Request an object for the given instance and resource hash
-	template <typename ResourceInstance, typename ResourceFactory>
-	bool RequestResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr, Hash _hash, ResourceFactory* _factoryPtr, bool _isPersistent, PacketResourceBuildInfo _resourceBuildInfo)
-	{
-		// Asserts
-		assert(!m_InUpdatePhase || (m_InUpdatePhase && std::this_thread::get_id() == m_UpdateThreadID));
+    template <typename ResourceInstance>
+    bool RequestRuntimeResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+                                PacketResourceFactory* _factoryPtr,
+                                PacketResourceBuildInfo _resourceBuildInfo, 
+                                std::vector<uint8_t> _resourceData = {})
+    {
+        // Create a new resource instance object
+        std::unique_ptr<PacketResourceInstance> newInstance = _factoryPtr->RequestInstance(_hash, this);
 
-		// Check if a resource with the given hash exist
-		if (!m_FileLoaderPtr->FileExist(_hash))
-		{
-			// The file doesn't exist
-			m_Logger->LogError(std::string("Trying to load file at path: \"")
-				.append(_hash.GetPath())
-				.append("\" and hash: ")
-				.append(std::to_string(_hash.GetHashValue()))
-				.append(" but it doesn't exist on our database!")
-				.c_str());
+        // Link the new instance with the instance ptr, takes ownership from the unique_ptr
+        _instancePtr.InstanceLink(std::move(newInstance));
 
-			return false;
-		}
-
-		// Create a new resource instance object
-		std::unique_ptr<PacketResourceInstance> newInstance = _factoryPtr->RequestInstance(_hash, this);
-
-		// Get a pointer to this new instance because we will move it into the instance ptr
-		PacketResourceInstance* newInstancePtr = newInstance.get();
-
-		// Link the new instance with the instance ptr, takes ownership from the unique_ptr
-		_instancePtr.InstanceLink(newInstance);
-
-		// Check if we already have an object with this hash, if the object was loaded and if we can construct this instance asynchronous
-		PacketResource* object = m_ResourceStoragePtr->FindObject(_hash, _resourceBuildInfo.buildFlags);
-		if (object != nullptr && object->IsReady() && _resourceBuildInfo.asyncInstanceConstruct)
-		{
-			// In case we are requesting a pesistent object, check if the already loaded object was created using the permanent mode
-			assert(!_isPersistent || (_isPersistent && object->IsPersistent()) && "Trying to request a permanent object but it was already loaded and is not permanent!");
-
-			// Make the instance reference it
-			object->MakeInstanceReference(newInstancePtr);
-
-			// Construct this instance
-			newInstancePtr->BeginConstruction();
-		}
-		else
-		{
-			// Create the new request
-			ObjectRequest request = { newInstancePtr, _hash, _resourceBuildInfo, _factoryPtr, _isPersistent };
-
-			// Push the new request
-			m_ResourceRequests.Insert(request);
-		}
-
-		return true;
-	}
-
+        // Add this new instance to our evaluation queue
+        m_InstancesPendingEvaluation.enqueue({ _instancePtr.Get(),
+                                             _factoryPtr, 
+                                             _resourceBuildInfo,
+                                             Hash(), 
+                                             false, 
+                                             true, 
+                                             std::move(_resourceData)});
+    }
+  
 	// The update method, process all requests
 	void Update();
 
@@ -234,7 +207,15 @@ protected:
 // VARIABLES //
 private: //////
 
-    typedef std::tuple<PacketResourceInstance*, PacketResourceFactory*, PacketResourceBuildInfo, Hash, bool> InstanceEvaluationData;
+    typedef std::tuple<
+        PacketResourceInstance*,
+        PacketResourceFactory*,
+        PacketResourceBuildInfo,
+        Hash,
+        bool,
+        bool,
+        std::vector<uint8_t>>
+        InstanceEvaluationData;
     
     // Instance queues/vectors
     moodycamel::ConcurrentQueue<InstanceEvaluationData>                  m_InstancesPendingEvaluation;

@@ -222,20 +222,6 @@ struct PacketResourceBuildInfo
 		flags(_flags), 
 		asyncInstanceConstruct(_asyncInstanceConstruct),
 		asyncResourceObjectDeletion(_asyncResourceObjectDeletion) {}
-	PacketResourceBuildInfo(uint32_t _buildFlags, 
-		uint32_t _flags, 
-		bool _asyncInstanceConstruct, 
-		bool _asyncResourceObjectDeletion, 
-		bool _createResourceIfInexistent, 
-		bool _createdResourceShouldLoad, 
-		bool _createdResourceAutoSave) :
-		buildFlags(_buildFlags),
-		flags(_flags),
-		asyncInstanceConstruct(_asyncInstanceConstruct),
-		asyncResourceObjectDeletion(_asyncResourceObjectDeletion),
-		createResourceIfInexistent(_createResourceIfInexistent),
-		createdResourceShouldLoad(_createdResourceShouldLoad),
-		createdResourceAutoSave(_createdResourceAutoSave) {}
 
 	// The build flags (resource with different build flags and equal hash objects are considered different between each other)
 	uint32_t buildFlags = 0;
@@ -247,21 +233,9 @@ struct PacketResourceBuildInfo
 	// happen inside the update phase of the resource manager)
 	bool asyncInstanceConstruct = true;
 
-	// If the Resource Object can be deleted aynchronous (without being sure if that will happen inside the update 
+	// If the Resource Object can be deleted synchronous (without being sure if that will happen inside the update 
 	// phase of the resource manager)
 	bool asyncResourceObjectDeletion = true;
-
-	// If the Resource Object should be created if its file doesn't exist, this will only work on Edit mode, this won't call the
-	// factory AllocateData() and DeallocateData() methods as the resource data won't be managed by this library
-	bool createResourceIfInexistent = false;
-
-	// In case we should create the resource if its file doesn't exist, if we should call the OnLoad() method after the 
-	// OnCreation() one (only works on Edit mode)
-	bool createdResourceShouldLoad = false;
-
-	// In case we should create the resource, if it should be saved right before unloading it from memory, creating a file
-	// (only works on Edit mode)
-	bool createdResourceAutoSave = false;
 };
 
 // The path type

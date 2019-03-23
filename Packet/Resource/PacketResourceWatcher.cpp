@@ -68,6 +68,12 @@ void PacketResourceWatcher::HandleFileAction(FWPacket::WatchID _watchid, const F
 
 bool PacketResourceWatcher::WatchResource(PacketResource* _resource)
 {
+    // If this is a runtime resource, don't do anything
+    if (_resource->IsRuntime())
+    {
+        return true;
+    }
+
 	// If we are enabled, continue
 	if (!m_IsEnabled)
 	{
@@ -106,6 +112,12 @@ bool PacketResourceWatcher::WatchResource(PacketResource* _resource)
 
 void PacketResourceWatcher::RemoveWatch(PacketResource* _resource)
 {
+    // If this is a runtime resource, don't do anything
+    if (_resource->IsRuntime())
+    {
+        return;
+    }
+
 	// If we are enabled, continue
 	if (!m_IsEnabled)
 	{
@@ -152,6 +164,12 @@ void PacketResourceWatcher::RemoveWatch(PacketResource* _resource)
 
 void PacketResourceWatcher::UpdateWatchedResource(PacketResource* _resource)
 {
+    // If this is a runtime resource, don't do anything
+    if (_resource->IsRuntime())
+    {
+        return;
+    }
+
 	// If we are enabled, continue
 	if (!m_IsEnabled)
 	{

@@ -67,7 +67,9 @@ public: //////////
     std::unique_ptr<PacketResource> LoadObject(PacketResourceFactory* _resourceFactory,
                                                Hash _hash, 
                                                PacketResourceBuildInfo _buildInfo,
-                                               bool _isPermanent) const;
+                                               bool _isPermanent, 
+                                               bool _isRuntimeResource, 
+                                               std::vector<uint8_t> _resourceData) const;
 
 ///////////////
 // VARIABLES //

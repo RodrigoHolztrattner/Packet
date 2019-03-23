@@ -32,12 +32,22 @@ PacketResourceData::PacketResourceData(uint64_t _size)
 	assert(result);
 }
 
+PacketResourceData::PacketResourceData(std::vector<uint8_t> _runtimeData)
+{
+    m_RuntimeData = std::move(_runtimeData);
+}
+
 PacketResourceData::PacketResourceData(PacketResourceData& _other)
 {
+    // Deallocate the current memory
+    DeallocateMemory();
+
+    // Allocate the necessary memory
+    AllocateMemory(_other.m_Size);
+
 	m_Data = _other.m_Data;
 	m_Size = _other.m_Size;
-	_other.m_Data = nullptr;
-	_other.m_Size = 0;
+    m_RuntimeData = _other.m_RuntimeData;
 }
 
 PacketResourceData::~PacketResourceData()
@@ -51,11 +61,16 @@ PacketResourceData& PacketResourceData::operator=(PacketResourceData&& _other)
 	// We can't assign to the same object
 	if (this != &_other)
 	{
+        // Deallocate the current memory
+        DeallocateMemory();
+
+        // Allocate the necessary memory
+        AllocateMemory(_other.m_Size);
+
 		// Acquire the other resource instance ptr
-		m_Data = _other.m_Data;
+        memcpy(m_Data, _other.m_Data, _other.m_Size);
 		m_Size = _other.m_Size;
-		m_Data = nullptr;
-		m_Size = 0;
+        m_RuntimeData = _other.m_RuntimeData;
 	}
 
 	return *this;
@@ -64,19 +79,35 @@ PacketResourceData& PacketResourceData::operator=(PacketResourceData&& _other)
 PacketResourceData::PacketResourceData(PacketResourceData&& _other)
 {
 	// Acquire the other resource instance ptr
-	m_Data = _other.m_Data;
-	m_Size = _other.m_Size;
-	m_Data = nullptr;
-	m_Size = 0;
+    m_Data = _other.m_Data;
+    m_Size = _other.m_Size;
+    m_RuntimeData = std::move(_other.m_RuntimeData);
+    _other.m_Data = nullptr;
+    _other.m_Size = 0;
 }
 
-uint8_t* PacketResourceData::GetData() const
+const uint8_t* PacketResourceData::GetData() const
 {
+    if (m_RuntimeData.size() > 0)
+    {
+        return static_cast<const uint8_t*>(m_RuntimeData.data());
+    }
+
 	return m_Data;
+}
+
+uint8_t* PacketResourceData::GetwritableData() const
+{
+    return m_Data;
 }
 
 uint64_t PacketResourceData::GetSize() const
 {
+    if (m_RuntimeData.size() > 0)
+    {
+        return m_RuntimeData.size();
+    }
+
 	return m_Size;
 }
 
@@ -95,9 +126,12 @@ bool PacketResourceData::AllocateMemory(uint64_t _total)
 
 void PacketResourceData::DeallocateMemory()
 {
-	delete[] m_Data;
-	m_Data = nullptr;
-	m_Size = 0;
+    if (m_Data != nullptr)
+    {
+        delete[] m_Data;
+        m_Data = nullptr;
+        m_Size = 0;
+    }
 }
 
 ////////////////////
@@ -110,7 +144,7 @@ PacketResource::PacketResource()
 	m_IgnorePhysicalDataChanges = false;
 	m_DataValid = false;
 	m_WasSynchronized = false;
-	m_IsPersistent = false;
+	m_IsPermanentResource = false;
 	m_IsPendingDeletion = false;
 	m_WasCreated = false;
 	m_HasUserFlag = false;
@@ -137,7 +171,7 @@ bool PacketResource::BeginLoad(bool _isPersistent)
 	m_DataValid = true;
 
 	// Set if this object is persistent
-	m_IsPersistent = _isPersistent;
+	m_IsPermanentResource = _isPersistent;
 
 	// Call the Onload() method
 	if (!OnLoad(m_Data, m_BuildInfo.buildFlags, m_BuildInfo.flags))
@@ -147,20 +181,6 @@ bool PacketResource::BeginLoad(bool _isPersistent)
 
 	// Set created to true
 	m_WasCreated = true;
-
-	return true;
-}
-
-bool PacketResource::BeginCreation(bool _isPersistent)
-{
-	// Set if this object is persistent
-	m_IsPersistent = _isPersistent;
-
-	// Call the OnCreation() method
-	if (!OnCreation())
-	{
-		return false;
-	}
 
 	return true;
 }
@@ -247,9 +267,14 @@ bool PacketResource::IsIndirectlyReferenced() const
 	return m_TotalIndirectReferences > 0;
 }
 
-bool PacketResource::IsPersistent() const
+bool PacketResource::IsPermanent() const
 {
-	return m_IsPersistent;
+	return m_IsPermanentResource;
+}
+
+bool PacketResource::IsRuntime()
+{
+    return m_IsRuntimeResource;
 }
 
 void PacketResource::RegisterUserFlag()
@@ -291,9 +316,11 @@ void PacketResource::SetHelperObjects(PacketResourceFactory* _factoryReference, 
 	m_CurrentOperationMode = _operationMode;
 }
 
-void PacketResource::SetBuildInfo(PacketResourceBuildInfo _buildInfo)
+void PacketResource::SetBuildInfo(PacketResourceBuildInfo _buildInfo,
+                                  bool _isRuntimeResource)
 {
 	m_BuildInfo = _buildInfo;
+    m_IsRuntimeResource = _isRuntimeResource;
 }
 
 const PacketResourceBuildInfo& PacketResource::GetBuildInfo() const
@@ -308,8 +335,6 @@ void PacketResource::SetPendingDeletion()
 
 void PacketResource::RedirectInstancesToResource(PacketResource* _newResource)
 {
-#ifndef NDEBUG
-
 	// For each instance
 	for (auto* instance : m_InstancesThatUsesThisResource)
 	{
@@ -331,8 +356,6 @@ void PacketResource::RedirectInstancesToResource(PacketResource* _newResource)
 
 	// Clear the instance vector
 	m_InstancesThatUsesThisResource.clear();
-
-#endif
 }
 
 bool PacketResource::AreInstancesReadyToBeUsed() const
@@ -343,7 +366,7 @@ bool PacketResource::AreInstancesReadyToBeUsed() const
 	for (auto* instance : m_InstancesThatUsesThisResource)
 	{
 		// Check if this instance or the instance that depends on it (if there is one) are locked
-		if (instance->IsLocked() || instance->InstanceDependencyIsLocked())
+		if (!instance->IsReady() || !instance->InstanceDependencyIsReady())
 		{
 			return false;
 		}
@@ -461,7 +484,7 @@ void PacketResource::IgnoreResourcePhysicalDataChanges()
 	m_IgnorePhysicalDataChanges = true;
 }
 
-bool PacketResource::UpdateResourcePhysicalData(uint8_t* _data, uint64_t _dataSize)
+bool PacketResource::UpdateResourcePhysicalData(const uint8_t* _data, uint64_t _dataSize)
 {
 	// Check the current operation mode
 	if (m_CurrentOperationMode != OperationMode::Edit)
@@ -469,7 +492,6 @@ bool PacketResource::UpdateResourcePhysicalData(uint8_t* _data, uint64_t _dataSi
 		m_LoggerPtr->LogWarning("Trying to call the method UpdateResourcePhysicalData() but the operation mode is different from the Edit mode!");
 		return false;
 	}
-
 
 #ifndef NDEBUG
 

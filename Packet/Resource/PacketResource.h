@@ -58,10 +58,14 @@ class PacketResourceReferencePtr;
 // and deallocation must be managed by a factory class
 struct PacketResourceData
 {
+    // Friend classes
+    friend PacketResourceLoader;
+
 	// Our constructors
 	PacketResourceData();
 	PacketResourceData(uint8_t* _data, uint64_t _size);
-	PacketResourceData(uint64_t _size);
+    PacketResourceData(uint64_t _size);
+    PacketResourceData(std::vector<uint8_t> _runtimeData);
 
 	// Copy constructor
 	PacketResourceData(PacketResourceData&);
@@ -76,7 +80,7 @@ struct PacketResourceData
 	PacketResourceData(PacketResourceData&& _other);
 
 	// Return the data
-	uint8_t* GetData() const;
+	const uint8_t* GetData() const;
 
 	// Return the size
 	uint64_t GetSize() const;
@@ -89,8 +93,17 @@ struct PacketResourceData
 
 protected:
 
+    // Return a pointer to this memory enabling it to be written
+    uint8_t* GetwritableData() const;
+
+protected:
+
 	uint8_t* m_Data;
 	uint64_t m_Size;
+
+private:
+
+    std::vector<uint8_t> m_RuntimeData;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,10 +138,6 @@ protected: //////////
 
 	// The OnLoad() method (asynchronous method)
 	virtual bool OnLoad(PacketResourceData& _data, uint32_t _buildFlags, uint32_t _flags) = 0;
-
-	// The OnCreation() method (asynchronous method), called only when creating a resource that doesn't exist, to
-	// use this method the user must explicit set the build info to create the resource
-	virtual bool OnCreation() { return true; }
 
 	// The OnDelete() method (asynchronous method)
 	virtual bool OnDelete(PacketResourceData&) = 0;
@@ -185,7 +194,7 @@ public: // PHYSICAL DATA UPDATE //
 	// of a new resource object with the updated data, if the user needs to update the data at runtime multiple times is 
 	// recommended to batch multiple "data updates" and call this method once in a while (only call this method when there is 
 	// a real need to actually save the data)
-	bool UpdateResourcePhysicalData(uint8_t* _data, uint64_t _dataSize);
+	bool UpdateResourcePhysicalData(const uint8_t* _data, uint64_t _dataSize);
 	bool UpdateResourcePhysicalData(PacketResourceData& _data);
 
 ////////////////////////////////////////
@@ -225,8 +234,11 @@ public: // STATUS //
 	bool IsDirectlyReferenced()   const;
 	bool IsIndirectlyReferenced() const;
 
-	// Return if this object is persistent (if it won't be released when it's reference count reaches 0)
-	bool IsPersistent() const;
+	// Return if this object is permanent (if it won't be released when it's reference count reaches 0)
+	bool IsPermanent() const;
+
+    // Return if this is a runtime resource
+    bool IsRuntime();
 
 ///////////////////////
 public: // USER FLAG //
@@ -266,7 +278,6 @@ protected: // INTERNAL //
 
 	// Begin load, creation, deletion, synchronize and desynchronize methods
 	bool BeginLoad(bool _isPersistent);
-	bool BeginCreation(bool _isPersistent);
 	bool BeginDelete();
 	bool BeginSynchronization();
 	bool BeginDesynchronization();
@@ -278,7 +289,8 @@ protected: // INTERNAL //
 	void SetHelperObjects(PacketResourceFactory* _factoryReference, PacketReferenceManager* _referenceManager, PacketFileLoader* _fileLoader, PacketLogger* _logger, OperationMode _operationMode);
 
 	// Set the build info
-	void SetBuildInfo(PacketResourceBuildInfo _buildInfo);
+	void SetBuildInfo(PacketResourceBuildInfo _buildInfo, 
+                      bool _isRuntimeResource);
 
 	// Set that this resource is pending deletion
 	void SetPendingDeletion();
@@ -315,12 +327,13 @@ private: //////
 	// Status
 	bool m_DataValid;
 	bool m_WasSynchronized;
-	bool m_IsPersistent;
+	bool m_IsPermanentResource;
 	bool m_IgnorePhysicalDataChanges;
 	bool m_IsPendingDeletion;
 	bool m_WasCreated;
 	bool m_HasUserFlag;
 	bool m_UserFlag;
+    bool m_IsRuntimeResource;
 
     // This is the index of the current construct phase
     uint32_t m_CurrentConstructPhaseIndex = 0;

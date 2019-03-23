@@ -31,7 +31,9 @@ PacketResourceLoader::~PacketResourceLoader()
 std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceFactory* _resourceFactory,
                                                                  Hash _hash, 
                                                                  PacketResourceBuildInfo _buildInfo,
-                                                                 bool _isPermanent) const
+                                                                 bool _isPermanent, 
+                                                                 bool _isRuntimeResource,
+                                                                 std::vector<uint8_t> _resourceData) const
 {
     // Allocate the object using the factory
     std::unique_ptr<PacketResource> resource = _resourceFactory->RequestObject();
@@ -43,27 +45,7 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     resource->SetHelperObjects(_resourceFactory, m_ReferenceManagerPtr, m_FileLoaderPtr, m_LoggerPtr, m_OperationMode);
 
     // Set the build info
-    resource->SetBuildInfo(_buildInfo);
-
-    // Check if the file exist
-#ifndef NDEBUG
-
-    // If we shouldn't create the resource if its file doesn't exist (also if we aren't on edit mode)
-    if (m_OperationMode != OperationMode::Edit || !resource->GetBuildInfo().createResourceIfInexistent)
-    {
-        // Check if the resource exist
-        if (!m_FileLoaderPtr->FileExist(_hash))
-        {
-            // Error validating this resource references, we will continue but keep in mind that this resource needs to update it references hashes
-            m_LoggerPtr->LogError(std::string("Trying to load a resource but it doesn't exist, path: \"")
-                                  .append(_hash.GetPath().String())
-                                  .append("\"")
-                                  .c_str());
-
-            assert(false);
-        }
-    }
-#endif
+    resource->SetBuildInfo(_buildInfo, _isRuntimeResource);
 
     // Check the operation mode to know if we should validate this resource references
     if (m_OperationMode == OperationMode::Edit)
@@ -75,27 +57,25 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
             // Error validating this resource references, we will continue but keep in mind that this resource needs to update it references hashes
             m_LoggerPtr->LogWarning(std::string("Found an error when validating a resource references (\"")
                                     .append(_hash.GetPath().String())
-                                    .append("\", we will continue but keep in mind that this resource needs to update it references hashes")
+                                    .append("\", we will continue but keep in mind that this resource needs to update its references hashes")
                                     .c_str());
         }
     }
 
-    // If we file doesn't exist and we should create the resource in this case (also we must be on edit mode)
-    if (resource->GetBuildInfo().createResourceIfInexistent && m_FileLoaderPtr->FileExist(_hash) && m_OperationMode == OperationMode::Edit)
+    // Check if this is a runtime resource and the data shouldn't come from a file
+    if (_isRuntimeResource)
     {
-        // Call the BeginCreation() method for this object
-        bool result = resource->BeginCreation(_isPermanent);
-        assert(result);
+        // Get the resource size
+        auto resourceSize = _resourceData.size();
 
-        // Check if we should call the BeginLoad() method
-        if (resource->GetBuildInfo().createdResourceShouldLoad)
-        {
-            // Call the BeginLoad() method for this object
-            resource->BeginLoad(_isPermanent);
-            assert(result);
-        }
+        // Get a reference to the object data vector directly
+        auto& dataVector = resource->GetDataRef();
+        dataVector = PacketResourceData(std::move(_resourceData));
+
+        // Call the BeginLoad() method for this object
+        bool result = resource->BeginLoad(_isPermanent);
+        assert(result);
     }
-    // Normally create the resource
     else
     {
         // Get the resource size
@@ -109,7 +89,7 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
         assert(result);
 
         // Read the file data
-        result = m_FileLoaderPtr->GetFileData(dataVector.GetData(), resourceSize, _hash);
+        result = m_FileLoaderPtr->GetFileData(dataVector.GetwritableData(), resourceSize, _hash);
         assert(result);
 
         // Call the BeginLoad() method for this object

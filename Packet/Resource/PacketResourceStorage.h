@@ -63,7 +63,7 @@ public: //////////
 public: //////////
 
 	// Try to find an object with the input hash, if successful, return it
-	PacketResource* FindObject(Hash _hash, uint32_t _buildFlags) const;
+	PacketResource* FindObject(Hash _hash, uint32_t _buildFlags, bool _isRuntimeResource) const;
 
 	// Insert a new object
 	bool InsertObject(std::unique_ptr<PacketResource> _object, Hash _hash, uint32_t _buildFlags);
@@ -71,15 +71,8 @@ public: //////////
 	// Replace an resource by a new one
 	std::unique_ptr<PacketResource> ReplaceObject(std::unique_ptr<PacketResource>& _object, Hash _hash, uint32_t _buildFlags);
 
-	// Remove an object
-	bool RemoveObject(PacketResource* _object);
-	bool RemoveObject(Hash _hash, uint32_t _buildFlags);
-
 	// Remove an object returning its ownership
 	std::unique_ptr<PacketResource> GetObjectOwnership(PacketResource* _object);
-
-	// Return a reference to our object map
-    const std::map<std::pair<HashPrimitive, uint32_t>, std::unique_ptr<PacketResource>>& GetObjectMapReference() const;
 
 ///////////////
 // VARIABLES //
@@ -87,6 +80,9 @@ private: //////
 
 	// The object map
 	std::map<std::pair<HashPrimitive, uint32_t>, std::unique_ptr<PacketResource>> m_ObjectMap;
+
+    // The runtime object map
+    std::map<PacketResource*, std::unique_ptr<PacketResource>> m_RuntimeObjectMap;
 };
 
 // Packet

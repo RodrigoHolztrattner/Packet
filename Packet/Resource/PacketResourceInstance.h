@@ -206,9 +206,6 @@ protected: // STATUS //
 	// Return if all dependencies are fulfilled
 	bool AreDependenciesFulfilled() const;
 
-	// Return if this instance is locked
-	bool IsLocked() const;
-
 //////////////////////////////////
 protected: // SELF INTERNAL USE //
 //////////////////////////////////
@@ -216,9 +213,9 @@ protected: // SELF INTERNAL USE //
 	// Add a dependency to another instance
 	void AddInstanceDependency(PacketResourceInstance& _instance);
 
-	// Return if in case this instance has another one that depends on it, if this one is locked. In case there is no
-	// dependency, return false
-	bool InstanceDependencyIsLocked() const;
+	// Return the ready status for the (if we depend on one) instance that we depend on (if we don't depend on any instance
+    // return false)
+	bool InstanceDependencyIsReady() const;
 
 private:
 
@@ -254,9 +251,6 @@ protected: // EXTERNAL USE //
 	}
 
 protected:
-
-	// Unlock this instance to be used by the world
-	void Unlock();
 
 	// Begin the construction of this instance
 	void BeginConstruction();
@@ -300,9 +294,6 @@ private: //////
 
 	// If this instance is linked with its owned ptr
 	bool m_IsLinked;
-
-	// If this instance is locked
-	bool m_IsLocked;
 
     // The safety mutex used to lock the access to this instance if modifications are being made
     mutable std::mutex m_SafetyMutex;

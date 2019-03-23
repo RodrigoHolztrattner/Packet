@@ -46,8 +46,6 @@ void PacketResourceManager::Update()
 {
 	// Prevent multiple threads from running this code (only one thread allowed, take care!)
 	std::lock_guard<std::mutex> guard(m_Mutex);
-
-
 }
 
 void PacketResourceManager::AsynchronousResourceProcessment()
@@ -71,14 +69,19 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         }
 
         // Get the info
-        auto[instance, factory, buildInfo, hash, isPermanent] = instanceEvaluationData;
+        auto[instance, factory, buildInfo, hash, isPermanent, isRuntime, resourceData] = instanceEvaluationData;
 
         // Check if we need to create and load this resource
-        PacketResource* resource = m_ResourceStoragePtr->FindObject(hash, buildInfo.buildFlags);
+        PacketResource* resource = m_ResourceStoragePtr->FindObject(hash, buildInfo.buildFlags, isRuntime);
         if (resource == nullptr)
         {
             // Load this resource
-            auto resourceUniquePtr = m_ResourceLoader.LoadObject(factory, hash, buildInfo, isPermanent);
+            auto resourceUniquePtr = m_ResourceLoader.LoadObject(factory, 
+                                                                 hash,
+                                                                 buildInfo,
+                                                                 isPermanent,
+                                                                 isRuntime, 
+                                                                 std::move(resourceData));
             resource = resourceUniquePtr.get();
             assert(resource != nullptr);
 
@@ -213,7 +216,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         factory->ReleaseInstance(std::move(instance));
 
         // Check if the resource should be deleted
-        if (!resource->IsDirectlyReferenced() && !resource->IsPersistent())
+        if (!resource->IsDirectlyReferenced() && !resource->IsPermanent())
         {
             // Remove this object from the storage, taking its ownership back
             std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resource);
@@ -367,7 +370,9 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     auto resourceUniquePtr = m_ResourceLoader.LoadObject(_resource->GetFactoryPtr(), 
                                                          _resource->GetHash(),
                                                          _resource->GetBuildInfo(),
-                                                         _resource->IsPersistent());
+                                                         _resource->IsPermanent(), 
+                                                         false,
+                                                         {});
 
     // Construct the resource
     resourceUniquePtr->OnConstruct();

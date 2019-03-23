@@ -19,7 +19,6 @@ PacketResourceInstance::PacketResourceInstance(Hash& _hash, PacketResourceManage
 	m_FactoryPtr = _factoryPtr;
 
 	// Set the initial data
-	m_IsLocked = true;
 	m_DependencyCount = 0;
 	m_LinkedInstanceDependency = nullptr;
 	m_ReferenceObject = nullptr;
@@ -36,8 +35,7 @@ bool PacketResourceInstance::IsReady(bool _ignoreUserFlag) const
 	// We only need to check if we are locked and if the reference object is pending replacement, if we are unlocked the reference object
 	// is valid (so no need to check the resource ptr) and it is ready to be used, the only case it won't be ok for us is if it's pending
 	// replacement, in this case we shouldn't use it until the resource is totally replaced
-	return !m_IsLocked
-		&& (_ignoreUserFlag
+	return (_ignoreUserFlag
 			|| (!m_ReferenceObject->HasUserFlag()
 				|| (m_ReferenceObject->HasUserFlag() && m_ReferenceObject->GetUserFlag())));
 }
@@ -51,7 +49,7 @@ void PacketResourceInstance::AddInstanceDependency(PacketResourceInstance& _inst
 	_instance.m_LinkedInstanceDependency = this;
 }
 
-bool PacketResourceInstance::InstanceDependencyIsLocked() const
+bool PacketResourceInstance::InstanceDependencyIsReady() const
 {
 	// No dependency
 	if (m_LinkedInstanceDependency == nullptr)
@@ -59,11 +57,13 @@ bool PacketResourceInstance::InstanceDependencyIsLocked() const
 		return false;
 	}
 
-	return m_LinkedInstanceDependency->IsLocked();
+	return m_LinkedInstanceDependency->IsReady();
 }
 
 void PacketResourceInstance::InstanceUnlink(std::unique_ptr<PacketResourceInstance> _instanceUniquePtr)
 {
+    std::lock_guard<std::mutex> lock(m_SafetyMutex);
+
 	// Set linked to false
 	m_IsLinked = false;
 	
@@ -99,11 +99,6 @@ bool PacketResourceInstance::AreDependenciesFulfilled() const
 	return m_DependencyCount == 0;
 }
 
-bool PacketResourceInstance::IsLocked() const
-{
-	return m_IsLocked;
-}
-
 /*
 bool PacketResourceInstance::RequestDuplicate(PacketResourceInstance& _other)
 {
@@ -114,16 +109,6 @@ bool PacketResourceInstance::RequestDuplicate(PacketResourceInstance& _other)
 	return m_ObjectManager->RequestObject(this, m_Hash, m_FactoryPtr, false);
 }
 */
-
-void PacketResourceInstance::Unlock()
-{
-	assert(m_IsLocked == true);
-	assert(m_DependencyCount == 0);
-	assert(m_ReferenceObject != nullptr);
-	assert(m_ReferenceObject->IsReady());
-
-	m_IsLocked = false;
-}
 
 void PacketResourceInstance::BeginConstruction()
 {
@@ -137,9 +122,6 @@ void PacketResourceInstance::BeginConstruction()
 	{
 		// Call the OnDependenciesFulfilled() method
 		OnDependenciesFulfilled();
-
-		// Unlock this instance
-		Unlock();
 	}
 
 	// If some instance depends on this one
@@ -165,9 +147,6 @@ void PacketResourceInstance::ResetInstance()
 	}
 	else
 	{
-		// Set the initial data
-		m_IsLocked = true;
-
 		// Make this instance be reconstructed in the future
 		m_ResourceManagerPtr->ReconstructInstance(this);
 	}
@@ -188,8 +167,20 @@ void PacketResourceInstance::FulfillDependency(PacketResourceInstance* _instance
 	{
 		// Call the OnDependenciesFulfilled() method
 		OnDependenciesFulfilled();
-
-		// Unlock this instance
-		Unlock();
 	}
 }
+
+/* TODO: 
+- A instancia pode ser usada antes do que deveria aqui:
+
+    // Check if this instance has any dependency
+    if (m_DependencyCount == 0)
+    {
+        // Call the OnDependenciesFulfilled() method
+        OnDependenciesFulfilled();
+    }
+
+    Como ela tem dep count == 0, ela ta ready, podendo ser usada antes da funcao OnDependenciesFulfilled ter sido chamada
+
+- 
+*/

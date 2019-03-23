@@ -19,8 +19,15 @@ PacketResourceStorage::~PacketResourceStorage()
 {
 }
 
-PacketResource* PacketResourceStorage::FindObject(Hash _hash, uint32_t _buildFlags) const
+PacketResource* PacketResourceStorage::FindObject(Hash _hash, uint32_t _buildFlags, bool _isRuntimeResource) const
 {
+    // If this is a runtime resource request, return nullptr, this is necessary to avoid unnecessary checks
+    // on the manager class
+    if (_isRuntimeResource)
+    {
+        return nullptr;
+    }
+
 	// Check if an object with the given hash exist
 	auto iterator = m_ObjectMap.find({ _hash, _buildFlags });
 	if (iterator == m_ObjectMap.end())
@@ -33,6 +40,15 @@ PacketResource* PacketResourceStorage::FindObject(Hash _hash, uint32_t _buildFla
 
 bool PacketResourceStorage::InsertObject(std::unique_ptr<PacketResource> _object, Hash _hash, uint32_t _buildFlags)
 {
+    // Verify if the resource is a runtime one
+    if (_object->IsRuntime())
+    {
+        // Insert it into the runtime object map
+        m_RuntimeObjectMap.insert({ _object.get(), std::move(_object) });
+
+        return true;
+    }
+
 	// Check if an object with the given hash exist
 	auto iterator = m_ObjectMap.find({ _hash, _buildFlags });
 	if (iterator != m_ObjectMap.end())
@@ -65,28 +81,28 @@ std::unique_ptr<PacketResource> PacketResourceStorage::ReplaceObject(std::unique
 	return oldResource;
 }
 
-bool PacketResourceStorage::RemoveObject(PacketResource* _object)
-{
-	return RemoveObject(_object->GetHash(), _object->GetBuildInfo().buildFlags);
-}
-
-bool PacketResourceStorage::RemoveObject(Hash _hash, uint32_t _buildFlags)
-{
-	// Check if an object with the given hash exist
-	auto iterator = m_ObjectMap.find({ _hash, _buildFlags });
-	if (iterator == m_ObjectMap.end())
-	{
-		return false;
-	}
-
-	// Erase the current object on the iterator
-	m_ObjectMap.erase(iterator);
-
-	return true;
-}
-
 std::unique_ptr<PacketResource> PacketResourceStorage::GetObjectOwnership(PacketResource* _object)
 {
+    // Verify if the resource is a runtime one
+    if (_object->IsRuntime())
+    {
+        // Check if an object with the given ptr exist
+        auto iterator = m_RuntimeObjectMap.find(_object);
+        if (iterator == m_RuntimeObjectMap.end())
+        {
+            return nullptr;
+        }
+
+        // Get the unique ptr
+        std::unique_ptr<PacketResource> objectUniquePtr = std::move(iterator->second);
+
+        // Erase the current object on the iterator
+        m_RuntimeObjectMap.erase(iterator);
+
+        // Return the unique ptr
+        return std::move(objectUniquePtr);
+    }
+
 	// Check if an object with the given hash exist
 	auto iterator = m_ObjectMap.find({ _object->GetHash(), _object->GetBuildInfo().buildFlags });
 	if (iterator == m_ObjectMap.end())
@@ -102,9 +118,4 @@ std::unique_ptr<PacketResource> PacketResourceStorage::GetObjectOwnership(Packet
 
 	// Return the unique ptr
 	return std::move(objectUniquePtr);
-}
-
-const std::map<std::pair<HashPrimitive, uint32_t>, std::unique_ptr<PacketResource>>& PacketResourceStorage::GetObjectMapReference() const
-{
-	return m_ObjectMap;
 }
