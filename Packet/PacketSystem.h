@@ -117,9 +117,6 @@ public:
 	// Check if a given file exist
 	bool FileExist(Hash _fileHash) const;
 
-	// The update method, process all requests
-	void Update();
-
 ///////////////
 // VARIABLES //
 private: //////
@@ -140,9 +137,9 @@ private:
 
 	// The reference manager, the resource storage, our current resource manager and the resource watcher
 	std::unique_ptr<PacketReferenceManager> m_ReferenceManager;
-	std::unique_ptr<PacketResourceStorage> m_ResourceStorage;
-	std::unique_ptr<PacketResourceManager> m_ResourceManager;
-	std::unique_ptr<PacketResourceWatcher> m_ResourceWatcher;
+	std::unique_ptr<PacketResourceStorage>  m_ResourceStorage;
+	std::unique_ptr<PacketResourceManager>  m_ResourceManager;
+	std::unique_ptr<PacketResourceWatcher>  m_ResourceWatcher;
 
 	// All registered resource factories
 	std::unordered_map<uint64_t, std::unique_ptr<PacketResourceFactory>> m_RegisteredFactories;

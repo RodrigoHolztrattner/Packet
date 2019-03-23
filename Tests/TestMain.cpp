@@ -29,15 +29,15 @@ public:
         return true;
     }
 
-    bool OnSynchronization() final
+    void OnConstruct() final
     {
-        return true;
-    }
 
-    bool OnDesynchronization() final
+    };
+
+    void OnExternalConstruct() final
     {
-        return true;
-    }
+
+    };
 };
 
 class MyInstance : public Packet::ResourceInstance
@@ -145,7 +145,6 @@ TEST_CASE("vectors can be sized and resized", "[vector]")
 {
     Packet::System packetSystem;
     std::string resourcePath = ResourceDirectory + "/dummy.txt";
-    bool exitLoop = false;
 
     {
         bool resourceCreationResult = CreateResourceFile(resourcePath);
@@ -159,17 +158,6 @@ TEST_CASE("vectors can be sized and resized", "[vector]")
         packetSystem.RegisterResourceFactory<MyResource>(std::make_unique<MyFactory>());
     }
     
-    std::thread t([&]()
-    {
-        while (!exitLoop)
-        {
-            packetSystem.Update();
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-        }
-    });
-    t.detach();
-
     SECTION("resizing bigger changes size and capacity") 
     {
         Packet::ResourceInstancePtr<MyInstance> resourceInstance;
@@ -190,9 +178,6 @@ TEST_CASE("vectors can be sized and resized", "[vector]")
 
             currentTime = clock();
         }
-
-        exitLoop = true;
-        t.join();
 
         REQUIRE(exitByTimeout == false);
     }

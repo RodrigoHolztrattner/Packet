@@ -142,12 +142,6 @@ protected: //////////
 	// The OnDelete() method (asynchronous method)
 	virtual bool OnDelete(PacketResourceData&) = 0;
 
-	// The OnSynchronization() method (synchronous method when calling the update() method)
-	virtual bool OnSynchronization() = 0;
-
-	// The OnDesynchronization() method (synchronous method when calling the update() method)
-	virtual bool OnDesynchronization() = 0;
-
     // Return if this resource requires an external construct phase
     virtual bool RequiresExternalConstructPhase() const { return false; }
 
@@ -256,11 +250,11 @@ protected: // INSTANCE REFERENCING //
 protected: // INTERNAL //
 /////////////////////////
 
-	// Begin load, creation, deletion, synchronize and desynchronize methods
+	// Begin load, deletion, construct and external construct methods
 	bool BeginLoad(bool _isPersistent);
 	bool BeginDelete();
-	bool BeginSynchronization();
-	bool BeginDesynchronization();
+    bool BeginConstruct();
+    bool BeginExternalConstruct();
 
 	// Set the hash
 	void SetHash(Hash _hash);
@@ -305,14 +299,13 @@ protected: // INTERNAL //
 private: //////
 
 	// Status
-	bool m_DataValid;
-	bool m_WasSynchronized;
-	bool m_IsPermanentResource;
-	bool m_IgnorePhysicalDataChanges;
-	bool m_IsPendingDeletion;
-	bool m_WasCreated;
-	bool m_UserFlag;
-    bool m_IsRuntimeResource;
+	bool m_IsPermanentResource       = false;
+	bool m_IgnorePhysicalDataChanges = false;
+	bool m_IsPendingDeletion         = false;
+    bool m_WasLoaded                 = false;
+    bool m_WasConstructed            = false;
+    bool m_WasExternallyConstructed  = false;
+    bool m_IsRuntimeResource         = false;
 
     // This is the index of the current construct phase
     uint32_t m_CurrentConstructPhaseIndex = 0;

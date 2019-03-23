@@ -45,21 +45,176 @@ PacketResourceManager::PacketResourceManager(OperationMode _operationMode,
 
 PacketResourceManager::~PacketResourceManager()
 {
-    // Exist from the asynchronous thread
+    // Exit from the asynchronous thread
     m_AsynchronousManagementThreadShouldExit = true;
     m_AsynchronousManagementThread.join();
+
+    // Move all instances that are pending release valuation to the release vector
+    {
+        std::unique_ptr<PacketResourceInstance> instanceReleaseObject;
+        while (m_InstancesPendingReleaseEvaluation.try_dequeue(instanceReleaseObject))
+        {
+            // Just move it to the pending release vector
+            m_InstancesPendingRelease.push_back(std::move(instanceReleaseObject));
+        }
+    }
+
+    // Instanced pending evaluation
+    {
+        // Sorry but no instance will be evaluated to receive its resource
+        InstanceEvaluationData instanceEvaluationData;
+        while (m_InstancesPendingEvaluation.try_dequeue(instanceEvaluationData))
+        {
+            // Get the info
+            auto[instance, factory, buildInfo, hash, isPermanent, isRuntime, resourceData] = instanceEvaluationData;
+
+            // If we have an instance here this should mean that a resource was requested but right after the program was
+            // set to shutdown, it's expected that the packet system will be destroyed after all instances were released
+            // so we must find this same instance on the release vector, if this isn't true the packet system is being
+            // destroyed with active instances -> A bad logic design.
+            auto FindInstance = [&](PacketResourceInstance* _instance)
+            {
+                for (auto& instanceUniquePtr : m_InstancesPendingRelease)
+                {
+                    if (instanceUniquePtr.get() == _instance)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            };
+            assert(FindInstance(instance) && "Packet resource system is being deleted but some resource instances \
+are still active, this will probably lead into exceptions!");
+            
+            // There is no right way of dealing with instances that aren't being destroyed but requested evaluation,
+            // I cannot just make it be released because it can be in used and that would generate problems, also
+            // leaving it and destroying the packet system will probably result in errors too since it potentially
+            // could try to access objects that aren't valid anymore.
+            // Also I cannot throw here, the ideal would be throwing an exception.
+        }
+    }
+
+    // Instanced pending construction
+    {
+        // Sorry but no instance will be constructed, also no need to release them here since these
+        // pointers are weak references, they will be released by methods below
+        m_InstancesPendingConstruction.clear();
+    }
+
+    // Instanced pending release
+    {
+        // Ok we can release these instances, but their resources are going to be deleted manually
+        for (auto& instance : m_InstancesPendingRelease)
+        {
+            // Remove the instance reference from its resource
+            PacketResource* resource = instance->GetResource();
+            PacketResourceFactory* factory = resource->GetFactoryPtr();
+            resource->RemoveInstanceReference(instance.get());
+
+            // Delete the instance using its factory object
+            factory->ReleaseInstance(std::move(instance));
+
+            // Check if the resource should be deleted
+            if (!resource->IsDirectlyReferenced() && !resource->IsPermanent())
+            {
+                // Remove this object from the storage, taking its ownership back
+                std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resource);
+
+                // Insert this object into the deletion queue
+                m_ResourcesPendingDeletion.push_back(std::move(objectUniquePtr));
+            }
+        }
+
+        m_InstancesPendingRelease.clear();
+    }
+
+    // For each resource pending replacement
+    {
+        for (auto& replacementInfo : m_ResourcesPendingReplacement)
+        {
+            auto&[newResourceUniquePtr, originalResource] = replacementInfo;
+
+            // Get the original resource ownership
+            auto originalResourceUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(originalResource);
+
+            // Decrement the number of references for the original resource, now it
+            // must have zero references
+            originalResourceUniquePtr->DecrementNumberDirectReferences();
+            assert(!originalResourceUniquePtr->IsReferenced());
+            assert(!newResourceUniquePtr->IsReferenced());
+
+            // Insert both resources into the deletion queue because
+            m_ResourcesPendingDeletion.push_back(std::move(originalResourceUniquePtr));
+            m_ResourcesPendingDeletion.push_back(std::move(newResourceUniquePtr));
+        }
+
+        m_ResourcesPendingReplacement.clear();
+    }
+    // Resource queues/vector
+    std::vector<std::pair<std::unique_ptr<PacketResource>, PacketResource*>> m_ResourcesPendingReplacement;
+
+    // Resources pending construction
+    {
+        // Sorry but we are closed today
+        PacketResource* resource;
+        while (m_ResourcesPendingExternalConstruction.try_dequeue(resource))
+        {
+            // Get the original resource ownership
+            auto resourceUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resource);
+
+            // Set it to be destroyed right below
+            m_ResourcesPendingDeletion.push_back(std::move(resourceUniquePtr));
+        } 
+    }
+    
+    // Resources pending post construction
+    {
+        // We don't need to do anything about this pointer
+        PacketResource* resource;
+        while (m_ResourcesPendingPostConstruction.try_dequeue(resource))
+        {
+        }
+    }
+
+    // Resources pending deletion
+    {
+        // Just normally delete these resources
+        for (auto& resource : m_ResourcesPendingDeletion)
+        {
+            // This resource can't be referenced, if it has references this means that some instance or resource 
+            // reference is still active when the packet system was set to shutdown, the correct behavior is
+            // to release/destroy every other object before releasing the main system
+            assert(!resource->IsReferenced() && "Packet resource system is being deleted but some resources are \
+ still active (they have instances and/or resource references), this will probably lead into exceptions!");
+
+            // Remove this resource watch (not enabled on release and non-edit builds)
+            m_ResourceWatcherPtr->RemoveWatch(resource.get());
+
+            // Set pending deletion for this resource
+            resource->SetPendingDeletion();
+
+            // Add this object into the deletion queue, takes ownership
+            m_ResourceDeleter.DeleteObject(std::move(resource), resource->GetFactoryPtr());
+        }
+
+        m_ResourcesPendingDeletion.clear();
+    }
+
+    assert(m_InstancesPendingEvaluation.size_approx()           == 0);
+    assert(m_InstancesPendingReleaseEvaluation.size_approx()    == 0);
+    assert(m_ResourcesPendingExternalConstruction.size_approx() == 0);
+    assert(m_ResourcesPendingPostConstruction.size_approx()     == 0);
+    assert(m_InstancesPendingConstruction.size()                == 0);
+    assert(m_InstancesPendingRelease.size()                     == 0);
+    assert(m_ResourcesPendingDeletion.size()                    == 0);
+    assert(m_ResourcesPendingReplacement.size()                 == 0);
 }
 
 void PacketResourceManager::ReleaseObject(std::unique_ptr<PacketResourceInstance> _instancePtr)
 {
 	// Push the new release request, no need to synchronize this because we use a lock-free queue
     m_InstancesPendingReleaseEvaluation.enqueue(std::move(_instancePtr));
-}
-
-void PacketResourceManager::Update()
-{
-	// Prevent multiple threads from running this code (only one thread allowed, take care!)
-	std::lock_guard<std::mutex> guard(m_Mutex);
 }
 
 void PacketResourceManager::AsynchronousResourceProcessment()

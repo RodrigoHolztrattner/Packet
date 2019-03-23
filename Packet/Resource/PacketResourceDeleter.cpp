@@ -22,7 +22,7 @@ bool PacketResourceDeleter::DeleteObject(std::unique_ptr<PacketResource> _object
                                          PacketResourceFactory* _factoryPtr) const
 {
 	// Call the BeginDesynchronization() method for this resource
-	_object->BeginDesynchronization();
+	_object->BeginDelete();
 
     // Verify if this is a runtime object and doesn't needs to have its memory released by the factory
     if (!_object->IsRuntime())

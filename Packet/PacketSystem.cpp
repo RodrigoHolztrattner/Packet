@@ -23,6 +23,14 @@ PacketSystem::PacketSystem()
 
 PacketSystem::~PacketSystem()
 {
+    // We need to respect an order of destruction here to prevent accessing deleted objects
+    m_ResourceManager.reset();
+    m_ResourceWatcher.reset();
+    m_ResourceStorage.reset();
+    m_ReferenceManager.reset();
+    m_RegisteredFactories.clear();
+    m_FileLoader.reset();
+    m_Logger.reset();
 }
 
 bool PacketSystem::Initialize(OperationMode _operationMode, std::string _packetManifestDirectory, std::unique_ptr<PacketLogger>&& _logger)
@@ -74,9 +82,4 @@ bool PacketSystem::FileExist(Hash _fileHash) const
 bool PacketSystem::ConstructPacket()
 {
 	return m_FileLoader->ConstructPacket();
-}
-
-void PacketSystem::Update()
-{
-	m_ResourceManager->Update();
 }

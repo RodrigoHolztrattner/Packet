@@ -159,12 +159,14 @@ protected: ///////
                                              _isPersistent,
                                              false, 
                                              {} });
+
+        return true;
     }
 
     template <typename ResourceInstance>
-    bool RequestRuntimeResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+    void RequestRuntimeResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
                                 PacketResourceFactory* _factoryPtr,
-                                PacketResourceBuildInfo _resourceBuildInfo, 
+                                PacketResourceBuildInfo _resourceBuildInfo,
                                 std::vector<uint8_t> _resourceData = {})
     {
         // Create a new resource instance object
@@ -183,9 +185,6 @@ protected: ///////
                                              std::move(_resourceData)});
     }
   
-	// The update method, process all requests
-	void Update();
-
     // The asynchronous resource process method
     void AsynchronousResourceProcessment();
 
@@ -235,10 +234,6 @@ private: //////
     // The asynchronous management thread and the conditional to exit
     std::thread m_AsynchronousManagementThread;
     bool m_AsynchronousManagementThreadShouldExit = false;
-
-    // Our mutexes
-    std::mutex m_StorageMutex;
-	std::mutex m_Mutex;
 
 	// The resource loader and deleter
 	PacketResourceLoader m_ResourceLoader;

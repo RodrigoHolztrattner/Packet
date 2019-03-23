@@ -142,14 +142,10 @@ PacketResource::PacketResource()
 {
 	// Set the initial data
 	m_IgnorePhysicalDataChanges = false;
-	m_DataValid = false;
-	m_WasSynchronized = false;
-	m_IsPermanentResource = false;
-	m_IsPendingDeletion = false;
-	m_WasCreated = false;
-	m_UserFlag = false;
-	m_TotalDirectReferences = 0;
-	m_TotalIndirectReferences = 0;
+	m_IsPermanentResource       = false;
+	m_IsPendingDeletion         = false;
+	m_TotalDirectReferences     = 0;
+	m_TotalIndirectReferences   = 0;
 }
 
 PacketResource::~PacketResource()
@@ -166,9 +162,6 @@ bool PacketResource::BeginLoad(bool _isPersistent)
 		return false;
 	}
 
-	// Set the data is valid
-	m_DataValid = true;
-
 	// Set if this object is persistent
 	m_IsPermanentResource = _isPersistent;
 
@@ -178,72 +171,49 @@ bool PacketResource::BeginLoad(bool _isPersistent)
 		return false;
 	}
 
-	// Set created to true
-	m_WasCreated = true;
+	// Set loaded to true
+    m_WasLoaded = true;
 
 	return true;
 }
 
 bool PacketResource::BeginDelete()
 {
-	assert(!m_WasSynchronized);
-
-	// Check if we have some data to delete (ignore this if this resource was created)
-	if (!m_WasCreated || (m_WasCreated && m_Data.GetSize() == 0))
-	{
-		return false;
-	}
-
-	// Set data invalid
-	m_DataValid = false;
-
 	// Call the OnDelete() method
 	if (!OnDelete(m_Data))
 	{
 		return false;
 	}
 
-	// The data must still be valid (ignore this if this resource was created)
-	if (!m_WasCreated || (m_WasCreated && m_Data.GetSize() == 0))
-	{
-		return false;
-	}
-
-	// Set created to false
-	m_WasCreated = false;
+	// Set loaded and constructed to false since this resource isn't valid anymore
+    m_WasLoaded = false;
+    m_WasConstructed = false;
+    m_WasExternallyConstructed = false;
 
 	return true;
 }
 
-bool PacketResource::BeginSynchronization()
+bool PacketResource::BeginConstruct()
 {
-	assert(!m_WasSynchronized);
+    OnConstruct();
 
-	// Call the OnSynchronization() method
-	OnSynchronization();
+    m_WasConstructed = true;
 
-	// Set synchronized
-	m_WasSynchronized = true;
-
-	return true;
+    return true;
 }
 
-bool PacketResource::BeginDesynchronization()
+bool PacketResource::BeginExternalConstruct()
 {
-	assert(m_WasSynchronized);
+    OnExternalConstruct();
 
-	// Call the OnDesynchronization() method
-	OnDesynchronization();
+    m_WasExternallyConstructed = true;
 
-	// Set synchronized
-	m_WasSynchronized = false;
-
-	return true;
+    return true;
 }
 
 bool PacketResource::IsReady() const
 {
-	return (m_DataValid && m_WasSynchronized) || m_WasCreated;
+	return m_WasLoaded && m_WasConstructed && m_WasExternallyConstructed;
 }
 
 bool PacketResource::IsPendingDeletion() const
