@@ -8,6 +8,8 @@
 
 #include <cassert>
 
+#define ThreadSleepTimeMS 3
+
 // Using namespace Peasant
 PacketUsingDevelopmentNamespace(Packet)
 
@@ -38,7 +40,7 @@ PacketResourceManager::PacketResourceManager(OperationMode _operationMode,
         {
             AsynchronousResourceProcessment();
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+            std::this_thread::sleep_for(std::chrono::milliseconds(ThreadSleepTimeMS));
         }
     });
 }
@@ -239,6 +241,8 @@ bool PacketResourceManager::WaitUntilReady(const PacketResourceInstance* _instan
         {
             return true;
         }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(ThreadSleepTimeMS));
 
         currentTime = clock();
     }
@@ -504,11 +508,6 @@ void PacketResourceManager::ReconstructInstance(PacketResourceInstance* _instanc
 
 void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
 {
-	// There is a decent chance that this method was called by the same event multiple times, this happens because the internal 
-	// implementation of the file notification system by the current operation system, to prevent this we need to check 3 
-	// locations so we can be sure we won't be updating a resource when it is already being updated, those locations are: 
-	// ReplaceQueue, DeletionQueue and if the current resource status inside the ResourceStorage is ready.
-
     // Disabled on non edit builds
     if (m_OperationMode != OperationMode::Edit)
     {
