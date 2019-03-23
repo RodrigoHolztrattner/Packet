@@ -165,8 +165,6 @@ TEST_CASE("vectors can be sized and resized", "[vector]")
         packetSystem.RequestResource<MyResource>(resourceInstance,
                                                  Packet::Hash(resourcePath));
 
-        bool waitResult = packetSystem.WaitUntilReady(resourceInstance.Get(), 5000);
-
-        REQUIRE(waitResult == true);
+        REQUIRE(packetSystem.WaitForInstance(resourceInstance.Get(), 5000) == true);
     }
 }

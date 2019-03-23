@@ -76,6 +76,8 @@ struct PacketResourceInstancePtr
 		}
 	}
 
+    PacketResourceInstancePtr& operator=(PacketResourceInstancePtr&& _other) = delete;
+    /*
 	// Our move assignment operator that will take the ownership from the given instance pointer
 	PacketResourceInstancePtr& operator=(PacketResourceInstancePtr&& _other) 
 	{
@@ -88,6 +90,7 @@ struct PacketResourceInstancePtr
 
 		return *this;
 	}
+    */
 
 	// Our move copy operator (same as above)
 	PacketResourceInstancePtr(PacketResourceInstancePtr&& _other)

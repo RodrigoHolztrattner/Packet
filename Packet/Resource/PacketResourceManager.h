@@ -187,7 +187,7 @@ protected: ///////
   
     // This method will wait until the given instance is ready to be used
     // Optionally you can pass a timeout parameter in milliseconds
-    bool WaitUntilReady(const PacketResourceInstance* _instance,
+    bool WaitForInstance(const PacketResourceInstance* _instance,
                         long long _timeout = -1) const;
 
 protected:

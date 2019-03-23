@@ -218,8 +218,8 @@ are still active, this will probably lead into exceptions!");
     assert(m_ResourcesPendingReplacement.size()                 == 0);
 }
 
-bool PacketResourceManager::WaitUntilReady(const PacketResourceInstance* _instance, 
-                                           long long _timeout) const
+bool PacketResourceManager::WaitForInstance(const PacketResourceInstance* _instance,
+                                            long long _timeout) const
 {
     // The instance must be valid
     if (_instance == nullptr)
