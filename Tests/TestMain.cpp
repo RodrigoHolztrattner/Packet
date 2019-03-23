@@ -165,20 +165,8 @@ TEST_CASE("vectors can be sized and resized", "[vector]")
         packetSystem.RequestResource<MyResource>(resourceInstance,
                                                  Packet::Hash(resourcePath));
 
-        clock_t initialTime = clock();
-        clock_t currentTime = clock();
-        bool exitByTimeout = true;
-        while (double(currentTime - initialTime) / CLOCKS_PER_SEC < 5)
-        {
-            if (resourceInstance->IsReady())
-            {
-                exitByTimeout = false;
-                break;
-            }
+        bool waitResult = packetSystem.WaitUntilReady(resourceInstance.Get(), 5000);
 
-            currentTime = clock();
-        }
-
-        REQUIRE(exitByTimeout == false);
+        REQUIRE(waitResult == true);
     }
 }

@@ -95,7 +95,9 @@ public:
 
 	// Request an object for the given instance and resource hash
 	template <typename ResourceClass, typename ResourceInstance>
-	bool RequestResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr, Hash _hash, PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
+	bool RequestResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr, 
+                         Hash _hash,
+                         PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
 	{
 		assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
 		return m_ResourceManager->RequestResource(_instancePtr,
@@ -108,11 +110,17 @@ public:
 	// Request a permanent object for the given instance and resource hash, the object will not be deleted when it reaches 0
 	// references, the deletion phase will only occur in conjunction with the storage deletion
 	template <typename ResourceClass, typename ResourceInstance>
-	bool RequestPersistentResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr, Hash _hash, PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
+	bool RequestPersistentResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+                                   Hash _hash, 
+                                   PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
 	{
 		assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
 		return m_ResourceManager->RequestResource(_instancePtr, _hash, m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(), true, _resourceBuildInfo);
 	}
+
+    // This method will wait until the given instance is ready to be used
+    // Optionally you can pass a timeout parameter in milliseconds
+    bool WaitUntilReady(const PacketResourceInstance* _instance, long long _timeout = -1) const;
 
 	// Check if a given file exist
 	bool FileExist(Hash _fileHash) const;

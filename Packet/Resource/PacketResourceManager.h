@@ -185,21 +185,26 @@ protected: ///////
                                              std::move(_resourceData)});
     }
   
-    // The asynchronous resource process method
-    void AsynchronousResourceProcessment();
+    // This method will wait until the given instance is ready to be used
+    // Optionally you can pass a timeout parameter in milliseconds
+    bool WaitUntilReady(const PacketResourceInstance* _instance,
+                        long long _timeout = -1) const;
 
 protected:
+
+    // The asynchronous resource process method
+    void AsynchronousResourceProcessment();
 
 	// This method is called when a resource file is modified, its execution will happen when inside the 
 	// update phase. This method won't be called when on release or non edit builds
 	void OnResourceDataChanged(PacketResource* _resource);
 
-	// Release an object instance, this method must be called only by a packet resource instance ptr when it is deleted without
+	// Release an resource instance, this method must be called only by a packet resource instance ptr when it is deleted without
 	// being moved to another variable using move semantics
-	void ReleaseObject(std::unique_ptr<PacketResourceInstance> _instance);
+	void ReleaseInstanceOnUnlink(std::unique_ptr<PacketResourceInstance> _instance);
 
 	// This method must be called by a instance object that needs to be reconstructed, this method must be
-	// called when doing the update phase here on this class (doesn't need to be called necessarilly inside
+	// called when doing the update phase here on this class (doesn't need to be called necessarily inside
 	// this object but we must ensure we are doing an update)
 	void ReconstructInstance(PacketResourceInstance* _instance);
 
@@ -229,8 +234,6 @@ private: //////
     std::vector<std::unique_ptr<PacketResource>> m_ResourcesPendingDeletion;
     std::vector<std::pair<std::unique_ptr<PacketResource>, PacketResource*>> m_ResourcesPendingReplacement;
 
-    
-
     // The asynchronous management thread and the conditional to exit
     std::thread m_AsynchronousManagementThread;
     bool m_AsynchronousManagementThreadShouldExit = false;
@@ -238,11 +241,6 @@ private: //////
 	// The resource loader and deleter
 	PacketResourceLoader m_ResourceLoader;
 	PacketResourceDeleter m_ResourceDeleter;
-
-	// The object requests and the release queue
-
-	// The construct, deletion and replace queues
-	
 
 	// The current operation mode
 	OperationMode m_OperationMode;

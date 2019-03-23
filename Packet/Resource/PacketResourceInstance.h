@@ -219,6 +219,9 @@ protected: // SELF INTERNAL USE //
     // on any instance return true)
 	bool InstanceDependencyIsReady() const;
 
+    // Return the instance factory pointer
+    PacketResourceFactory* GetFactoryPtr() const;
+
 private:
 
 	// Fulfill a dependency
@@ -241,7 +244,6 @@ protected: // EXTERNAL USE //
 	{
         std::lock_guard<std::mutex> lock(m_SafetyMutex);
 
-		assert(m_ReferenceObject != nullptr);
 		return reinterpret_cast<ResourceClass*>(m_ReferenceObject);
 	}
 

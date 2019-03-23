@@ -74,6 +74,12 @@ bool PacketSystem::Initialize(OperationMode _operationMode, std::string _packetM
 	return true;
 }
 
+bool PacketSystem::WaitUntilReady(const PacketResourceInstance* _instance,
+                                  long long _timeout) const
+{
+    return m_ResourceManager->WaitUntilReady(_instance, _timeout);
+}
+
 bool PacketSystem::FileExist(Hash _fileHash) const
 {
 	return m_FileLoader->FileExist(_fileHash);

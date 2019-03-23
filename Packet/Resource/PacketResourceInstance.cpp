@@ -60,6 +60,11 @@ bool PacketResourceInstance::InstanceDependencyIsReady() const
 	return m_LinkedInstanceDependency->IsReady();
 }
 
+PacketResourceFactory* PacketResourceInstance::GetFactoryPtr() const
+{
+    return m_FactoryPtr;
+}
+
 void PacketResourceInstance::InstanceUnlink(std::unique_ptr<PacketResourceInstance> _instanceUniquePtr)
 {
     std::lock_guard<std::mutex> lock(m_SafetyMutex);
@@ -68,14 +73,13 @@ void PacketResourceInstance::InstanceUnlink(std::unique_ptr<PacketResourceInstan
 	m_WasLinked = false;
 	
 	// Use the resource manager to release this instance
-	m_ResourceManagerPtr->ReleaseObject(std::move(_instanceUniquePtr));
+	m_ResourceManagerPtr->ReleaseInstanceOnUnlink(std::move(_instanceUniquePtr));
 }
 
 PacketResource* PacketResourceInstance::GetResource() const
 {
     std::lock_guard<std::mutex> lock(m_SafetyMutex);
 
-	assert(m_ReferenceObject != nullptr);
 	return m_ReferenceObject;
 }
 

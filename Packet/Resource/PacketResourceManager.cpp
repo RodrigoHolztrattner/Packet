@@ -109,21 +109,28 @@ are still active, this will probably lead into exceptions!");
         {
             // Remove the instance reference from its resource
             PacketResource* resource = instance->GetResource();
-            PacketResourceFactory* factory = resource->GetFactoryPtr();
-            resource->RemoveInstanceReference(instance.get());
+            PacketResourceFactory* factory = instance->GetFactoryPtr();
+
+            // If we requested this instance and it was released right after the request, there is a 
+            // possibility that its resource doesn't exist
+            if (resource != nullptr)
+            {
+                // Remove the reference originally from this instance
+                resource->RemoveInstanceReference(instance.get());
+
+                // Check if the resource should be deleted
+                if (!resource->IsDirectlyReferenced() && !resource->IsPermanent())
+                {
+                    // Remove this object from the storage, taking its ownership back
+                    std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resource);
+
+                    // Insert this object into the deletion queue
+                    m_ResourcesPendingDeletion.push_back(std::move(objectUniquePtr));
+                }
+            }
 
             // Delete the instance using its factory object
-            factory->ReleaseInstance(std::move(instance));
-
-            // Check if the resource should be deleted
-            if (!resource->IsDirectlyReferenced() && !resource->IsPermanent())
-            {
-                // Remove this object from the storage, taking its ownership back
-                std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resource);
-
-                // Insert this object into the deletion queue
-                m_ResourcesPendingDeletion.push_back(std::move(objectUniquePtr));
-            }
+            factory->ReleaseInstance(std::move(instance));     
         }
 
         m_InstancesPendingRelease.clear();
@@ -151,8 +158,6 @@ are still active, this will probably lead into exceptions!");
 
         m_ResourcesPendingReplacement.clear();
     }
-    // Resource queues/vector
-    std::vector<std::pair<std::unique_ptr<PacketResource>, PacketResource*>> m_ResourcesPendingReplacement;
 
     // Resources pending construction
     {
@@ -211,7 +216,37 @@ are still active, this will probably lead into exceptions!");
     assert(m_ResourcesPendingReplacement.size()                 == 0);
 }
 
-void PacketResourceManager::ReleaseObject(std::unique_ptr<PacketResourceInstance> _instancePtr)
+bool PacketResourceManager::WaitUntilReady(const PacketResourceInstance* _instance, 
+                                           long long _timeout) const
+{
+    // The instance must be valid
+    if (_instance == nullptr)
+    {
+        return false;
+    }
+
+    clock_t initialTime = clock();
+    clock_t currentTime = initialTime;
+    while (true)
+    {
+        if (_timeout != -1 &&
+            double(currentTime - initialTime) / CLOCKS_PER_SEC >= double(_timeout) / 1000)
+        {
+            return false;
+        }
+
+        if (_instance->IsReady())
+        {
+            return true;
+        }
+
+        currentTime = clock();
+    }
+
+    return false;
+}
+
+void PacketResourceManager::ReleaseInstanceOnUnlink(std::unique_ptr<PacketResourceInstance> _instancePtr)
 {
 	// Push the new release request, no need to synchronize this because we use a lock-free queue
     m_InstancesPendingReleaseEvaluation.enqueue(std::move(_instancePtr));
