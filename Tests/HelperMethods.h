@@ -4,7 +4,7 @@
 #include <fstream>
 #include <functional>
 
-bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite = 100)
+static bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite = 100)
 {
     if (std::filesystem::path(_filename).has_parent_path())
     {
@@ -27,7 +27,7 @@ bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite = 100)
     return false;
 }
 
-bool MustChangeToTrueUntilTimeout(std::function<bool()> _condition, long long _timeout)
+static bool MustChangeToTrueUntilTimeout(std::function<bool()> _condition, long long _timeout)
 {
     clock_t initialTime = clock();
     clock_t currentTime = initialTime;
@@ -52,7 +52,7 @@ bool MustChangeToTrueUntilTimeout(std::function<bool()> _condition, long long _t
     return false;
 }
 
-bool MustNotChangeToFalseUntilTimeout(std::function<bool()> _condition, long long _timeout)
+static bool MustNotChangeToFalseUntilTimeout(std::function<bool()> _condition, long long _timeout)
 {
     clock_t initialTime = clock();
     clock_t currentTime = initialTime;
@@ -77,14 +77,14 @@ bool MustNotChangeToFalseUntilTimeout(std::function<bool()> _condition, long lon
     return true;
 }
 
-bool MustChangeToTrueAfterTimeout(std::function<bool()> _condition, long long _timeout)
+static bool MustChangeToTrueAfterTimeout(std::function<bool()> _condition, long long _timeout)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(_timeout));
 
     return _condition();
 }
 
-bool MustChangeToFalseAfterTimeout(std::function<bool()> _condition, long long _timeout)
+static bool MustChangeToFalseAfterTimeout(std::function<bool()> _condition, long long _timeout)
 {
     return !MustChangeToTrueAfterTimeout(_condition, _timeout);
 }

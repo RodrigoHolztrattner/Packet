@@ -1,5 +1,3 @@
-#define CATCH_CONFIG_MAIN
-
 #include <catch2/catch.hpp>
 #include <string>
 #include <vector>
@@ -10,37 +8,7 @@
 #include "MyInstance.h"
 #include "MyFactory.h"
 #include "HelperMethods.h"
-
-#define ResourceDirectory    std::string("Data")
-#define MaximumTimeoutWaitMS long long(5000)
-
-SCENARIO("Packet system can be initialized", "[system]")
-{
-    GIVEN("A non initialized packet system")
-    {
-        Packet::System packetSystem;
-
-        WHEN("It's initialized in edit mode") 
-        {
-            bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
-
-            THEN("It must have been initialized successfully") 
-            {
-                REQUIRE(initializationResult == true);
-            }
-        }
-
-        WHEN("It's initialized in condensed mode") 
-        {
-            bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Condensed, ResourceDirectory);
-
-            THEN("It must have been initialized successfully") 
-            {
-                REQUIRE(initializationResult == true);
-            }
-        }
-    }
-}
+#include "HelperDefines.h"
 
 SCENARIO("Instances can request resources if their file exist", "[instance]")
 {
@@ -222,15 +190,135 @@ SCENARIO("Instances can request permanent resources if their file exist", "[inst
     }
 }
 
-/*
-    - Instance pode ter um metodo que retorna um holder do seu recurso interno (incrementando a ref count?) que tenha 
-    acesso tambem a propria instance, ao fazer isso a instance ficara com lock e apenas sera unlocked quando esse objeto
-    for out of scope ou explicitamente chamarmos unlock nele.
-    - O resource tambem deve respeitar o lock e unlock?
-    - Esse objeto permite que funcoes do resource sejam chamadas usando o operador ->.
-    - Ao finalizar as edicoes, o resource deve ser colocado para edicao no manager!?
+SCENARIO("Multiple resource requests and releases can be made from multiple threads at the same time", "[instance]")
+{
+    GIVEN("A default packet system initialized on any mode (doesn't matter what we choose) and a resource file")
+    {
+        // Packet system
+        Packet::System packetSystem;
+        bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
+        packetSystem.RegisterResourceFactory<MyFactory, MyResource>();
 
-    - Adicionar get resource e flags no resource test pra ver se as funcoes foram chamadas
+        // Resource file
+        std::string resourcePath = ResourceDirectory + "/dummy.txt";
+        bool resourceCreationResult = CreateResourceFile(resourcePath);
 
-    - Nao esquecer do external construct object!
-*/
+        WHEN("Multiple threads request resources at the same time")
+        {
+            const int TotalRequestPerThread = 100;
+            std::array<Packet::ResourceInstancePtr<MyInstance>, TotalRequestPerThread> instancesThread_a;
+            std::array<Packet::ResourceInstancePtr<MyInstance>, TotalRequestPerThread> instancesThread_b;
+            std::array<Packet::ResourceInstancePtr<MyInstance>, TotalRequestPerThread> instancesThread_c;
+            std::array<Packet::ResourceInstancePtr<MyInstance>, TotalRequestPerThread> instancesThread_d;
+
+            std::thread a = std::thread([&]()
+            {
+                for (int i = 0; i < TotalRequestPerThread; i++)
+                {
+                    bool requestResult = packetSystem.RequestResource<MyResource>(
+                        instancesThread_a[i],
+                        Packet::Hash(resourcePath));
+                }
+            });
+
+            std::thread b = std::thread([&]()
+            {
+                for (int i = 0; i < TotalRequestPerThread; i++)
+                {
+                    bool requestResult = packetSystem.RequestResource<MyResource>(
+                        instancesThread_b[i],
+                        Packet::Hash(resourcePath));
+                }
+            });
+
+            std::thread c = std::thread([&]()
+            {
+                for (int i = 0; i < TotalRequestPerThread; i++)
+                {
+                    bool requestResult = packetSystem.RequestResource<MyResource>(
+                        instancesThread_c[i],
+                        Packet::Hash(resourcePath));
+                }
+            });
+
+            std::thread d = std::thread([&]()
+            {
+                for (int i = 0; i < TotalRequestPerThread; i++)
+                {
+                    bool requestResult = packetSystem.RequestResource<MyResource>(
+                        instancesThread_d[i],
+                        Packet::Hash(resourcePath));
+                }
+            });
+
+            THEN("Eventually all instances must be ready for use")
+            {
+                for (int i = 0; i < TotalRequestPerThread; i++)
+                {
+                    REQUIRE(packetSystem.WaitForInstance(instancesThread_a[i].Get(), MaximumTimeoutWaitMS) == true);
+                    REQUIRE(packetSystem.WaitForInstance(instancesThread_b[i].Get(), MaximumTimeoutWaitMS) == true);
+                    REQUIRE(packetSystem.WaitForInstance(instancesThread_c[i].Get(), MaximumTimeoutWaitMS) == true);
+                    REQUIRE(packetSystem.WaitForInstance(instancesThread_d[i].Get(), MaximumTimeoutWaitMS) == true);
+                }
+            }
+
+            AND_THEN("The number of resources on the packet system must be equal to 1 after some time")
+            {
+                REQUIRE(MustChangeToTrueUntilTimeout([&]()
+                {
+                    return packetSystem.GetAproximatedResourceAmount() == 1;
+                }, 5000));
+            }
+
+            AND_WHEN("After all instances were created, if we release them all but one")
+            {
+                // Wait for their creation
+                a.join();
+                b.join();
+                c.join();
+                d.join();
+
+                for (int i = 0; i < TotalRequestPerThread; i++)
+                {
+                    instancesThread_a[i].Reset();
+                    instancesThread_b[i].Reset();
+                    instancesThread_c[i].Reset();
+                    if (i != 99)
+                    {
+                        instancesThread_d[i].Reset();
+                    }
+                }
+
+                THEN("The number of resources on the packet system must not change and be 1 since one instance still uses the resource")
+                {
+                    REQUIRE(MustChangeToTrueAfterTimeout([&]()
+                    {
+                        return packetSystem.GetAproximatedResourceAmount() == 1;
+                    }, 1000));
+                }
+
+                AND_WHEN("We release the remaining instance")
+                {
+                    instancesThread_d[99].Reset();
+
+                    THEN("The number of resources on the packet system must be equal to zero after some time")
+                    {
+                        REQUIRE(MustChangeToTrueUntilTimeout([&]()
+                        {
+                            return packetSystem.GetAproximatedResourceAmount() == 0;
+                        }, 5000));
+                    }
+                }
+            }
+
+            if (a.joinable())
+                a.join();
+            if (b.joinable())
+                b.join();
+            if (c.joinable())
+                c.join();
+            if (d.joinable())
+                d.join();
+        }
+    }
+}

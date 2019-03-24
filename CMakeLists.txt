@@ -155,7 +155,9 @@ SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc")
 SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od")
 
 add_executable(${TEST_PROJECT_NAME} 
-Tests/TestMain.cpp
+Tests/TestsMain.cpp
+Tests/TestsInstances.cpp
+Tests/TestsReferences.cpp
 Tests/MyResource.cpp
 Tests/MyInstance.cpp
 Tests/MyFactory.cpp)
