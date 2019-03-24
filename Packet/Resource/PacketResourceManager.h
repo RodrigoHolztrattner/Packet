@@ -236,10 +236,10 @@ private: //////
 
     // The asynchronous management thread and the conditional to exit
     std::thread m_AsynchronousManagementThread;
-    bool m_AsynchronousManagementThreadShouldExit = false;
+    bool        m_AsynchronousManagementThreadShouldExit = false;
 
 	// The resource loader and deleter
-	PacketResourceLoader m_ResourceLoader;
+	PacketResourceLoader  m_ResourceLoader;
 	PacketResourceDeleter m_ResourceDeleter;
 
 	// The current operation mode

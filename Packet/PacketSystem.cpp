@@ -80,6 +80,11 @@ bool PacketSystem::WaitForInstance(const PacketResourceInstance* _instance,
     return m_ResourceManager->WaitForInstance(_instance, _timeout);
 }
 
+uint32_t PacketSystem::GetAproximatedResourceAmount() const
+{
+    return m_ResourceStorage->GetAproximatedResourceAmount();
+}
+
 bool PacketSystem::FileExist(Hash _fileHash) const
 {
 	return m_FileLoader->FileExist(_fileHash);

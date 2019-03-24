@@ -71,8 +71,15 @@ public: //////////
 	// Replace an resource by a new one
 	std::unique_ptr<PacketResource> ReplaceObject(std::unique_ptr<PacketResource>& _object, Hash _hash, uint32_t _buildFlags);
 
-	// Remove an object returning its ownership
+	// Remove an object, passing its ownership
 	std::unique_ptr<PacketResource> GetObjectOwnership(PacketResource* _object);
+
+    // Return a vector with all permanent resources, passing their ownership
+    std::vector<std::unique_ptr<PacketResource>> GetPermanentResourcesOwnership();
+
+    // Return an approximation of the current number of resources since some of them could be enqueued 
+    // to be created or released
+    uint32_t GetAproximatedResourceAmount() const;
 
 ///////////////
 // VARIABLES //

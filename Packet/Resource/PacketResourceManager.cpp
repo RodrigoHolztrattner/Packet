@@ -138,6 +138,15 @@ are still active, this will probably lead into exceptions!");
         m_InstancesPendingRelease.clear();
     }
 
+    // Permanent resources
+    {
+        // Get all permanent resources and move them to the delete vector
+        std::vector<std::unique_ptr<PacketResource>> permanentResources = m_ResourceStoragePtr->GetPermanentResourcesOwnership();
+        m_ResourcesPendingDeletion.insert(m_ResourcesPendingDeletion.end(),
+                                          std::make_move_iterator(permanentResources.begin()),
+                                          std::make_move_iterator(permanentResources.end()));
+    }
+
     // For each resource pending replacement
     {
         for (auto& replacementInfo : m_ResourcesPendingReplacement)

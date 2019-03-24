@@ -74,6 +74,19 @@ SCENARIO("Instances can request resources if their file exist", "[instance]")
                 AND_THEN("The instance must change its status to ready after some time")
                 {
                     REQUIRE(packetSystem.WaitForInstance(resourceInstance.Get(), MaximumTimeoutWaitMS) == true);
+
+                    AND_WHEN("The instance is reseted")
+                    {
+                        resourceInstance.Reset();
+
+                        THEN("The number of resources on the packet system must be equal to zero after some time")
+                        {
+                            REQUIRE(MustChangeToTrueUntilTimeout([&]()
+                            {
+                                return packetSystem.GetAproximatedResourceAmount() == 0;
+                            }, 5000));
+                        }
+                    }
                 }
             }
         }
@@ -113,6 +126,97 @@ SCENARIO("Instances can request runtime resources", "[instance]")
             THEN("The instance must change its status to ready after some time")
             {
                 REQUIRE(packetSystem.WaitForInstance(resourceInstance.Get(), MaximumTimeoutWaitMS) == true);
+
+                AND_WHEN("The instance is reseted")
+                {
+                    resourceInstance.Reset();
+
+                    THEN("The number of resources on the packet system must be equal to zero after some time")
+                    {
+                        REQUIRE(MustChangeToTrueUntilTimeout([&]()
+                        {
+                            return packetSystem.GetAproximatedResourceAmount() == 0;
+                        }, 5000));
+                    }
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("Instances can request permanent resources if their file exist", "[instance]")
+{
+    GIVEN("A packet system initialized on edit (doesn't matter) mode and registered with a MyFactory type resource factory")
+    {
+        Packet::System packetSystem;
+        bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
+        REQUIRE(initializationResult == true);
+
+        packetSystem.RegisterResourceFactory<MyFactory, MyResource>();
+
+        AND_GIVEN("A previously created resource file")
+        {
+            std::string resourcePath = ResourceDirectory + "/dummy.txt";
+            bool resourceCreationResult = CreateResourceFile(resourcePath);
+            REQUIRE(resourceCreationResult == true);
+
+            WHEN("An instance request a permanent resource")
+            {
+                Packet::ResourceInstancePtr<MyInstance> resourceInstance;
+
+                bool requestResult = packetSystem.RequestPermanentResource<MyResource>(
+                    resourceInstance,
+                    Packet::Hash(resourcePath));
+
+                THEN("The request must have returned true (the resource file exist)")
+                {
+                    REQUIRE(requestResult == true);
+                }
+
+                AND_THEN("The instance must change its status to ready after some time")
+                {
+                    REQUIRE(packetSystem.WaitForInstance(resourceInstance.Get(), MaximumTimeoutWaitMS) == true);
+
+                    AND_WHEN("The instance is reseted")
+                    {
+                        resourceInstance.Reset();
+
+                        THEN("The number of resources on the packet system must not change and be 1 since the resource is permanent")
+                        {
+                            REQUIRE(MustChangeToTrueAfterTimeout([&]()
+                            {
+                                return packetSystem.GetAproximatedResourceAmount() == 1;
+                            }, 500));
+                        }
+                    }
+                }
+
+                AND_THEN("The instance is reseted")
+                {
+                    resourceInstance.Reset();
+
+                    THEN("The number of resources on the packet system must not change and be 1 since the resource is permanent")
+                    {
+                        REQUIRE(MustChangeToTrueAfterTimeout([&]()
+                        {
+                            return packetSystem.GetAproximatedResourceAmount() == 1;
+                        }, 500));
+                    }
+                }
+            }
+        }
+
+        WHEN("An instance request a resource that doesn't exist")
+        {
+            Packet::ResourceInstancePtr<MyInstance> resourceInstance;
+
+            bool requestResult = packetSystem.RequestResource<MyResource>(
+                resourceInstance,
+                Packet::Hash("bla.txt"));
+
+            THEN("The request must have returned false (the resource file doesn't exist)")
+            {
+                REQUIRE(requestResult == false);
             }
         }
     }
@@ -125,6 +229,8 @@ SCENARIO("Instances can request runtime resources", "[instance]")
     - O resource tambem deve respeitar o lock e unlock?
     - Esse objeto permite que funcoes do resource sejam chamadas usando o operador ->.
     - Ao finalizar as edicoes, o resource deve ser colocado para edicao no manager!?
+
+    - Adicionar get resource e flags no resource test pra ver se as funcoes foram chamadas
 
     - Nao esquecer do external construct object!
 */

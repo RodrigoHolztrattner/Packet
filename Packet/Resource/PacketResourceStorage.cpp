@@ -119,3 +119,29 @@ std::unique_ptr<PacketResource> PacketResourceStorage::GetObjectOwnership(Packet
 	// Return the unique ptr
 	return std::move(objectUniquePtr);
 }
+
+std::vector<std::unique_ptr<PacketResource>> PacketResourceStorage::GetPermanentResourcesOwnership()
+{
+    std::vector<std::unique_ptr<PacketResource>> returnVector;
+
+    for (auto it = m_ObjectMap.begin(); it != m_ObjectMap.end() ; )
+    {
+        if (it->second->IsPermanent())
+        {
+            returnVector.push_back(std::move(it->second));
+
+            m_ObjectMap.erase(it++);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    return returnVector;
+}
+
+uint32_t PacketResourceStorage::GetAproximatedResourceAmount() const
+{
+    return m_ObjectMap.size() + m_RuntimeObjectMap.size();
+}

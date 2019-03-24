@@ -130,8 +130,8 @@ struct PacketResourceInstancePtr
 		if (m_ResourceInstance != nullptr)
 		{
 			// Unlink and reset it
-			m_ResourceInstance->InstanceUnlink(m_ResourceInstance);
-			m_ResourceInstance = nullptr;
+            PacketResourceInstance* instancePtr = m_ResourceInstance.get();
+			m_ResourceInstance->InstanceUnlink(std::move(m_ResourceInstance));
 		}
 	}
 
@@ -175,7 +175,7 @@ protected: ///////
                            PacketResourceManager* _resourceManager,
                            PacketResourceFactory* _factoryPtr);
 
-	// Disable the copy constructor so we won't be making so many mistakes :)
+	// Disable the copy constructor so we won't be making mistakes :)
 	PacketResourceInstance(const PacketResourceInstance& _other) = delete;
 
 public:
