@@ -49,6 +49,7 @@ PacketDevelopmentNamespaceBegin(Packet)
 
 // Classes we know
 class PacketResourceInstance;
+class PacketResource;
 class PacketReferenceManager;
 class PacketResourceFactory;
 class PacketResourceWatcher;
@@ -65,6 +66,7 @@ public:
 
 	// Friend classes
 	friend PacketResourceInstance;
+    friend PacketResource;
 	friend PacketSystem;
 
 	// The request type
@@ -208,6 +210,10 @@ protected:
 	// this object but we must ensure we are doing an update)
 	void ReconstructInstance(PacketResourceInstance* _instance);
 
+    // This method will register a resource to be modified after it reaches 0 indirect references
+    // Only the resource should call this method
+    void RegisterResourceForModifications(PacketResource* _resource);
+
 ///////////////
 // VARIABLES //
 private: //////
@@ -233,6 +239,8 @@ private: //////
     moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingPostConstruction;
     std::vector<std::unique_ptr<PacketResource>> m_ResourcesPendingDeletion;
     std::vector<std::pair<std::unique_ptr<PacketResource>, PacketResource*>> m_ResourcesPendingReplacement;
+    moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingModificationEvaluation;
+    std::vector<PacketResource*>                                             m_ResourcesPendingModification;
 
     // The asynchronous management thread and the conditional to exit
     std::thread m_AsynchronousManagementThread;

@@ -23,7 +23,7 @@ PacketResourceManager::PacketResourceManager(OperationMode _operationMode,
 	m_ResourceStoragePtr(_storagePtr),
 	m_FileLoaderPtr(_fileLoaderPtr), 
 	m_ReferenceManagerPtr(_referenceManagerPtr),
-	m_ResourceLoader(_fileLoaderPtr, _referenceManagerPtr, _loggerPtr, _operationMode),
+	m_ResourceLoader(_fileLoaderPtr, _referenceManagerPtr, this, _loggerPtr, _operationMode),
 	m_ResourceWatcherPtr(_resourceWatcherPtr), 
 	m_Logger(_loggerPtr)
 {
@@ -193,6 +193,15 @@ are still active, this will probably lead into exceptions!");
         }
     }
 
+    // Resources pending modifications
+    {
+        // We don't need to do anything about this pointer
+        PacketResource* resource;
+        while (m_ResourcesPendingModificationEvaluation.try_dequeue(resource))
+        {
+        }
+    }
+
     // Resources pending deletion
     {
         // Just normally delete these resources
@@ -217,14 +226,15 @@ are still active, this will probably lead into exceptions!");
         m_ResourcesPendingDeletion.clear();
     }
 
-    assert(m_InstancesPendingEvaluation.size_approx()           == 0);
-    assert(m_InstancesPendingReleaseEvaluation.size_approx()    == 0);
-    assert(m_ResourcesPendingExternalConstruction.size_approx() == 0);
-    assert(m_ResourcesPendingPostConstruction.size_approx()     == 0);
-    assert(m_InstancesPendingConstruction.size()                == 0);
-    assert(m_InstancesPendingRelease.size()                     == 0);
-    assert(m_ResourcesPendingDeletion.size()                    == 0);
-    assert(m_ResourcesPendingReplacement.size()                 == 0);
+    assert(m_InstancesPendingEvaluation.size_approx()             == 0);
+    assert(m_InstancesPendingReleaseEvaluation.size_approx()      == 0);
+    assert(m_ResourcesPendingExternalConstruction.size_approx()   == 0);
+    assert(m_ResourcesPendingPostConstruction.size_approx()       == 0);
+    assert(m_ResourcesPendingModificationEvaluation.size_approx() == 0);
+    assert(m_InstancesPendingConstruction.size()                  == 0);
+    assert(m_InstancesPendingRelease.size()                       == 0);
+    assert(m_ResourcesPendingDeletion.size()                      == 0);
+    assert(m_ResourcesPendingReplacement.size()                   == 0);
 }
 
 bool PacketResourceManager::WaitForInstance(const PacketResourceInstance* _instance,
@@ -390,6 +400,38 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         }
     }
 
+    /////////////////////////////////////
+    // RESOURCES PENDING MODIFICATIONS // 
+    /////////////////////////////////////
+    while (true)
+    {
+        // If we have resourced pending modifications
+        PacketResource* resource;
+        if (!m_ResourcesPendingModificationEvaluation.try_dequeue(resource))
+        {
+            break;
+        }
+
+        m_ResourcesPendingModification.push_back(resource);
+    }
+
+    // For each instance pending modification
+    for (int i = static_cast<int>(m_ResourcesPendingModification.size() - 1); i >= 0; i--)
+    {
+        PacketResource* resource = m_ResourcesPendingModification[i];
+
+        // Verify is this resource doesn't have indirect references
+        if (resource->IsIndirectlyReferenced())
+        {
+            continue;
+        }
+
+        // Begin the modifications
+        resource->BeginModifications();
+
+        m_ResourcesPendingModification.erase(m_ResourcesPendingModification.begin() + i);
+    }
+
     ///////////////////////
     // RELEASE INSTANCES //
     ///////////////////////
@@ -454,8 +496,8 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         // Get a short variable to this resource
         auto& resource = m_ResourcesPendingDeletion[i];
 
-        // Check if this resource is referenced in any way and if it is pending replacement
-        if (resource->IsReferenced())
+        // Check if this resource is referenced in any way and if it is pending modifications
+        if (resource->IsReferenced() || resource->IsPendingModifications())
         {
             // We cannot delete it right now
             continue;
@@ -513,6 +555,11 @@ void PacketResourceManager::ReconstructInstance(PacketResourceInstance* _instanc
 
 	// Insert the reference into the construct queue
     m_InstancesPendingConstruction.push_back(_instance);
+}
+
+void PacketResourceManager::RegisterResourceForModifications(PacketResource* _resource)
+{
+    m_ResourcesPendingModificationEvaluation.enqueue(_resource);
 }
 
 void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)

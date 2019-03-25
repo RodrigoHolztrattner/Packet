@@ -149,6 +149,9 @@ protected: //////////
     virtual void OnConstruct() {};
     virtual void OnExternalConstruct() {};
 
+    //
+    virtual void OnModification() {};
+
 //////////////////
 // MAIN METHODS //
 public: //////////
@@ -234,6 +237,9 @@ public: // STATUS //
     // Return if this is a runtime resource
     bool IsRuntime();
 
+    // If this resource is pending modifications
+    bool IsPendingModifications();
+
 /////////////////////////////////////
 protected: // INSTANCE REFERENCING //
 /////////////////////////////////////
@@ -242,10 +248,6 @@ protected: // INSTANCE REFERENCING //
 	void MakeInstanceReference(PacketResourceInstance* _instance);
 	void RemoveInstanceReference(PacketResourceInstance* _instance);
 
-	// Make/remove a temporary reference
-	void MakeTemporaryReference();
-	void RemoveTemporaryReference();
-
 /////////////////////////
 protected: // INTERNAL //
 /////////////////////////
@@ -253,14 +255,20 @@ protected: // INTERNAL //
 	// Begin load, deletion, construct and external construct methods
 	bool BeginLoad(bool _isPersistent);
 	bool BeginDelete();
-    bool BeginConstruct();
-    bool BeginExternalConstruct();
+    void BeginConstruct();
+    void BeginExternalConstruct();
+    void BeginModifications();
 
 	// Set the hash
 	void SetHash(Hash _hash);
 
 	// Set the helper object pointers and the operation mode
-	void SetHelperObjects(PacketResourceFactory* _factoryReference, PacketReferenceManager* _referenceManager, PacketFileLoader* _fileLoader, PacketLogger* _logger, OperationMode _operationMode);
+	void SetHelperObjects(PacketResourceFactory* _factoryReference,
+                          PacketReferenceManager* _referenceManager, 
+                          PacketResourceManager* _resourceManager,
+                          PacketFileLoader* _fileLoader, 
+                          PacketLogger* _logger, 
+                          OperationMode _operationMode);
 
 	// Set the build info
 	void SetBuildInfo(PacketResourceBuildInfo _buildInfo, 
@@ -268,6 +276,15 @@ protected: // INTERNAL //
 
 	// Set that this resource is pending deletion
 	void SetPendingDeletion();
+
+    // Set that this resource has pending modification, this will lock the modification mutex and prevent
+    // any new resource from being created, after this call when the resource has 0 indirect references
+    // it should be able to handle modifications safely
+    // This method will also add this resource into the "pending modification queue" on the resource
+    // manager, this is ok since the manager won't perform the modifications until this resource get 0
+    // indirect references, it will have at least one because this method should be called from a reference
+    // object.
+    void SetPendingModifications();
 
 	// Make all instances that depends on this resource to point to another resource, decrementing the total 
 	// number of references to zero, this method must be called when inside the update phase on the resource 
@@ -288,11 +305,13 @@ protected: // INTERNAL //
 	// Return the data reference, non const because this should be used to externally release the data (factory)
     PacketResourceData& GetDataRef();
 
-    // Increment the number of direct references
+    // Increment/decrement the number of direct references
     void IncrementNumberDirectReferences();
-
-    // Decrement the number of direct references
     void DecrementNumberDirectReferences();
+
+    // Increment/decrement the number of indirect references
+    void IncrementNumberIndirectReferences();
+    void DecrementNumberIndirectReferences();
 
 ///////////////
 // VARIABLES //
@@ -306,6 +325,7 @@ private: //////
     bool m_WasConstructed            = false;
     bool m_WasExternallyConstructed  = false;
     bool m_IsRuntimeResource         = false;
+    bool m_IsPendingModifications    = false;
 
     // This is the index of the current construct phase
     uint32_t m_CurrentConstructPhaseIndex = 0;
@@ -320,24 +340,24 @@ private: //////
 	PacketResourceBuildInfo m_BuildInfo;
 
 	// A pointer to the resource factory, the reference manager, the file loader and the logger object
-	PacketResourceFactory* m_FactoryPtr;
-	PacketReferenceManager* m_ReferenceManagerPtr;
-	PacketFileLoader* m_FileLoaderPtr;
-	PacketLogger* m_LoggerPtr;
+	PacketResourceFactory*  m_FactoryPtr;
+    PacketReferenceManager* m_ReferenceManagerPtr;
+    PacketResourceManager*  m_ResourceManagerPtr;
+    PacketFileLoader*       m_FileLoaderPtr;
+	PacketLogger*           m_LoggerPtr;
 
 	// The current operation mode for the packet system
 	OperationMode m_CurrentOperationMode;
-
-#ifndef NDEBUG
 
 	// This is a vector with all instances that uses this object + a mutex to prevent multiple writes 
 	// at the same time, those variables exist only on debug builds and they offer functionality to 
 	// the runtime detection of resource file changes, providing a way to update all instances that 
 	// points to a given resource object
 	std::vector<PacketResourceInstance*> m_InstancesThatUsesThisResource;
-	std::mutex m_InstanceVectorMutex;
 
-#endif
+    // This is the modifications mutex, it is used to prevent thread races when the modification
+    // flag is active, preventing any new reference from being created
+    std::mutex m_ResourceModificationMutex;
 };
 
 // The temporary resource reference type
@@ -350,8 +370,12 @@ class PacketResourceReferencePtr
 
 protected:
 
-	// Constructor used by the resource class
-	PacketResourceReferencePtr(ResourceClass* _resource) : m_ResourceObject(_resource) {}
+	// Constructor used by the instance class
+	PacketResourceReferencePtr(ResourceClass* _resource) : m_ResourceObject(_resource) 
+    {
+        // Increment the total number of temporary references for the resource
+        m_ResourceObject->IncrementNumberIndirectReferences();
+    }
 
 public:
 
@@ -361,7 +385,10 @@ public:
 	// Copy constructor disabled
 	PacketResourceReferencePtr(const PacketResourceReferencePtr&) = delete;
 
-	// Move operator
+    // Assignment operator
+    PacketResourceReferencePtr& operator=(const PacketResourceReferencePtr&) = delete;
+
+	// Move assignment operator
 	PacketResourceReferencePtr& operator=(PacketResourceReferencePtr&& _other)
 	{
 		// Set the pointer
@@ -371,6 +398,7 @@ public:
 		return *this;
 	}
 
+    /*
 	// Our move copy operator (same as above)
 	PacketResourceReferencePtr(PacketResourceReferencePtr&& _other)
 	{
@@ -380,7 +408,7 @@ public:
 	}
 
 	// Reset this pointer, unlinking it
-	void Reset()
+	virtual void Reset()
 	{
 		// If the resource object is valid
 		if (m_ResourceObject != nullptr)
@@ -389,6 +417,7 @@ public:
 			m_ResourceObject = nullptr;
 		}
 	}
+    */
 
 	// Operator to use this as a pointer to the resource object
 	ResourceClass* operator->() const
@@ -409,20 +438,41 @@ public:
 	}
 
 	// Destructor
-	~PacketResourceReferencePtr()
+	virtual ~PacketResourceReferencePtr()
 	{
 		// If the resource object is valid
 		if (m_ResourceObject != nullptr)
 		{
-			m_ResourceObject->RemoveTemporaryReference();
+			m_ResourceObject->DecrementNumberIndirectReferences();
 			m_ResourceObject = nullptr;
 		}
 	}
 
-private:
+protected:
 
 	// The resource object
 	ResourceClass* m_ResourceObject = nullptr;
+};
+
+// The temporary editable resource reference type
+template <typename ResourceClass>
+class PacketEditableResourceReferencePtr : public PacketResourceReferencePtr<ResourceClass>
+{
+protected:
+
+    // Constructor used by the instance class
+    PacketEditableResourceReferencePtr(PacketResourceInstance* _instance, 
+                                       ResourceClass* _resource)
+        : PacketResourceReferencePtr<ResourceClass>(_resource)
+    {
+        _resource->SetPendingModifications();
+    }
+
+public:
+
+    // Default constructor
+    PacketEditableResourceReferencePtr() 
+        : PacketResourceReferencePtr<ResourceClass>() {}
 };
 
 // Packet

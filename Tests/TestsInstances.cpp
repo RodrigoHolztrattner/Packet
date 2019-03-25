@@ -33,7 +33,7 @@ SCENARIO("Instances can request resources if their file exist", "[instance]")
                 bool requestResult = packetSystem.RequestResource<MyResource>(
                     resourceInstance,
                     Packet::Hash(resourcePath));
-
+            
                 THEN("The request must have returned true (the resource file exist)")
                 {
                     REQUIRE(requestResult == true);

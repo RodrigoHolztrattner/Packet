@@ -192,17 +192,28 @@ public: //////////
 	// synchronized, and third if this instance was constructed with all of its dependencies fulfilled
 	bool IsReady() const;
 
-	// Create a temporary reference
+	// Create a temporary reference from the internal resource, this will prevent it from being deleted even if this
+    // instance is released
 	template <typename ResourceClass>
 	PacketResourceReferencePtr<ResourceClass> GetResourceReference() const
 	{
         std::lock_guard<std::mutex> lock(m_SafetyMutex);
 
-		// Increment the total number of temporary references
-		m_ReferenceObject->MakeTemporaryReference();
-
 		return PacketResourceReferencePtr<ResourceClass>(static_cast<ResourceClass*>(m_ReferenceObject));
 	}
+
+    // Create a temporary reference from the internal resource, allowing it to me modified
+    // After the editable reference goes out of scope or is explicit reseted, the underlying resource
+    // will be enqueued to be updated
+    // During the lifetime of this object, the resource will be locked and the only way to use it
+    // will be by the reference
+    template <typename ResourceClass>
+    PacketEditableResourceReferencePtr<ResourceClass> GetEditableResourceReference() const
+    {
+        std::lock_guard<std::mutex> lock(m_SafetyMutex);
+ 
+        return PacketEditableResourceReferencePtr<ResourceClass>(this, static_cast<ResourceClass*>(m_ReferenceObject));
+    }
 
 ///////////////////////
 protected: // STATUS //

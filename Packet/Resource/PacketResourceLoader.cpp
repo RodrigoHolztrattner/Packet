@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketResourceLoader.h"
 #include "PacketResourceFactory.h"
+#include "PacketResourceManager.h"
 #include "PacketResource.h"
 #include "..\PacketReferenceManager.h"
 
@@ -14,12 +15,14 @@ PacketUsingDevelopmentNamespace(Packet)
 
 PacketResourceLoader::PacketResourceLoader(PacketFileLoader* _fileLoaderPtr,
                                            PacketReferenceManager* _referenceManager,
-                                           PacketLogger* _loggerPtr, 
+                                           PacketResourceManager* _resourceManager,
+                                           PacketLogger* _loggerPtr,
                                            OperationMode _operationMode)
 {
 	// Save the pointers and the operation mode
 	m_FileLoaderPtr = _fileLoaderPtr;
 	m_ReferenceManagerPtr = _referenceManager;
+    m_ResourceManagerPtr = _resourceManager;
 	m_LoggerPtr = _loggerPtr;
 	m_OperationMode = _operationMode;
 }
@@ -42,7 +45,12 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     resource->SetHash(_hash);
 
     // Set the helper pointers and the current operation mode
-    resource->SetHelperObjects(_resourceFactory, m_ReferenceManagerPtr, m_FileLoaderPtr, m_LoggerPtr, m_OperationMode);
+    resource->SetHelperObjects(_resourceFactory,
+                               m_ReferenceManagerPtr, 
+                               m_ResourceManagerPtr,
+                               m_FileLoaderPtr, 
+                               m_LoggerPtr, 
+                               m_OperationMode);
 
     // Set the build info
     resource->SetBuildInfo(_buildInfo, _isRuntimeResource);

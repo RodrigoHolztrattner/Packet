@@ -13,6 +13,8 @@ public:
                Packet::ResourceFactory* _factoryPtr);
     ~MyInstance();
 
+protected:
+
     void OnConstruct() final;
     void OnDependenciesFulfilled() final;
     void OnReset() final;

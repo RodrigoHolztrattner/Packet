@@ -39,6 +39,7 @@ PacketDevelopmentNamespaceBegin(Packet)
 
 // Classes we know
 class PacketReferenceManager;
+class PacketResourceManager;
 class PacketResource;
 class PacketResourceFactory;
 
@@ -55,6 +56,7 @@ public: //////////
 	// Constructor / destructor
 	PacketResourceLoader(PacketFileLoader* _fileLoaderPtr,
                          PacketReferenceManager* _referenceManager,
+                         PacketResourceManager* _resourceManager,
                          PacketLogger* _loggerPtr, 
                          OperationMode _operationMode);
 	~PacketResourceLoader();
@@ -76,10 +78,11 @@ public: //////////
 private: //////
 
 	// The packet file loader ptr, the reference manager ptr, the logger ptr and the current operation mode
-	PacketFileLoader* m_FileLoaderPtr;
+	PacketFileLoader*       m_FileLoaderPtr;
 	PacketReferenceManager* m_ReferenceManagerPtr;
-	PacketLogger* m_LoggerPtr;
-	OperationMode m_OperationMode;
+    PacketResourceManager*  m_ResourceManagerPtr;
+	PacketLogger*           m_LoggerPtr;
+	OperationMode           m_OperationMode;
 };
 
 // Packet

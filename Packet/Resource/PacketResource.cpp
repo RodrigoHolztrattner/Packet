@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketResource.h"
 #include "PacketResourceInstance.h"
+#include "PacketResourceManager.h"
 #include "PacketResourceFactory.h"
 #include "..\PacketReferenceManager.h"
 
@@ -196,27 +197,35 @@ bool PacketResource::BeginDelete()
 	return true;
 }
 
-bool PacketResource::BeginConstruct()
+void PacketResource::BeginConstruct()
 {
     OnConstruct();
 
     m_WasConstructed = true;
-
-    return true;
 }
 
-bool PacketResource::BeginExternalConstruct()
+void PacketResource::BeginExternalConstruct()
 {
     OnExternalConstruct();
 
     m_WasExternallyConstructed = true;
+}
 
-    return true;
+void PacketResource::BeginModifications()
+{
+    OnModification();
+
+    m_IsPendingModifications = false;
+    m_ResourceModificationMutex.unlock();
 }
 
 bool PacketResource::IsReady() const
 {
-	return m_WasLoaded && m_WasConstructed && m_WasExternallyConstructed;
+	return m_WasLoaded
+        && m_WasConstructed
+        && m_WasExternallyConstructed
+        && !m_IsPendingModifications
+        && !m_IsPendingDeletion;
 }
 
 bool PacketResource::IsPendingDeletion() const
@@ -249,6 +258,11 @@ bool PacketResource::IsRuntime()
     return m_IsRuntimeResource;
 }
 
+bool PacketResource::IsPendingModifications()
+{
+    return m_IsPendingModifications;
+}
+
 Hash PacketResource::GetHash() const
 {
 	return m_Hash;
@@ -259,10 +273,16 @@ void PacketResource::SetHash(Hash _hash)
 	m_Hash = _hash;
 }
 
-void PacketResource::SetHelperObjects(PacketResourceFactory* _factoryReference, PacketReferenceManager* _referenceManager, PacketFileLoader* _fileLoader, PacketLogger* _logger, OperationMode _operationMode)
+void PacketResource::SetHelperObjects(PacketResourceFactory* _factoryReference,
+                                      PacketReferenceManager* _referenceManager, 
+                                      PacketResourceManager* _resourceManager,
+                                      PacketFileLoader* _fileLoader, 
+                                      PacketLogger* _logger,
+                                      OperationMode _operationMode)
 {
 	m_FactoryPtr = _factoryReference;
 	m_ReferenceManagerPtr = _referenceManager;
+    m_ResourceManagerPtr = _resourceManager;
 	m_FileLoaderPtr = _fileLoader;
 	m_LoggerPtr = _logger;
 	m_CurrentOperationMode = _operationMode;
@@ -283,6 +303,14 @@ const PacketResourceBuildInfo& PacketResource::GetBuildInfo() const
 void PacketResource::SetPendingDeletion()
 {
 	m_IsPendingDeletion = true;
+}
+
+void PacketResource::SetPendingModifications()
+{
+    m_ResourceModificationMutex.lock();
+    m_IsPendingModifications = true;
+
+    m_ResourceManagerPtr->RegisterResourceForModifications(this);
 }
 
 void PacketResource::RedirectInstancesToResource(PacketResource* _newResource)
@@ -312,23 +340,22 @@ void PacketResource::RedirectInstancesToResource(PacketResource* _newResource)
 
 bool PacketResource::AreInstancesReadyToBeUsed() const
 {
-#ifndef NDEBUG
+    if (m_CurrentOperationMode == OperationMode::Edit)
+    {
+        // For each instance
+        for (auto* instance : m_InstancesThatUsesThisResource)
+        {
+            // Check if this instance or the instance that depends on it (if there is one) are locked
+            if (!instance->IsReady() || !instance->InstanceDependencyIsReady())
+            {
+                return false;
+            }
+        }
 
-	// For each instance
-	for (auto* instance : m_InstancesThatUsesThisResource)
-	{
-		// Check if this instance or the instance that depends on it (if there is one) are locked
-		if (!instance->IsReady() || !instance->InstanceDependencyIsReady())
-		{
-			return false;
-		}
-	}
+        return true;
+    }
 
-	return true;
-
-#endif
-
-	m_LoggerPtr->LogWarning("Trying to call the method AreInstancesReadyToBeUsed() but the current build isn't a debug one!");
+	m_LoggerPtr->LogWarning("Calling method AreInstancesReadyToBeUsed() on Condensed mode!");
 	return false;
 }
 
@@ -339,54 +366,50 @@ bool PacketResource::IgnorePhysicalDataChanges() const
 
 void PacketResource::MakeInstanceReference(PacketResourceInstance* _instance)
 {
-	// Increment the total number of references
-	m_TotalDirectReferences++;
+    // Increment the total number of references
+    m_TotalDirectReferences++;
 
-	// Set the object reference
-	_instance->SetObjectReference(this);
+    // Set the object reference
+    _instance->SetObjectReference(this);
 
-
-#ifndef NDEBUG
-
-	// Insert this instance into the instance vector os dependencies
-	{
-		std::lock_guard<std::mutex> lock(m_InstanceVectorMutex);
-		m_InstancesThatUsesThisResource.push_back(_instance);
-	}
-
-#endif
+    // Insert this instance into the instance vector of dependencies
+    if (m_CurrentOperationMode == OperationMode::Edit)
+    {
+        m_InstancesThatUsesThisResource.push_back(_instance);
+    }
 }
 
 void PacketResource::RemoveInstanceReference(PacketResourceInstance* _instance)
 {
-	assert(m_TotalDirectReferences > 0);
+    assert(m_TotalDirectReferences > 0);
 
-	// Subtract one from the reference count
-	m_TotalDirectReferences--;
+    // Subtract one from the reference count
+    m_TotalDirectReferences--;
 
-#ifndef NDEBUG
-
-	// Find the instance object inside the instance vector and remove it, there is no need to use
-	// the mutex because this can only happens on the update phase of the PacketResourceManager
-	for (unsigned int i = 0; i < m_InstancesThatUsesThisResource.size(); i++)
-	{
-		// Compare the pointers
-		if (m_InstancesThatUsesThisResource[i] == _instance)
-		{
-			// Remove it
-			m_InstancesThatUsesThisResource.erase(m_InstancesThatUsesThisResource.begin() + i);
-		}
-	}
-
-#endif
+    if (m_CurrentOperationMode == OperationMode::Edit)
+    {
+        // Find the instance object inside the instance vector and remove it, there is no need to use
+        // the mutex because this can only happens on the update phase of the PacketResourceManager
+        for (unsigned int i = 0; i < m_InstancesThatUsesThisResource.size(); i++)
+        {
+            // Compare the pointers
+            if (m_InstancesThatUsesThisResource[i] == _instance)
+            {
+                // Remove it
+                m_InstancesThatUsesThisResource.erase(m_InstancesThatUsesThisResource.begin() + i);
+            }
+        }
+    }
 }
 
-void PacketResource::MakeTemporaryReference()
+void PacketResource::IncrementNumberIndirectReferences()
 {
+    std::lock_guard<std::mutex> lock(m_ResourceModificationMutex);
+
 	m_TotalIndirectReferences++;
 }
 
-void PacketResource::RemoveTemporaryReference()
+void PacketResource::DecrementNumberIndirectReferences()
 {
 	m_TotalIndirectReferences--;
 }
@@ -445,8 +468,6 @@ bool PacketResource::UpdateResourcePhysicalData(const uint8_t* _data, uint64_t _
 		return false;
 	}
 
-#ifndef NDEBUG
-
 	// Check the size to proceed
 	if (_dataSize == 0)
 	{
@@ -475,11 +496,6 @@ bool PacketResource::UpdateResourcePhysicalData(const uint8_t* _data, uint64_t _
 	}
 
 	return true;
-
-#endif
-
-	m_LoggerPtr->LogWarning("Trying to call the method UpdateResourcePhysicalData() but the current build isn't a debug one!");
-	return false;
 }
 
 bool PacketResource::UpdateResourcePhysicalData(PacketResourceData& _data)
@@ -497,15 +513,8 @@ bool PacketResource::RegisterPhysicalResourceReference(Hash _targetResourceHash,
 		return false;
 	}
 
-#ifndef NDEBUG
-
 	// Call the validate file references method for the reference manager
 	return m_ReferenceManagerPtr->RegisterFileReference(m_Hash.GetPath().String(), _targetResourceHash.GetPath().String(), _hashDataLocation);
-
-#endif
-
-	m_LoggerPtr->LogWarning("Trying to call the method RegisterPhysicalResourceReference() but the current build isn't a debug one!");
-	return false;
 }
 
 bool PacketResource::ClearAllPhysicalResourceReferences()
@@ -518,17 +527,10 @@ bool PacketResource::ClearAllPhysicalResourceReferences()
 		return false;
 	}
 
-#ifndef NDEBUG
-
 	// Clear all file references
 	m_ReferenceManagerPtr->ClearFileReferences(m_Hash.GetPath().String());
 
 	return true;
-
-#endif
-
-	m_LoggerPtr->LogWarning("Trying to call the method ClearAllPhysicalResourceReferences() but the current build isn't a debug one!");
-	return false;
 }
 
 bool PacketResource::VerifyPhysicalResourceReferences(ReferenceFixer _fixer, bool _allOrNothing)
@@ -541,13 +543,6 @@ bool PacketResource::VerifyPhysicalResourceReferences(ReferenceFixer _fixer, boo
 		return false;
 	}
 
-#ifndef NDEBUG
-
 	// Call the validate file references method for the reference manager
 	return m_ReferenceManagerPtr->ValidateFileReferences(m_Hash.GetPath().String(), _fixer, _allOrNothing);
-
-#endif
-
-	m_LoggerPtr->LogWarning("Trying to call the method VerifyPhysicalResourceReferences() but the current build isn't a debug one!");
-	return false;
 }
