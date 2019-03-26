@@ -29,7 +29,7 @@ PacketResourceWatcher::~PacketResourceWatcher()
 {
 }
 
-void PacketResourceWatcher::HandleFileAction(FWPacket::WatchID _watchid, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action)
+void PacketResourceWatcher::HandleFileAction(FWPacket::WatchID, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action)
 {
 	// Check if we have a watch on this directory
 	auto iter = m_WatchedDirectories.find(Hash(_dir).GetHashValue());

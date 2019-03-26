@@ -8,7 +8,7 @@ MyResource::~MyResource()
 {
 }
 
-bool MyResource::OnLoad(Packet::ResourceData& _data, uint32_t _buildFlags, uint32_t _flags)
+bool MyResource::OnLoad(Packet::ResourceData&, uint32_t, uint32_t)
 {
     return true;
 }

@@ -143,5 +143,5 @@ std::vector<std::unique_ptr<PacketResource>> PacketResourceStorage::GetPermanent
 
 uint32_t PacketResourceStorage::GetAproximatedResourceAmount() const
 {
-    return m_ObjectMap.size() + m_RuntimeObjectMap.size();
+    return static_cast<uint32_t>(m_ObjectMap.size() + m_RuntimeObjectMap.size());
 }

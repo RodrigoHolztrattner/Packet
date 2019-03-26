@@ -196,12 +196,12 @@ SCENARIO("Multiple resource requests and releases can be made from multiple thre
     {
         // Packet system
         Packet::System packetSystem;
-        bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
+        packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
         packetSystem.RegisterResourceFactory<MyFactory, MyResource>();
 
         // Resource file
         std::string resourcePath = ResourceDirectory + "/dummy.txt";
-        bool resourceCreationResult = CreateResourceFile(resourcePath);
+        CreateResourceFile(resourcePath);
 
         WHEN("Multiple threads request resources at the same time")
         {
@@ -215,7 +215,7 @@ SCENARIO("Multiple resource requests and releases can be made from multiple thre
             {
                 for (int i = 0; i < TotalRequestPerThread; i++)
                 {
-                    bool requestResult = packetSystem.RequestResource<MyResource>(
+                    packetSystem.RequestResource<MyResource>(
                         instancesThread_a[i],
                         Packet::Hash(resourcePath));
                 }
@@ -225,7 +225,7 @@ SCENARIO("Multiple resource requests and releases can be made from multiple thre
             {
                 for (int i = 0; i < TotalRequestPerThread; i++)
                 {
-                    bool requestResult = packetSystem.RequestResource<MyResource>(
+                    packetSystem.RequestResource<MyResource>(
                         instancesThread_b[i],
                         Packet::Hash(resourcePath));
                 }
@@ -235,7 +235,7 @@ SCENARIO("Multiple resource requests and releases can be made from multiple thre
             {
                 for (int i = 0; i < TotalRequestPerThread; i++)
                 {
-                    bool requestResult = packetSystem.RequestResource<MyResource>(
+                    packetSystem.RequestResource<MyResource>(
                         instancesThread_c[i],
                         Packet::Hash(resourcePath));
                 }
@@ -245,7 +245,7 @@ SCENARIO("Multiple resource requests and releases can be made from multiple thre
             {
                 for (int i = 0; i < TotalRequestPerThread; i++)
                 {
-                    bool requestResult = packetSystem.RequestResource<MyResource>(
+                    packetSystem.RequestResource<MyResource>(
                         instancesThread_d[i],
                         Packet::Hash(resourcePath));
                 }

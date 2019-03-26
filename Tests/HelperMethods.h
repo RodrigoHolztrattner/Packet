@@ -14,7 +14,7 @@ static bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite = 
     std::ofstream myfile(_filename);
     if (myfile.is_open())
     {
-        for (int i = 0; i < _amountToWrite; i++)
+        for (int i = 0; i < static_cast<int>(_amountToWrite); i++)
         {
             myfile << std::to_string(_amountToWrite);
         }

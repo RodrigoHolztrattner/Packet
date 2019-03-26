@@ -131,7 +131,7 @@ struct PacketResourceInstancePtr
 		{
 			// Unlink and reset it
             PacketResourceInstance* instancePtr = m_ResourceInstance.get();
-			m_ResourceInstance->InstanceUnlink(std::move(m_ResourceInstance));
+            instancePtr->InstanceUnlink(std::move(m_ResourceInstance));
 		}
 	}
 

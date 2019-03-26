@@ -91,8 +91,8 @@ project(${PROJECT_NAME} VERSION 1.0.0 DESCRIPTION "blob")
 # PROJECT #
 ###########
 
-SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc /W4 /WX /FI")
-SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od /W4 /WX /FI")
+SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc")
+SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od")
 
 add_library(${PROJECT_NAME} STATIC
   Packet/PacketCondensedModeFileLoader.cpp
@@ -157,8 +157,8 @@ if(NOT catch2_POPULATED)
   FetchContent_Populate(catch2)
 endif()
 
-SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc /W4 /WX /FI")
-SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od /W4 /WX /FI")
+SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc")
+SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od")
 
 add_executable(${TEST_PROJECT_NAME} 
   Tests/TestsMain.cpp
