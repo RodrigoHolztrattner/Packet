@@ -132,6 +132,10 @@ public:
     // Optionally you can pass a timeout parameter in milliseconds
     bool WaitForInstance(const PacketResourceInstance* _instance, long long _timeout = -1) const;
 
+    // This method will return a vector of resource external constructor object that must be constructed
+    // by the user externally (since the resource requires it)
+    std::vector<PacketResourceExternalConstructor> GetResourceExternalConstructors();
+
     // Return an approximation of the current number of resources since some of them could be enqueued 
     // to be created or released
     uint32_t GetAproximatedResourceAmount() const;

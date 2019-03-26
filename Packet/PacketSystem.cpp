@@ -80,6 +80,11 @@ bool PacketSystem::WaitForInstance(const PacketResourceInstance* _instance,
     return m_ResourceManager->WaitForInstance(_instance, _timeout);
 }
 
+std::vector<PacketResourceExternalConstructor> PacketSystem::GetResourceExternalConstructors()
+{
+    return m_ResourceManager->GetResourceExternalConstructors();
+}
+
 uint32_t PacketSystem::GetAproximatedResourceAmount() const
 {
     return m_ResourceStorage->GetAproximatedResourceAmount();
