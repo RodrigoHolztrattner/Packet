@@ -263,6 +263,23 @@ bool PacketResource::IsPendingModifications() const
     return m_IsPendingModifications;
 }
 
+bool PacketResource::RequiresExternalConstructPhase() const
+{ 
+    return false; 
+}
+
+void PacketResource::OnConstruct()
+{
+}
+
+void PacketResource::OnExternalConstruct(void*)
+{
+}
+
+void PacketResource::OnModification()
+{
+}
+
 Hash PacketResource::GetHash() const
 {
 	return m_Hash;

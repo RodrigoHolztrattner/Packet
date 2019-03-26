@@ -145,14 +145,16 @@ protected: //////////
 	virtual bool OnDelete(PacketResourceData&) = 0;
 
     // Return if this resource requires an external construct phase
-    virtual bool RequiresExternalConstructPhase() const { return false; }
+    virtual bool RequiresExternalConstructPhase() const;
 
-    //
-    virtual void OnConstruct() {};
-    virtual void OnExternalConstruct(void*) {};
+    // The construct methods, the OnConstruct will be called asynchronously by the resource 
+    // manager and the external one can be flagged to be called by the user
+    virtual void OnConstruct();
+    virtual void OnExternalConstruct(void* _data);
 
-    //
-    virtual void OnModification() {};
+    // This method is called when this resource is modified (edited), it's guaranteed that it
+    // can safely update any internal data without risks of races
+    virtual void OnModification();
 
 //////////////////
 // MAIN METHODS //
@@ -388,8 +390,7 @@ public:
 		return *this;
 	}
 
-    /*
-	// Our move copy operator (same as above)
+	// Our move copy operator
 	PacketResourceReferencePtr(PacketResourceReferencePtr&& _other)
 	{
 		// Set the pointer
@@ -403,11 +404,10 @@ public:
 		// If the resource object is valid
 		if (m_ResourceObject != nullptr)
 		{
-			m_ResourceObject->RemoveTemporaryReference();
+			m_ResourceObject->DecrementNumberIndirectReferences();
 			m_ResourceObject = nullptr;
 		}
 	}
-    */
 
 	// Operator to use this as a pointer to the resource object
 	ResourceClass* operator->() const
