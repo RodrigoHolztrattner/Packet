@@ -204,9 +204,9 @@ void PacketResource::BeginConstruct()
     m_WasConstructed = true;
 }
 
-void PacketResource::BeginExternalConstruct()
+void PacketResource::BeginExternalConstruct(void* _data)
 {
-    OnExternalConstruct();
+    OnExternalConstruct(_data);
 
     m_WasExternallyConstructed = true;
 }
@@ -253,12 +253,12 @@ bool PacketResource::IsPermanent() const
 	return m_IsPermanentResource;
 }
 
-bool PacketResource::IsRuntime()
+bool PacketResource::IsRuntime() const
 {
     return m_IsRuntimeResource;
 }
 
-bool PacketResource::IsPendingModifications()
+bool PacketResource::IsPendingModifications() const
 {
     return m_IsPendingModifications;
 }
@@ -545,4 +545,53 @@ bool PacketResource::VerifyPhysicalResourceReferences(ReferenceFixer _fixer, boo
 
 	// Call the validate file references method for the reference manager
 	return m_ReferenceManagerPtr->ValidateFileReferences(m_Hash.GetPath().String(), _fixer, _allOrNothing);
+}
+
+///////////////////////////////////////
+// PacketResourceExternalConstructor //
+///////////////////////////////////////
+
+PacketResourceExternalConstructor::PacketResourceExternalConstructor(PacketResource* _resource, PacketResourceManager* _manager) :
+    m_Resource(_resource),
+    m_ResourceManager(_manager)
+{
+}
+
+PacketResourceExternalConstructor::PacketResourceExternalConstructor(PacketResourceExternalConstructor&& _other)
+{
+    m_ResourceManager = std::move(_other.m_ResourceManager);
+    m_Resource = std::move(_other.m_Resource);
+}
+
+PacketResourceExternalConstructor& PacketResourceExternalConstructor::operator=(PacketResourceExternalConstructor&& _other)
+{
+    if (this != &_other)
+    {
+        m_ResourceManager = std::move(_other.m_ResourceManager);
+        m_Resource = std::move(_other.m_Resource);
+    }
+
+    return *this;
+}
+
+PacketResourceExternalConstructor::~PacketResourceExternalConstructor()
+{
+    if (m_Resource != nullptr)
+    {
+        // We need to reinsert this resource into the manager queue because it wasn't 
+        // constructed
+        m_ResourceManager->RegisterResourceForExternalConstruction(m_Resource);
+    }
+}
+
+void PacketResourceExternalConstructor::ConstructResource(void* _data)
+{
+    if (m_Resource != nullptr)
+    {
+        m_Resource->BeginExternalConstruct(_data);
+    }
+
+    // The resource will be automatically ready, we don't need to do any other processing
+    // and our internal ptr can be set to null
+    m_Resource = nullptr;
 }

@@ -16,5 +16,5 @@ public:
 
     void OnConstruct() final;
 
-    void OnExternalConstruct() final;
+    void OnExternalConstruct(void* _data) final;
 };

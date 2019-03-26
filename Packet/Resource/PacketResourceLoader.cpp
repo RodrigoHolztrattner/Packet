@@ -73,9 +73,6 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     // Check if this is a runtime resource and the data shouldn't come from a file
     if (_isRuntimeResource)
     {
-        // Get the resource size
-        auto resourceSize = _resourceData.size();
-
         // Get a reference to the object data vector directly
         auto& dataVector = resource->GetDataRef();
         dataVector = PacketResourceData(std::move(_resourceData));
@@ -112,7 +109,7 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     // the manager will make all necessary adjustments to externally synchronize it
     if (!resource->RequiresExternalConstructPhase())
     {
-        resource->BeginExternalConstruct();
+        resource->BeginExternalConstruct(nullptr);
     }
 
     return resource;

@@ -22,6 +22,6 @@ void MyResource::OnConstruct()
 {
 };
 
-void MyResource::OnExternalConstruct()
+void MyResource::OnExternalConstruct(void* _data)
 {
 };

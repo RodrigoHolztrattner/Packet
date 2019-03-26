@@ -50,6 +50,7 @@ class PacketResourceFactory;
 class PacketResourceWatcher;
 class PacketResourceStorage;
 class PacketReferenceManager;
+class PacketResourceExternalConstructor;
 
 template <typename ResourceClass>
 class PacketResourceReferencePtr;
@@ -120,6 +121,7 @@ public:
 	friend PacketResourceWatcher;
 	friend PacketResourceStorage;
 	friend PacketResourceInstance;
+    friend PacketResourceExternalConstructor;
 
 	template <typename ResourceClass>
 	friend class PacketResourceReferencePtr;
@@ -147,7 +149,7 @@ protected: //////////
 
     //
     virtual void OnConstruct() {};
-    virtual void OnExternalConstruct() {};
+    virtual void OnExternalConstruct(void*) {};
 
     //
     virtual void OnModification() {};
@@ -220,33 +222,34 @@ public: // PHYSICAL RESOURCE REFERECE //
 public: // STATUS //
 ////////////////////
 
-	// Return if this object is ready to be used
-	bool IsReady() const;
-
-	// Return if this object is pending deletion
-	bool IsPendingDeletion() const;
-
-	// Return if this object is referenced
+	// Return the status of this resource
+	bool IsReady()                const;
+	bool IsPendingDeletion()      const;
 	bool IsReferenced()           const;
 	bool IsDirectlyReferenced()   const;
 	bool IsIndirectlyReferenced() const;
-
-	// Return if this object is permanent (if it won't be released when it's reference count reaches 0)
-	bool IsPermanent() const;
-
-    // Return if this is a runtime resource
-    bool IsRuntime();
-
-    // If this resource is pending modifications
-    bool IsPendingModifications();
+	bool IsPermanent()            const;
+    bool IsRuntime()              const;
+    bool IsPendingModifications() const;
+    bool IgnorePhysicalDataChanges() const;
 
 /////////////////////////////////////
 protected: // INSTANCE REFERENCING //
 /////////////////////////////////////
 
-	// Make a instance reference this object / remove reference 
+	// Make a instance reference/remove this resource as its internal resource
 	void MakeInstanceReference(PacketResourceInstance* _instance);
 	void RemoveInstanceReference(PacketResourceInstance* _instance);
+
+    // Make all instances that depends on this resource to point to another resource, decrementing the total 
+    // number of references to zero, this method must be called when inside the update phase on the resource 
+    // manager so no race conditions will happen. This method will only do something when on debug builds
+    void RedirectInstancesToResource(PacketResource* _newResource);
+
+    // This method will check if all instances that depends on this resource are totally constructed and ready
+    // to be used, this method only works on debug builds and it's not intended to be used on release builds, 
+    // also this method must be called when inside the update method on the PacketResourceManager class
+    bool AreInstancesReadyToBeUsed() const;
 
 /////////////////////////
 protected: // INTERNAL //
@@ -256,7 +259,7 @@ protected: // INTERNAL //
 	bool BeginLoad(bool _isPersistent);
 	bool BeginDelete();
     void BeginConstruct();
-    void BeginExternalConstruct();
+    void BeginExternalConstruct(void* _data);
     void BeginModifications();
 
 	// Set the hash
@@ -285,19 +288,6 @@ protected: // INTERNAL //
     // indirect references, it will have at least one because this method should be called from a reference
     // object.
     void SetPendingModifications();
-
-	// Make all instances that depends on this resource to point to another resource, decrementing the total 
-	// number of references to zero, this method must be called when inside the update phase on the resource 
-	// manager so no race conditions will happen. This method will only do something when on debug builds
-	void RedirectInstancesToResource(PacketResource* _newResource);
-
-	// This method will check if all instances that depends on this resource are totally constructed and ready
-	// to be used, this method only works on debug builds and it's not intended to be used on release builds, 
-	// also this method must be called when inside the update method on the PacketResourceManager class
-	bool AreInstancesReadyToBeUsed() const;
-
-	// Return if this resource ignore physical data changes
-	bool IgnorePhysicalDataChanges() const;
 
 	// Return the build info
     const PacketResourceBuildInfo& GetBuildInfo() const;
@@ -473,6 +463,36 @@ public:
     // Default constructor
     PacketEditableResourceReferencePtr() 
         : PacketResourceReferencePtr<ResourceClass>() {}
+};
+
+// A temporary object that should be used to call the resource OnExternalConstruct method, this
+// object will be returned by the resource manager when a thread query about the resources that
+// need external construction
+class PacketResourceExternalConstructor
+{
+    friend PacketResourceManager;
+
+protected:
+
+    PacketResourceExternalConstructor(PacketResource* _resource, PacketResourceManager* _manager);
+
+public:
+
+    PacketResourceExternalConstructor() = delete;
+    PacketResourceExternalConstructor(const PacketResourceExternalConstructor&) = delete;
+    PacketResourceExternalConstructor& operator=(const PacketResourceExternalConstructor&) = delete;
+    PacketResourceExternalConstructor(PacketResourceExternalConstructor&& _other);
+    PacketResourceExternalConstructor& operator=(PacketResourceExternalConstructor&& _other);
+    ~PacketResourceExternalConstructor();
+
+    // Externally construct the underlying resource
+    void ConstructResource(void* _data);
+
+private:
+
+    // The resource that needs construction and our resource manager
+    PacketResource*        m_Resource        = nullptr;
+    PacketResourceManager* m_ResourceManager = nullptr;
 };
 
 // Packet

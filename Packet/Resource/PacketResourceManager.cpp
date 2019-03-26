@@ -184,15 +184,6 @@ are still active, this will probably lead into exceptions!");
         } 
     }
     
-    // Resources pending post construction
-    {
-        // We don't need to do anything about this pointer
-        PacketResource* resource;
-        while (m_ResourcesPendingPostConstruction.try_dequeue(resource))
-        {
-        }
-    }
-
     // Resources pending modifications
     {
         // We don't need to do anything about this pointer
@@ -229,7 +220,6 @@ are still active, this will probably lead into exceptions!");
     assert(m_InstancesPendingEvaluation.size_approx()             == 0);
     assert(m_InstancesPendingReleaseEvaluation.size_approx()      == 0);
     assert(m_ResourcesPendingExternalConstruction.size_approx()   == 0);
-    assert(m_ResourcesPendingPostConstruction.size_approx()       == 0);
     assert(m_ResourcesPendingModificationEvaluation.size_approx() == 0);
     assert(m_InstancesPendingConstruction.size()                  == 0);
     assert(m_InstancesPendingRelease.size()                       == 0);
@@ -267,6 +257,19 @@ bool PacketResourceManager::WaitForInstance(const PacketResourceInstance* _insta
     }
 
     return false;
+}
+
+std::vector<PacketResourceExternalConstructor> PacketResourceManager::GetResourceExternalConstructors()
+{
+    std::vector<PacketResourceExternalConstructor> outConstructors;
+
+    PacketResource* resource = nullptr;
+    while (m_ResourcesPendingExternalConstruction.try_dequeue(resource))
+    {
+        outConstructors.emplace_back(PacketResourceExternalConstructor(resource, this));
+    }
+
+    return std::move(outConstructors);
 }
 
 void PacketResourceManager::ReleaseInstanceOnUnlink(std::unique_ptr<PacketResourceInstance> _instancePtr)
@@ -326,11 +329,6 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             {
                 m_ResourcesPendingExternalConstruction.enqueue(resource);
             }
-            // If no external synchronization is required, enqueue it on the post construction queue
-            else
-            {
-                m_ResourcesPendingPostConstruction.enqueue(resource);
-            }
         }
 
         // Make the instance reference it
@@ -338,29 +336,6 @@ void PacketResourceManager::AsynchronousResourceProcessment()
 
         // Insert this instance into the wait vector
         m_InstancesPendingConstruction.push_back(instance);
-    }
-
-    ////////////////////////////////
-    // RESOURCE POST CONSTRUCTION //
-    ////////////////////////////////
-    while (true)
-    {
-        // If we have pending resources
-        PacketResource* resource;
-        if (!m_ResourcesPendingPostConstruction.try_dequeue(resource))
-        {
-            break;
-        }
-
-        // Check if this resource was successfully created
-        if (!resource->IsReady())
-        {
-            // Something bad happened, destroy this resource and inform all instances about that
-            // ...
-
-            // Release any reference on the pending replacement vector
-            // TODO: Is this necessary?
-        }
     }
 
     ///////////////////////////////////
@@ -562,6 +537,11 @@ void PacketResourceManager::RegisterResourceForModifications(PacketResource* _re
     m_ResourcesPendingModificationEvaluation.enqueue(_resource);
 }
 
+void PacketResourceManager::RegisterResourceForExternalConstruction(PacketResource* _resource)
+{
+    m_ResourcesPendingExternalConstruction.enqueue(_resource);
+}
+
 void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
 {
     // Disabled on non edit builds
@@ -641,10 +621,10 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     {
         m_ResourcesPendingExternalConstruction.enqueue(resourceUniquePtr.get());
     }
-    // If no external synchronization is required, enqueue it on the post construction queue
     else
     {
-        m_ResourcesPendingPostConstruction.enqueue(resourceUniquePtr.get());
+        // If this resource doesn't need external construct, call it here to set the internal flags
+        resourceUniquePtr->BeginExternalConstruct(nullptr);
     }
     
 	// Move the resource into the replace queue

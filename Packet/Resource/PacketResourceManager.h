@@ -50,10 +50,12 @@ PacketDevelopmentNamespaceBegin(Packet)
 // Classes we know
 class PacketResourceInstance;
 class PacketResource;
+class PacketResourceExternalConstructor;
 class PacketReferenceManager;
 class PacketResourceFactory;
 class PacketResourceWatcher;
 class PacketSystem;
+
 template <typename InstanceClass>
 struct PacketResourceInstancePtr;
 
@@ -67,47 +69,8 @@ public:
 	// Friend classes
 	friend PacketResourceInstance;
     friend PacketResource;
+    friend PacketResourceExternalConstructor;
 	friend PacketSystem;
-
-	// The request type
-	struct ObjectRequest
-	{
-		// The instance and hash variables
-		PacketResourceInstance* instance;
-		Hash hash;
-
-		// The build info
-		PacketResourceBuildInfo buildInfo;
-
-		// The factory ptr
-		PacketResourceFactory* factoryPtr;
-
-		// If the object is permanent
-		bool isPermanent;
-	};
-
-	// The release type
-	struct ObjectRelease
-	{
-		// The instance
-		std::unique_ptr<PacketResourceInstance> instance;
-
-		// The factory ptr
-		PacketResourceFactory* factoryPtr;
-
-		// If this object should be deleted synchronous
-		bool deleteSync;
-	};
-
-	// The deletion type
-	struct DeletionRequest
-	{
-		// The resource
-		std::unique_ptr<PacketResource> resource;
-
-		// If this object should be deleted synchronous
-		bool deleteSync;
-	};
 
 //////////////////
 // CONSTRUCTORS //
@@ -192,6 +155,10 @@ protected: ///////
     bool WaitForInstance(const PacketResourceInstance* _instance,
                         long long _timeout = -1) const;
 
+    // This method will return a vector of resource external constructor object that must be constructed
+    // by the user externally (since the resource requires it)
+    std::vector<PacketResourceExternalConstructor> GetResourceExternalConstructors();
+
 protected:
 
     // The asynchronous resource process method
@@ -213,6 +180,12 @@ protected:
     // This method will register a resource to be modified after it reaches 0 indirect references
     // Only the resource should call this method
     void RegisterResourceForModifications(PacketResource* _resource);
+
+    // This method will register a resource to be externally constructed, it should be called from a 
+    // PacketResourceExternalConstructor object if it goes out of scope without constructing the 
+    // underlying resource. By calling this we will make sure the resource has the change to be 
+    // picked for construction again
+    void RegisterResourceForExternalConstruction(PacketResource* _resource);
 
 ///////////////
 // VARIABLES //
@@ -236,7 +209,6 @@ private: //////
 
     // Resource queues/vector
     moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingExternalConstruction;
-    moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingPostConstruction;
     std::vector<std::unique_ptr<PacketResource>> m_ResourcesPendingDeletion;
     std::vector<std::pair<std::unique_ptr<PacketResource>, PacketResource*>> m_ResourcesPendingReplacement;
     moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingModificationEvaluation;

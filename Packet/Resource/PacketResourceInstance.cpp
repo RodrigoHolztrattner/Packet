@@ -156,7 +156,7 @@ void PacketResourceInstance::ResetInstance()
 	OnReset();
 }
 
-void PacketResourceInstance::FulfillDependency(PacketResourceInstance* _instance)
+void PacketResourceInstance::FulfillDependency(PacketResourceInstance*)
 {
 	assert(m_DependencyCount != 0);
 

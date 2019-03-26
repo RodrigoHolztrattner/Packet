@@ -77,34 +77,43 @@ if(NOT concurrentqueue_POPULATED)
   FetchContent_Populate(concurrentqueue)
 endif()
 
-###########
-# PROJECT #
-###########
+##########
+# CONFIG #
+##########
+
+set(TEST_PROJECT_NAME "Tests")
+project(${TEST_PROJECT_NAME} VERSION 1.0.0 DESCRIPTION "blob")
 
 set(PROJECT_NAME "Packet")
 project(${PROJECT_NAME} VERSION 1.0.0 DESCRIPTION "blob")
 
+###########
+# PROJECT #
+###########
+
+SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc /W4 /WX /FI")
+SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od /W4 /WX /FI")
+
 add_library(${PROJECT_NAME} STATIC
-Packet/PacketCondensedModeFileLoader.cpp
-Packet/PacketCOndenser.cpp
-Packet/PacketEditModeFileLoader.cpp
-Packet/PacketReferenceManager.cpp
-Packet/PacketScanner.cpp
-Packet/PacketSystem.cpp
-Packet/Resource/PacketResource.cpp
-Packet/Resource/PacketResourceDeleter.cpp
-Packet/Resource/PacketResourceFactory.cpp
-Packet/Resource/PacketResourceHolder.cpp
-Packet/Resource/PacketResourceInstance.cpp
-Packet/Resource/PacketResourceLoader.cpp
-Packet/Resource/PacketResourceManager.cpp
-Packet/Resource/PacketResourceStorage.cpp
-Packet/Resource/PacketResourceWatcher.cpp
-Packet/ThirdParty/FileWatcher/FileWatcher.cpp
-Packet/ThirdParty/FileWatcher/FileWatcherLinux.cpp
-Packet/ThirdParty/FileWatcher/FileWatcherOSX.cpp
-Packet/ThirdParty/FileWatcher/FileWatcherWin32.cpp
-)
+  Packet/PacketCondensedModeFileLoader.cpp
+  Packet/PacketCOndenser.cpp
+  Packet/PacketEditModeFileLoader.cpp
+  Packet/PacketReferenceManager.cpp
+  Packet/PacketScanner.cpp
+  Packet/PacketSystem.cpp
+  Packet/Resource/PacketResource.cpp
+  Packet/Resource/PacketResourceDeleter.cpp
+  Packet/Resource/PacketResourceFactory.cpp
+  Packet/Resource/PacketResourceHolder.cpp
+  Packet/Resource/PacketResourceInstance.cpp
+  Packet/Resource/PacketResourceLoader.cpp
+  Packet/Resource/PacketResourceManager.cpp
+  Packet/Resource/PacketResourceStorage.cpp
+  Packet/Resource/PacketResourceWatcher.cpp
+  Packet/ThirdParty/FileWatcher/FileWatcher.cpp
+  Packet/ThirdParty/FileWatcher/FileWatcherLinux.cpp
+  Packet/ThirdParty/FileWatcher/FileWatcherOSX.cpp
+  Packet/ThirdParty/FileWatcher/FileWatcherWin32.cpp)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER Packet/Packet.h)
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/Packet/ThirdParty/FileWatcher")
@@ -120,13 +129,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${concurrentqueue_SOURCE_DIR})
 include(GNUInstallDirs)
 
 install(TARGETS ${PROJECT_NAME}
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    COMPONENT library)
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  COMPONENT library)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 17
+  CXX_STANDARD 17
 	CXX_STANDARD_REQUIRED ON)    
 	
 
@@ -148,19 +157,16 @@ if(NOT catch2_POPULATED)
   FetchContent_Populate(catch2)
 endif()
 
-set(TEST_PROJECT_NAME "Tests")
-project(${TEST_PROJECT_NAME} VERSION 1.0.0 DESCRIPTION "blob")
-
-SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc")
-SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od")
+SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc /W4 /WX /FI")
+SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od /W4 /WX /FI")
 
 add_executable(${TEST_PROJECT_NAME} 
-Tests/TestsMain.cpp
-Tests/TestsInstances.cpp
-Tests/TestsReferences.cpp
-Tests/MyResource.cpp
-Tests/MyInstance.cpp
-Tests/MyFactory.cpp)
+  Tests/TestsMain.cpp
+  Tests/TestsInstances.cpp
+  Tests/TestsReferences.cpp
+  Tests/MyResource.cpp
+  Tests/MyInstance.cpp
+  Tests/MyFactory.cpp)
 
 target_include_directories(${TEST_PROJECT_NAME} PUBLIC ${catch2_SOURCE_DIR}/single_include)
 
@@ -169,5 +175,5 @@ target_link_libraries(${TEST_PROJECT_NAME} "Packet")
 
 # Request C++ 17
 set_target_properties(${TEST_PROJECT_NAME} PROPERTIES
-            CXX_STANDARD 17
-            CXX_STANDARD_REQUIRED ON)         
+  CXX_STANDARD 17
+  CXX_STANDARD_REQUIRED ON)         

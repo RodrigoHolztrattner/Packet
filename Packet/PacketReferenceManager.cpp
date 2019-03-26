@@ -182,10 +182,10 @@ bool PacketReferenceManager::ValidateFileReferences(std::string _filePath, Refer
 	for (auto& reference : referenceVector)
 	{
 		// Get the referenced file path
-		auto referenceFilePath = std::filesystem::path(reference.fileReferencePath);
+		auto localReferenceFilePath = std::filesystem::path(reference.fileReferencePath);
 
 		// Check if the file exist and it's valid
-		if (!std::filesystem::exists(referenceFilePath))
+		if (!std::filesystem::exists(localReferenceFilePath))
 		{
 			// We have a problem, check how we should handle this //
 			if (_fixer == ReferenceFixer::None)
