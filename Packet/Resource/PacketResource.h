@@ -356,92 +356,102 @@ private: //////
 template <typename ResourceClass>
 class PacketResourceReferencePtr
 {
-	// Friend classes
-	friend PacketResource;
-	friend PacketResourceInstance;
+    // Friend classes
+    friend PacketResource;
+    friend PacketResourceInstance;
 
 protected:
 
-	// Constructor used by the instance class
-	PacketResourceReferencePtr(ResourceClass* _resource) : m_ResourceObject(_resource) 
+    // Constructor used by the instance class
+    PacketResourceReferencePtr(ResourceClass* _resource) :
+        m_ResourceObject(_resource),
+        m_PacketResourceObject(_resource)
     {
         // Increment the total number of temporary references for the resource
-        m_ResourceObject->IncrementNumberIndirectReferences();
+        m_PacketResourceObject->IncrementNumberIndirectReferences();
     }
 
 public:
 
-	// Default constructor
-	PacketResourceReferencePtr() : m_ResourceObject(nullptr) {}
+    // Default constructor
+    PacketResourceReferencePtr() :
+        m_ResourceObject(nullptr),
+        m_PacketResourceObject(nullptr)
+    {
+    }
 
-	// Copy constructor disabled
-	PacketResourceReferencePtr(const PacketResourceReferencePtr&) = delete;
+    // Copy constructor disabled
+    PacketResourceReferencePtr(const PacketResourceReferencePtr&) = delete;
 
     // Assignment operator
     PacketResourceReferencePtr& operator=(const PacketResourceReferencePtr&) = delete;
 
-	// Move assignment operator
-	PacketResourceReferencePtr& operator=(PacketResourceReferencePtr&& _other)
-	{
-		// Set the pointer
-		m_ResourceObject = _other.m_ResourceObject;
-		_other.m_ResourceObject = nullptr;
+    // Move assignment operator
+    PacketResourceReferencePtr& operator=(PacketResourceReferencePtr&& _other)
+    {
+        if (this != _other)
+        {
+            m_ResourceObject = std::move(_other.m_ResourceObject);
+            m_PacketResourceObject = std::move(_other.m_PacketResourceObject);
+        }
 
-		return *this;
-	}
+        return *this;
+    }
 
-	// Our move copy operator
-	PacketResourceReferencePtr(PacketResourceReferencePtr&& _other)
-	{
-		// Set the pointer
-		m_ResourceObject = _other.m_ResourceObject;
-		_other.m_ResourceObject = nullptr;
-	}
+    // Our move copy operator
+    PacketResourceReferencePtr(PacketResourceReferencePtr&& _other)
+    {
+        m_ResourceObject = std::move(_other.m_ResourceObject);
+        m_PacketResourceObject = std::move(_other.m_PacketResourceObject);
+    }
 
-	// Reset this pointer, unlinking it
-	virtual void Reset()
-	{
-		// If the resource object is valid
-		if (m_ResourceObject != nullptr)
-		{
-			m_ResourceObject->DecrementNumberIndirectReferences();
-			m_ResourceObject = nullptr;
-		}
-	}
+    // Reset this pointer, unlinking it
+    virtual void Reset()
+    {
+        // If the resource object is valid
+        if (m_ResourceObject != nullptr)
+        {
+            m_PacketResourceObject->DecrementNumberIndirectReferences();
+            m_PacketResourceObject = nullptr;
+            m_ResourceObject = nullptr;
+        }
+    }
 
-	// Operator to use this as a pointer to the resource object
-	ResourceClass* operator->() const
-	{
-		return m_ResourceObject;
-	}
+    // Operator to use this as a pointer to the resource object
+    ResourceClass* operator->() const
+    {
+        return m_ResourceObject;
+    }
 
-	// The get method
-	ResourceClass* Get()
-	{
-		return m_ResourceObject;
-	}
+    // The get method
+    ResourceClass* Get()
+    {
+        return m_ResourceObject;
+    }
 
-	// Return if this is valid
-	bool IsValid()
-	{
-		return m_ResourceObject != nullptr;
-	}
+    // Return if this is valid
+    bool IsValid()
+    {
+        return m_ResourceObject != nullptr;
+    }
 
-	// Destructor
-	virtual ~PacketResourceReferencePtr()
-	{
-		// If the resource object is valid
-		if (m_ResourceObject != nullptr)
-		{
-			m_ResourceObject->DecrementNumberIndirectReferences();
-			m_ResourceObject = nullptr;
-		}
-	}
+    // Destructor
+    virtual ~PacketResourceReferencePtr()
+    {
+        // If the resource object is valid
+        if (m_ResourceObject != nullptr)
+        {
+            m_PacketResourceObject->DecrementNumberIndirectReferences();
+            m_PacketResourceObject = nullptr;
+            m_ResourceObject = nullptr;
+        }
+    }
 
 protected:
 
-	// The resource object
-	ResourceClass* m_ResourceObject = nullptr;
+    // The resource object
+    ResourceClass*  m_ResourceObject = nullptr;
+    PacketResource* m_PacketResourceObject = nullptr;
 };
 
 // The temporary editable resource reference type
