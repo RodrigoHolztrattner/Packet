@@ -578,6 +578,8 @@ PacketResourceExternalConstructor::PacketResourceExternalConstructor(PacketResou
 {
     m_ResourceManager = std::move(_other.m_ResourceManager);
     m_Resource = std::move(_other.m_Resource);
+    _other.m_ResourceManager = nullptr;
+    _other.m_Resource = nullptr;
 }
 
 PacketResourceExternalConstructor& PacketResourceExternalConstructor::operator=(PacketResourceExternalConstructor&& _other)
@@ -586,6 +588,8 @@ PacketResourceExternalConstructor& PacketResourceExternalConstructor::operator=(
     {
         m_ResourceManager = std::move(_other.m_ResourceManager);
         m_Resource = std::move(_other.m_Resource);
+        _other.m_ResourceManager = nullptr;
+        _other.m_Resource = nullptr;
     }
 
     return *this;
