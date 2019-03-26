@@ -389,12 +389,9 @@ public:
     // Move assignment operator
     PacketResourceReferencePtr& operator=(PacketResourceReferencePtr&& _other)
     {
-        if (this != _other)
-        {
-            m_ResourceObject = std::move(_other.m_ResourceObject);
-            m_PacketResourceObject = std::move(_other.m_PacketResourceObject);
-        }
-
+        m_ResourceObject = std::move(_other.m_ResourceObject);
+        m_PacketResourceObject = std::move(_other.m_PacketResourceObject);
+        
         return *this;
     }
 
