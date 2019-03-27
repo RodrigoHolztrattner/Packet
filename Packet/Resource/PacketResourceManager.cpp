@@ -573,7 +573,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
 	// Check
     for (auto& replaceInfo : m_ResourcesPendingReplacement)
     {
-        if (replaceInfo.first->GetHash() == _resource->GetHash())
+        if (replaceInfo.second->GetHash() == _resource->GetHash())
         {
             // There is no need to set it again, duplicated call
             m_Logger->LogWarning(std::string("Found duplicated file modification event on file: \"")
