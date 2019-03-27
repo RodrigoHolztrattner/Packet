@@ -96,7 +96,7 @@ struct PacketResourceInstancePtr
 	PacketResourceInstancePtr(PacketResourceInstancePtr&& _other)
 	{
 		// Acquire the other resource instance ptr
-		m_ResourceInstance = std::move(_other.m_ResourceInstance);
+        m_ResourceInstance = std::move(_other.m_ResourceInstance);
 	}
 
 	// Operator to use this as a pointer to the instance object

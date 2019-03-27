@@ -391,7 +391,9 @@ public:
     {
         m_ResourceObject = std::move(_other.m_ResourceObject);
         m_PacketResourceObject = std::move(_other.m_PacketResourceObject);
-        
+        _other.m_ResourceObject = nullptr;
+        _other.m_PacketResourceObject = nullptr;
+
         return *this;
     }
 
@@ -400,6 +402,8 @@ public:
     {
         m_ResourceObject = std::move(_other.m_ResourceObject);
         m_PacketResourceObject = std::move(_other.m_PacketResourceObject);
+        _other.m_ResourceObject = nullptr;
+        _other.m_PacketResourceObject = nullptr;
     }
 
     // Reset this pointer, unlinking it

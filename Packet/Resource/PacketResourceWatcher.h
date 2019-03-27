@@ -59,7 +59,9 @@ public:
 		// Forward the file action to the resource watcher object
 		void handleFileAction(FWPacket::WatchID _watchid, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action) override
 		{
-			m_ResourceWatcherPtr->HandleFileAction(_watchid, _dir, _filename, _action);
+            std::string standardizedPath = _dir;
+            std::replace(standardizedPath.begin(), standardizedPath.end(), '\\', '/');
+			m_ResourceWatcherPtr->HandleFileAction(_watchid, standardizedPath, _filename, _action);
 		}
 
 	private:
