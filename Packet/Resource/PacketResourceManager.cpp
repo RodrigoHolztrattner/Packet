@@ -331,7 +331,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             resource->OnConstruct();
 
             // If this resource requires external construct, enqueue it on the correspondent queue
-            if (resource->RequiresExternalConstructPhase() && !resourceUniquePtr->ConstructionFailed())
+            if (resource->RequiresExternalConstructPhase() && !resource->ConstructionFailed())
             {
                 m_ResourcesPendingExternalConstruction.enqueue(resource);
             }
