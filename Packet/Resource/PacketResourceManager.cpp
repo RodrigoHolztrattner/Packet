@@ -278,6 +278,11 @@ void PacketResourceManager::ReleaseInstanceOnUnlink(std::unique_ptr<PacketResour
     m_InstancesPendingReleaseEvaluation.enqueue(std::move(_instancePtr));
 }
 
+uint32_t PacketResourceManager::GetApproximatedNumberResourcesPendingDeletion()
+{
+    return static_cast<uint32_t>(m_ResourcesPendingDeletion.size());
+}
+
 void PacketResourceManager::AsynchronousResourceProcessment()
 {
     // Call the update method for the resource watcher (disabled on non-edit builds)

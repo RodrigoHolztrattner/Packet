@@ -161,6 +161,9 @@ protected: ///////
 
 protected:
 
+    // This method return the approximated number of resources that are pending deletion
+    uint32_t GetApproximatedNumberResourcesPendingDeletion();
+
     // The asynchronous resource process method
     void AsynchronousResourceProcessment();
 

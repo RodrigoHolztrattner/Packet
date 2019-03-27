@@ -87,7 +87,8 @@ std::vector<PacketResourceExternalConstructor> PacketSystem::GetResourceExternal
 
 uint32_t PacketSystem::GetAproximatedResourceAmount() const
 {
-    return m_ResourceStorage->GetAproximatedResourceAmount();
+    return m_ResourceStorage->GetAproximatedResourceAmount() + 
+        m_ResourceManager->GetApproximatedNumberResourcesPendingDeletion();
 }
 
 bool PacketSystem::FileExist(Hash _fileHash) const
