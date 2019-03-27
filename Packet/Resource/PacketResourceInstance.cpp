@@ -140,7 +140,9 @@ void PacketResourceInstance::ResetInstance()
 		// Reset it, this will probably release this instance because if there is a 
 		// dependency, it must have a pointer to this instance, so calling the 
 		// OnReset() method we expect it to release this instance
+        m_LinkedInstanceDependency->LockUsage();
 		m_LinkedInstanceDependency->ResetInstance();
+        m_LinkedInstanceDependency->UnlockUsage();
 	}
 	else
 	{

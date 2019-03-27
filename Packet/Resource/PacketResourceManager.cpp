@@ -380,7 +380,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             m_ResourcesPendingReplacement.erase(m_ResourcesPendingReplacement.begin() + i);
         }
         // Check if the new resource failed to be constructed
-        if (newResource->ConstructionFailed())
+        else if (newResource->ConstructionFailed())
         {
             // Do not replace the resource since the new one failed, delete the new resource
             m_ResourcesPendingDeletion.push_back(std::move(newResource));
