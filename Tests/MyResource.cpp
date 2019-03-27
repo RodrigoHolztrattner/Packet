@@ -18,10 +18,12 @@ bool MyResource::OnDelete(Packet::ResourceData& _data)
     return true;
 }
 
-void MyResource::OnConstruct()
+bool MyResource::OnConstruct()
 {
-};
+    return true;
+}
 
-void MyResource::OnExternalConstruct(void* _data)
+bool MyResource::OnExternalConstruct(void* _data)
 {
-};
+    return true;
+}

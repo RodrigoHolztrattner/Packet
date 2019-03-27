@@ -107,7 +107,7 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
 
     // If this resource doesn't need external construct, call it here to set the internal flags, else
     // the manager will make all necessary adjustments to externally synchronize it
-    if (!resource->RequiresExternalConstructPhase())
+    if (!resource->RequiresExternalConstructPhase() && !resource->ConstructionFailed())
     {
         resource->BeginExternalConstruct(nullptr);
     }

@@ -14,7 +14,7 @@ public:
 
     bool OnDelete(Packet::ResourceData& _data) final;
 
-    void OnConstruct() final;
+    bool OnConstruct() final;
 
-    void OnExternalConstruct(void* _data) final;
+    bool OnExternalConstruct(void* _data) final;
 };

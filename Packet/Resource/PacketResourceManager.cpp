@@ -311,12 +311,13 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         if (resource == nullptr)
         {
             // Load this resource
-            auto resourceUniquePtr = m_ResourceLoader.LoadObject(factory, 
-                                                                 hash,
-                                                                 buildInfo,
-                                                                 isPermanent,
-                                                                 isRuntime, 
-                                                                 std::move(resourceData));
+            auto resourceUniquePtr = m_ResourceLoader.LoadObject(
+                factory,
+                hash,
+                buildInfo,
+                isPermanent,
+                isRuntime,
+                std::move(resourceData));
             resource = resourceUniquePtr.get();
             assert(resource != nullptr);
 
@@ -330,7 +331,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             resource->OnConstruct();
 
             // If this resource requires external construct, enqueue it on the correspondent queue
-            if (resource->RequiresExternalConstructPhase())
+            if (resource->RequiresExternalConstructPhase() && !resourceUniquePtr->ConstructionFailed())
             {
                 m_ResourcesPendingExternalConstruction.enqueue(resource);
             }
@@ -374,6 +375,15 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             // Insert this resource into the deletion queue because it has no direct references (we moved all 
             // instances that referenced it into the new resource)
             m_ResourcesPendingDeletion.push_back(std::move(oldResource));
+
+            // Remove the resource from this queue
+            m_ResourcesPendingReplacement.erase(m_ResourcesPendingReplacement.begin() + i);
+        }
+        // Check if the new resource failed to be constructed
+        if (newResource->ConstructionFailed())
+        {
+            // Do not replace the resource since the new one failed, delete the new resource
+            m_ResourcesPendingDeletion.push_back(std::move(newResource));
 
             // Remove the resource from this queue
             m_ResourcesPendingReplacement.erase(m_ResourcesPendingReplacement.begin() + i);
@@ -622,11 +632,11 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     resourceUniquePtr->OnConstruct();
 
     // If this resource requires external construct, enqueue it on the correspondent queue
-    if (resourceUniquePtr->RequiresExternalConstructPhase())
+    if (resourceUniquePtr->RequiresExternalConstructPhase() && !resourceUniquePtr->ConstructionFailed())
     {
         m_ResourcesPendingExternalConstruction.enqueue(resourceUniquePtr.get());
     }
-    else
+    else if(!resourceUniquePtr->ConstructionFailed())
     {
         // If this resource doesn't need external construct, call it here to set the internal flags
         resourceUniquePtr->BeginExternalConstruct(nullptr);

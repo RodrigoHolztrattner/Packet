@@ -199,21 +199,28 @@ bool PacketResource::BeginDelete()
 
 void PacketResource::BeginConstruct()
 {
-    OnConstruct();
+    bool result = OnConstruct();
+    m_ConstructFailed = !result;
 
     m_WasConstructed = true;
 }
 
 void PacketResource::BeginExternalConstruct(void* _data)
 {
-    OnExternalConstruct(_data);
+    bool result = OnExternalConstruct(_data);
+    m_ConstructFailed = m_ConstructFailed && !result;
 
     m_WasExternallyConstructed = true;
 }
 
 void PacketResource::BeginModifications()
 {
-    OnModification();
+    bool result = OnModification();
+    if (!result)
+    {
+        // TODO:
+        // Revert changes?! (Is it possible to revert the changes successfully?)
+    }
 
     m_IsPendingModifications = false;
     m_ResourceModificationMutex.unlock();
@@ -225,7 +232,8 @@ bool PacketResource::IsReady() const
         && m_WasConstructed
         && m_WasExternallyConstructed
         && !m_IsPendingModifications
-        && !m_IsPendingDeletion;
+        && !m_IsPendingDeletion
+        && !m_ConstructFailed;
 }
 
 bool PacketResource::IsPendingDeletion() const
@@ -268,16 +276,19 @@ bool PacketResource::RequiresExternalConstructPhase() const
     return false; 
 }
 
-void PacketResource::OnConstruct()
+bool PacketResource::OnConstruct()
 {
+    return true;
 }
 
-void PacketResource::OnExternalConstruct(void*)
+bool PacketResource::OnExternalConstruct(void*)
 {
+    return true;
 }
 
-void PacketResource::OnModification()
+bool PacketResource::OnModification()
 {
+    return true;
 }
 
 Hash PacketResource::GetHash() const
@@ -379,6 +390,11 @@ bool PacketResource::AreInstancesReadyToBeUsed() const
 bool PacketResource::IgnorePhysicalDataChanges() const
 {
 	return m_IgnorePhysicalDataChanges;
+}
+
+bool PacketResource::ConstructionFailed() const
+{
+    return m_ConstructFailed;
 }
 
 void PacketResource::MakeInstanceReference(PacketResourceInstance* _instance)

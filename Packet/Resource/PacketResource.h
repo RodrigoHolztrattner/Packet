@@ -149,12 +149,12 @@ protected: //////////
 
     // The construct methods, the OnConstruct will be called asynchronously by the resource 
     // manager and the external one can be flagged to be called by the user
-    virtual void OnConstruct();
-    virtual void OnExternalConstruct(void* _data);
+    virtual bool OnConstruct();
+    virtual bool OnExternalConstruct(void* _data);
 
     // This method is called when this resource is modified (edited), it's guaranteed that it
     // can safely update any internal data without risks of races
-    virtual void OnModification();
+    virtual bool OnModification();
 
 //////////////////
 // MAIN METHODS //
@@ -225,15 +225,16 @@ public: // STATUS //
 ////////////////////
 
 	// Return the status of this resource
-	bool IsReady()                const;
-	bool IsPendingDeletion()      const;
-	bool IsReferenced()           const;
-	bool IsDirectlyReferenced()   const;
-	bool IsIndirectlyReferenced() const;
-	bool IsPermanent()            const;
-    bool IsRuntime()              const;
-    bool IsPendingModifications() const;
+	bool IsReady()                   const;
+	bool IsPendingDeletion()         const;
+	bool IsReferenced()              const;
+	bool IsDirectlyReferenced()      const;
+	bool IsIndirectlyReferenced()    const;
+	bool IsPermanent()               const;
+    bool IsRuntime()                 const;
+    bool IsPendingModifications()    const;
     bool IgnorePhysicalDataChanges() const;
+    bool ConstructionFailed()        const;
 
 /////////////////////////////////////
 protected: // INSTANCE REFERENCING //
@@ -318,6 +319,7 @@ private: //////
     bool m_WasExternallyConstructed  = false;
     bool m_IsRuntimeResource         = false;
     bool m_IsPendingModifications    = false;
+    bool m_ConstructFailed           = false;
 
     // This is the index of the current construct phase
     uint32_t m_CurrentConstructPhaseIndex = 0;
