@@ -78,8 +78,6 @@ void PacketResourceInstance::InstanceUnlink(std::unique_ptr<PacketResourceInstan
 
 PacketResource* PacketResourceInstance::GetResource() const
 {
-    std::lock_guard<std::mutex> lock(m_SafetyMutex);
-
 	return m_ReferenceObject;
 }
 

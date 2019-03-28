@@ -257,8 +257,6 @@ protected: // EXTERNAL USE //
 	template<typename ResourceClass>
 	ResourceClass* GetResource() const
 	{
-        std::lock_guard<std::mutex> lock(m_SafetyMutex);
-
 		return reinterpret_cast<ResourceClass*>(m_ReferenceObject);
 	}
 
