@@ -341,29 +341,50 @@ void PacketResource::SetPendingModifications()
     m_ResourceManagerPtr->RegisterResourceForModifications(this);
 }
 
-void PacketResource::RedirectInstancesToResource(PacketResource* _newResource)
+void PacketResource::ResetLinkedInstances(PacketResource* _newTargetResource)
 {
+    std::set<PacketResourceInstance*> instancesPendingReset;
+
 	// For each instance
 	for (auto* instance : m_InstancesThatUsesThisResource)
 	{
         // Lock this instance
         instance->LockUsage();
 
-		// Set the object reference
-		_newResource->MakeInstanceReference(instance);
+        // Gather the top parent for this instance
+        PacketResourceInstance* instanceTopParent = instance->GatherTopParentInstanceRecursively();
 
-		// Reset this instance
-		instance->ResetInstance();
+        // Set that this parent instance needs to be reseted
+        instancesPendingReset.insert(instanceTopParent);
+
+        // Remove the reference from this resource
+        RemoveInstanceReference(instance);
+
+        // Redirect the instance
+        _newTargetResource->MakeInstanceReference(instance);
 
         // Unlock the instance
         instance->UnlockUsage();
-
-        // Decrement the number of direct references
-        m_TotalDirectReferences--;
 	}
 
-	// Clear the instance vector
-	m_InstancesThatUsesThisResource.clear();
+    assert(m_InstancesThatUsesThisResource.size() == 0);
+
+    // For each instance that needs to be reseted
+    for (auto& instance : instancesPendingReset)
+    {
+        // Lock this instance
+        instance->LockUsage();
+
+        // Call the delete method for this instance to make it release all of its
+        // internal data
+        instance->BeginDelete();
+
+        // Reconstruct the instance by calling its begin construct method
+        instance->BeginConstruct();
+
+        // Unlock the instance
+        instance->UnlockUsage();
+    }
 }
 
 bool PacketResource::AreInstancesReadyToBeUsed() const

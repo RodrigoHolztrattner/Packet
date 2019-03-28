@@ -13,6 +13,7 @@
 #include <vector>
 #include <atomic>
 #include <cassert>
+#include <set>
 
 ///////////////
 // NAMESPACE //
@@ -270,15 +271,12 @@ protected: // EXTERNAL USE //
 
 protected:
 
-	// Begin the construction of this instance
-	void BeginConstruction();
+	// Begin the construction/deletion of this instance
+	void BeginConstruct();
+    void BeginDelete();
 
-	// Reset this instance, clearing its status, this method must be called by a resource object 
-	// that is being replaced by a newer version, its ensured that this will only be called when 
-	// all dependencies for this instance are fulfilled, also if there is another instance that 
-	// depends on this one, it's ensured that this instance was also constructed and ready, 
-	// recursively
-	void ResetInstance();
+	// This method will gather the top parent recursively
+	PacketResourceInstance* GatherTopParentInstanceRecursively();
 
 	// Set the peasant object reference
 	void SetObjectReference(PacketResource* _objectReference);
@@ -298,13 +296,9 @@ protected: //////////
 	// Called when all instance dependencies are fulfilled
 	virtual void OnDependenciesFulfilled() = 0;
 
-	// Called when this instance object was reseted and its status must be cleaned, this means that 
-	// this instance will be constructed again, also if there is another instance that depends on 
-	// this one it will be put on locked state until this instance is reconstructed.
-	// It's ensured that this will only be called when all dependencies for this instance are fulfilled, 
-	// also if there is another instance that depends on this, it's ensured that this instance was also
-	// constructed and ready, recursively
-	virtual void OnReset() = 0;
+    // Called when this instance must release its internal data, it could be in deletion process
+    // or being reseted due a resource replacement
+    virtual void OnDelete() = 0;
 
 ///////////////
 // VARIABLES //

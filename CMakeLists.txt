@@ -164,6 +164,7 @@ add_executable(${TEST_PROJECT_NAME}
   Tests/TestsMain.cpp
   Tests/TestsInstances.cpp
   Tests/TestsReferences.cpp
+  Tests/TestsResourceReplace.cpp
   Tests/MyResource.cpp
   Tests/MyInstance.cpp
   Tests/MyFactory.cpp)

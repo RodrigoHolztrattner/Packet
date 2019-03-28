@@ -27,6 +27,24 @@ static bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite = 
     return false;
 }
 
+static bool UpdateResourceFile(std::string _filename, uint32_t _amountToWrite = 100)
+{
+    std::ofstream myfile(_filename);
+    if (myfile.is_open())
+    {
+        for (int i = 0; i < static_cast<int>(_amountToWrite); i++)
+        {
+            myfile << std::to_string(_amountToWrite);
+        }
+
+        myfile.close();
+
+        return true;
+    }
+
+    return false;
+}
+
 static bool MustChangeToTrueUntilTimeout(std::function<bool()> _condition, long long _timeout)
 {
     clock_t initialTime = clock();

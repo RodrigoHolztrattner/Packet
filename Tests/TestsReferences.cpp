@@ -15,7 +15,7 @@ Packet::ResourceReferencePtr<MyResource> DummyMethod(Packet::ResourceReferencePt
     return _reference;
 }
 
-SCENARIO("Resource references can be requested from instances", "[instance]")
+SCENARIO("Resource references can be requested from instances", "[reference]")
 {
     GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
     {

@@ -103,7 +103,7 @@ bool PacketResourceInstance::AreDependenciesFulfilled() const
 	return m_DependencyCount == 0;
 }
 
-void PacketResourceInstance::BeginConstruction()
+void PacketResourceInstance::BeginConstruct()
 {
 	assert(m_DependencyCount == 0);
 
@@ -128,34 +128,27 @@ void PacketResourceInstance::BeginConstruction()
 	}
 }
 
-void PacketResourceInstance::ResetInstance()
+void PacketResourceInstance::BeginDelete()
 {
-    // We should not be able to acquire a lock to the internal mutex because this
-    // method should only be called when this instance was previously locked
-    assert(!m_SafetyMutex.try_lock());
+    OnDelete();
 
-	// If there is a dependency that depends on this one, reset. 
+    m_WasConstructed = false;
+    m_LinkedInstanceDependency = nullptr;
+    m_DependencyCount = 0;
+}
+
+PacketResourceInstance* PacketResourceInstance::GatherTopParentInstanceRecursively()
+{
+	// If there is a dependency that depends on this one, continue recursively 
 	if (m_LinkedInstanceDependency != nullptr)
 	{
-		// Reset it, this will probably release this instance because if there is a 
-		// dependency, it must have a pointer to this instance, so calling the 
-		// OnReset() method we expect it to release this instance
-        m_LinkedInstanceDependency->LockUsage();
-		m_LinkedInstanceDependency->ResetInstance();
-        m_LinkedInstanceDependency->UnlockUsage();
+        return m_LinkedInstanceDependency->GatherTopParentInstanceRecursively();
 	}
 	else
 	{
-		// Make this instance be reconstructed in the future
-		m_ResourceManagerPtr->ReconstructInstance(this);
+        // We found the topmost parent instance
+        return this;
 	}
-
-    // Reset internal data
-    m_WasConstructed = false;
-    m_LinkedInstanceDependency = nullptr;
-
-	// Call the on reset virtual method
-	OnReset();
 }
 
 void PacketResourceInstance::FulfillDependency(PacketResourceInstance*)

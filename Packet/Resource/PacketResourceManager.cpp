@@ -358,8 +358,8 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             // Update the resource watched
             m_ResourceWatcherPtr->UpdateWatchedResource(newResource.get());
 
-            // Make all instances that points to the old resource now point to the new one
-            originalResource->RedirectInstancesToResource(newResource.get());
+            // Reset all instances owned by the original resource
+            originalResource->ResetLinkedInstances(newResource.get());
 
             // Replace the new resource inside the storage (takes ownership)
             std::unique_ptr<PacketResource> oldResource = m_ResourceStoragePtr->ReplaceObject(
@@ -370,7 +370,9 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             // Decrement the number of references for the original resource, now it
             // must have zero direct references since we moved all instances
             originalResource->DecrementNumberDirectReferences();
-            assert(!originalResource->IsDirectlyReferenced());
+            assert(!originalResource->IsDirectlyReferenced() && "An resource that was being replaced by another still \
+have references pointing to it, have you forgotten to release some resource instance dependencies on the OnDelete \
+function in one of your resource instance classes?");
 
             // Insert this resource into the deletion queue because it has no direct references (we moved all 
             // instances that referenced it into the new resource)
@@ -461,6 +463,9 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         // Remove the instance reference from this object
         resource->RemoveInstanceReference(instance.get());
 
+        // Call the begin delete method for this instance
+        instance->BeginDelete();
+
         // Delete the instance using its factory object
         factory->ReleaseInstance(std::move(instance));
 
@@ -518,7 +523,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         if (resource->IsReady())
         {
             // Call the construct method for this instance
-            m_InstancesPendingConstruction[i]->BeginConstruction();
+            m_InstancesPendingConstruction[i]->BeginConstruct();
 
             // Remove this instance from the wait vector
             m_InstancesPendingConstruction.erase(m_InstancesPendingConstruction.begin() + i);

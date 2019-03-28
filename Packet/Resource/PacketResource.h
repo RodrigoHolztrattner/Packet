@@ -244,10 +244,8 @@ protected: // INSTANCE REFERENCING //
 	void MakeInstanceReference(PacketResourceInstance* _instance);
 	void RemoveInstanceReference(PacketResourceInstance* _instance);
 
-    // Make all instances that depends on this resource to point to another resource, decrementing the total 
-    // number of references to zero, this method must be called when inside the update phase on the resource 
-    // manager so no race conditions will happen. This method will only do something when on debug builds
-    void RedirectInstancesToResource(PacketResource* _newResource);
+    // Make all instances that depends on this resource to be reseted and start pointing to a new resource
+    void ResetLinkedInstances(PacketResource* _newTargetResource);
 
     // This method will check if all instances that depends on this resource are totally constructed and ready
     // to be used, this method only works on debug builds and it's not intended to be used on release builds, 
