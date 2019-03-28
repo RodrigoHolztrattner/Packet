@@ -384,6 +384,17 @@ function in one of your resource instance classes?");
         // Check if the new resource failed to be constructed
         else if (newResource->ConstructionFailed())
         {
+            // Remove the direct reference used to prevent the deletion of this resource. Checks if it should be deleted
+            originalResource->DecrementNumberDirectReferences();
+            if (!originalResource->IsDirectlyReferenced() && !originalResource->IsPermanent())
+            {
+                // Remove this object from the storage, taking its ownership back
+                std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(originalResource);
+
+                // Insert this object into the deletion queue
+                m_ResourcesPendingDeletion.push_back(std::move(objectUniquePtr));
+            }
+
             // Do not replace the resource since the new one failed, delete the new resource
             m_ResourcesPendingDeletion.push_back(std::move(newResource));
 
