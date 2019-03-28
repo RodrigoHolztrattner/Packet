@@ -636,6 +636,20 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     // being destroyed)
     _resource->IncrementNumberDirectReferences();
 
+    // Sometimes when the resource was modified it is still in process of being saved when we get the
+    // event here, to prevent a failure when loading this file we must wait until it can be detected
+    uint32_t maxAttempts = 10;
+    while (maxAttempts-- != 0)
+    {
+        const char* path = _resource->GetHash().GetPath().String();
+        if (std::filesystem::exists(path) && !std::filesystem::is_directory(path))
+        {
+            break;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
     // Load this resource
     auto resourceUniquePtr = m_ResourceLoader.LoadObject(_resource->GetFactoryPtr(), 
                                                          _resource->GetHash(),
