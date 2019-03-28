@@ -138,23 +138,20 @@ public: //////////
 // VIRTUAL METHODS //
 protected: //////////
 
-	// The OnLoad() method (asynchronous method)
-	virtual bool OnLoad(PacketResourceData& _data, uint32_t _buildFlags, uint32_t _flags) = 0;
+    // The construct methods, the OnConstruct will be called asynchronously by the resource 
+    // manager and the external one can be flagged to be called by the user
+    virtual bool OnConstruct(PacketResourceData& _data, uint32_t _buildFlags, uint32_t _flags);
+    virtual bool OnExternalConstruct(PacketResourceData& _data, uint32_t _buildFlags, uint32_t _flags, void* _customData);
+
+    // This method is called when this resource is modified (edited), it's guaranteed that it
+    // can safely update any internal data without risks of races
+    virtual bool OnModification();
 
 	// The OnDelete() method (asynchronous method)
 	virtual bool OnDelete(PacketResourceData&) = 0;
 
     // Return if this resource requires an external construct phase
     virtual bool RequiresExternalConstructPhase() const;
-
-    // The construct methods, the OnConstruct will be called asynchronously by the resource 
-    // manager and the external one can be flagged to be called by the user
-    virtual bool OnConstruct();
-    virtual bool OnExternalConstruct(void* _data);
-
-    // This method is called when this resource is modified (edited), it's guaranteed that it
-    // can safely update any internal data without risks of races
-    virtual bool OnModification();
 
 //////////////////
 // MAIN METHODS //

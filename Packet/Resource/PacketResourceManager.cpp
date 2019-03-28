@@ -327,9 +327,6 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             // Register this resource inside the storage
             m_ResourceStoragePtr->InsertObject(std::move(resourceUniquePtr), hash, buildInfo.buildFlags);
 
-            // Construct the resource
-            resource->OnConstruct();
-
             // If this resource requires external construct, enqueue it on the correspondent queue
             if (resource->RequiresExternalConstructPhase() && !resource->ConstructionFailed())
             {

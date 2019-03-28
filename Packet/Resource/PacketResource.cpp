@@ -169,12 +169,6 @@ bool PacketResource::BeginLoad(bool _isPersistent)
 	// Set if this object is persistent
 	m_IsPermanentResource = _isPersistent;
 
-	// Call the Onload() method
-	if (!OnLoad(m_Data, m_BuildInfo.buildFlags, m_BuildInfo.flags))
-	{
-		return false;
-	}
-
 	// Set loaded to true
     m_WasLoaded = true;
 
@@ -199,15 +193,24 @@ bool PacketResource::BeginDelete()
 
 void PacketResource::BeginConstruct()
 {
-    bool result = OnConstruct();
-    m_ConstructFailed = !result;
+    // If the data size is zero and this is not a runtime resource we should set that the construction
+    // failed directly instead trying to construct it
+    if (m_Data.GetSize() == 0 && !m_IsRuntimeResource)
+    {
+        m_ConstructFailed = true;
+    }
+    else
+    {
+        bool result = OnConstruct(m_Data, m_BuildInfo.buildFlags, m_BuildInfo.flags);
+        m_ConstructFailed = !result;
 
-    m_WasConstructed = true;
+        m_WasConstructed = true;
+    }
 }
 
 void PacketResource::BeginExternalConstruct(void* _data)
 {
-    bool result = OnExternalConstruct(_data);
+    bool result = OnExternalConstruct(m_Data, m_BuildInfo.buildFlags, m_BuildInfo.flags, _data);
     m_ConstructFailed = m_ConstructFailed && !result;
 
     m_WasExternallyConstructed = true;
@@ -276,12 +279,12 @@ bool PacketResource::RequiresExternalConstructPhase() const
     return false; 
 }
 
-bool PacketResource::OnConstruct()
+bool PacketResource::OnConstruct(PacketResourceData&, uint32_t, uint32_t)
 {
     return true;
 }
 
-bool PacketResource::OnExternalConstruct(void*)
+bool PacketResource::OnExternalConstruct(PacketResourceData&, uint32_t, uint32_t, void*)
 {
     return true;
 }

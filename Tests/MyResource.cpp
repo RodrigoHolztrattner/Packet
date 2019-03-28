@@ -8,22 +8,18 @@ MyResource::~MyResource()
 {
 }
 
-bool MyResource::OnLoad(Packet::ResourceData&, uint32_t, uint32_t)
+
+bool MyResource::OnConstruct(Packet::ResourceData& _data, uint32_t _buildFlags, uint32_t _flags)
+{
+    return true;
+}
+
+bool MyResource::OnExternalConstruct(Packet::ResourceData& _data, uint32_t _buildFlags, uint32_t _flags, void* _customData)
 {
     return true;
 }
 
 bool MyResource::OnDelete(Packet::ResourceData& _data)
-{
-    return true;
-}
-
-bool MyResource::OnConstruct()
-{
-    return true;
-}
-
-bool MyResource::OnExternalConstruct(void* _data)
 {
     return true;
 }

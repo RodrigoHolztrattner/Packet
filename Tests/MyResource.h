@@ -10,11 +10,9 @@ public:
 
     ~MyResource();
 
-    bool OnLoad(Packet::ResourceData& _data, uint32_t _buildFlags, uint32_t _flags) final;
+    bool OnConstruct(Packet::ResourceData& _data, uint32_t _buildFlags, uint32_t _flags) final;
+
+    bool OnExternalConstruct(Packet::ResourceData& _data, uint32_t _buildFlags, uint32_t _flags, void* _customData) final;
 
     bool OnDelete(Packet::ResourceData& _data) final;
-
-    bool OnConstruct() final;
-
-    bool OnExternalConstruct(void* _data) final;
 };
