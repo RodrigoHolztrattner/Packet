@@ -644,9 +644,6 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
                                                          false,
                                                          {});
 
-    // Construct the resource
-    resourceUniquePtr->OnConstruct();
-
     // If this resource requires external construct, enqueue it on the correspondent queue
     if (resourceUniquePtr->RequiresExternalConstructPhase() && !resourceUniquePtr->ConstructionFailed())
     {
