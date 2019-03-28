@@ -647,7 +647,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
             break;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
     // Load this resource
