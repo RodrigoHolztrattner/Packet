@@ -358,7 +358,7 @@ void PacketResource::ResetLinkedInstances(PacketResource* _newTargetResource)
         instancesPendingReset.insert(instanceTopParent);
 
         // Remove the reference from this resource
-        RemoveInstanceReference(instance);
+        m_TotalDirectReferences--;
 
         // Redirect the instance
         _newTargetResource->MakeInstanceReference(instance);
@@ -367,7 +367,10 @@ void PacketResource::ResetLinkedInstances(PacketResource* _newTargetResource)
         instance->UnlockUsage();
 	}
 
-    assert(m_InstancesThatUsesThisResource.size() == 0);
+    m_InstancesThatUsesThisResource.clear();
+
+    // We must only have the manual incremented direct reference now
+    assert(m_TotalDirectReferences == 1);
 
     // For each instance that needs to be reseted
     for (auto& instance : instancesPendingReset)
