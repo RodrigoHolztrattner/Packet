@@ -617,6 +617,12 @@ PacketResourceExternalConstructor::PacketResourceExternalConstructor(PacketResou
 {
 }
 
+PacketResourceExternalConstructor::PacketResourceExternalConstructor() :
+    m_Resource(nullptr),
+    m_ResourceManager(nullptr)
+{
+}
+
 PacketResourceExternalConstructor::PacketResourceExternalConstructor(PacketResourceExternalConstructor&& _other)
 {
     m_ResourceManager = std::move(_other.m_ResourceManager);

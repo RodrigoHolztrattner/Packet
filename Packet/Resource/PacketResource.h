@@ -486,9 +486,9 @@ protected:
 
 public:
 
-    PacketResourceExternalConstructor() = delete;
     PacketResourceExternalConstructor(const PacketResourceExternalConstructor&) = delete;
     PacketResourceExternalConstructor& operator=(const PacketResourceExternalConstructor&) = delete;
+    PacketResourceExternalConstructor();
     PacketResourceExternalConstructor(PacketResourceExternalConstructor&& _other);
     PacketResourceExternalConstructor& operator=(PacketResourceExternalConstructor&& _other);
     ~PacketResourceExternalConstructor();
