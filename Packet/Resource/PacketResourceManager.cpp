@@ -56,6 +56,10 @@ PacketResourceManager::~PacketResourceManager()
         std::unique_ptr<PacketResourceInstance> instanceReleaseObject;
         while (m_InstancesPendingReleaseEvaluation.try_dequeue(instanceReleaseObject))
         {
+			// By calling this method below we will make sure that, if this instance
+			// owns any other instance, it will be inserted on this queue and evaluated
+			instanceReleaseObject->BeginDelete();
+
             // Just move it to the pending release vector
             m_InstancesPendingRelease.push_back(std::move(instanceReleaseObject));
         }
