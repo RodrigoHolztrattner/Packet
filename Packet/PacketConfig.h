@@ -321,6 +321,11 @@ struct Hash
 		return a.m_Hash < b.m_Hash;
 	}
 
+    bool operator< (const Hash& a) const
+    {
+        return a.m_Hash < this->m_Hash;
+    }
+
 	// Return the hash value
 	const HashPrimitive GetHashValue() const
 	{
