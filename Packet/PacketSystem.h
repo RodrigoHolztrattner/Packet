@@ -113,7 +113,7 @@ public:
 
 	// Request a permanent object for the given reference and resource hash, the object will not be deleted when it reaches 0
 	// references, the deletion phase will only occur in conjunction with the storage deletion
-	template <typename ResourceClass, typename ResourceInstance>
+	template <typename ResourceClass>
     bool RequestPermanentResource(PacketResourceReference<ResourceClass>& _resourceReference,
                                   Hash _hash,
                                   PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
