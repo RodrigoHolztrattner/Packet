@@ -2,7 +2,6 @@
 // Filename: PacketResource.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketResource.h"
-#include "PacketResourceInstance.h"
 #include "PacketResourceManager.h"
 #include "PacketResourceFactory.h"
 #include "..\PacketReferenceManager.h"
@@ -12,7 +11,6 @@
 
 // Using namespace Peasant
 PacketUsingDevelopmentNamespace(Packet)
-
 
 ////////////////////////
 // PacketResourceData //
@@ -154,14 +152,12 @@ PacketResource::PacketResource()
 	m_IgnorePhysicalDataChanges = false;
 	m_IsPermanentResource       = false;
 	m_IsPendingDeletion         = false;
-	m_TotalDirectReferences     = 0;
-	m_TotalIndirectReferences   = 0;
+    m_TotalReferences           = 0;
 }
 
 PacketResource::~PacketResource()
 {
-	assert(m_TotalDirectReferences == 0);
-	assert(m_TotalIndirectReferences == 0);
+	assert(m_TotalReferences == 0);
 }
 
 bool PacketResource::BeginLoad(bool _isPersistent)
@@ -226,7 +222,7 @@ void PacketResource::BeginModifications()
     }
 
     m_IsPendingModifications = false;
-    m_ResourceModificationMutex.unlock();
+    m_ResourceMutex.unlock();
 }
 
 bool PacketResource::IsReady() const
@@ -246,17 +242,7 @@ bool PacketResource::IsPendingDeletion() const
 
 bool PacketResource::IsReferenced() const
 {
-	return m_TotalDirectReferences > 0 || m_TotalIndirectReferences > 0;
-}
-
-bool PacketResource::IsDirectlyReferenced() const
-{
-	return m_TotalDirectReferences > 0;
-}
-
-bool PacketResource::IsIndirectlyReferenced() const
-{
-	return m_TotalIndirectReferences > 0;
+	return m_TotalReferences > 0;
 }
 
 bool PacketResource::IsPermanent() const
@@ -338,80 +324,10 @@ void PacketResource::SetPendingDeletion()
 
 void PacketResource::SetPendingModifications()
 {
-    m_ResourceModificationMutex.lock();
+    m_ResourceMutex.lock();
     m_IsPendingModifications = true;
 
     m_ResourceManagerPtr->RegisterResourceForModifications(this);
-}
-
-void PacketResource::ResetLinkedInstances(PacketResource* _newTargetResource)
-{
-    std::set<PacketResourceInstance*> instancesPendingReset;
-
-	// For each instance
-	for (auto* instance : m_InstancesThatUsesThisResource)
-	{
-        // Lock this instance
-        instance->LockUsage();
-
-        // Gather the top parent for this instance
-        PacketResourceInstance* instanceTopParent = instance->GatherTopParentInstanceRecursively();
-
-        // Set that this parent instance needs to be reseted
-        instancesPendingReset.insert(instanceTopParent);
-
-        // Remove the reference from this resource
-        m_TotalDirectReferences--;
-
-        // Redirect the instance
-        _newTargetResource->MakeInstanceReference(instance);
-
-        // Unlock the instance
-        instance->UnlockUsage();
-	}
-
-    m_InstancesThatUsesThisResource.clear();
-
-    // We must only have the manual incremented direct reference now
-    assert(m_TotalDirectReferences == 1);
-
-    // For each instance that needs to be reseted
-    for (auto& instance : instancesPendingReset)
-    {
-        // Lock this instance
-        instance->LockUsage();
-
-        // Call the delete method for this instance to make it release all of its
-        // internal data
-        instance->BeginDelete();
-
-        // Reconstruct the instance by calling its begin construct method
-        instance->BeginConstruct();
-
-        // Unlock the instance
-        instance->UnlockUsage();
-    }
-}
-
-bool PacketResource::AreInstancesReadyToBeUsed() const
-{
-    if (m_CurrentOperationMode == OperationMode::Edit)
-    {
-        // For each instance
-        for (auto* instance : m_InstancesThatUsesThisResource)
-        {
-            // Check if this instance or the instance that depends on it (if there is one) are locked
-            if (!instance->IsReady() || !instance->InstanceDependencyIsReady())
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-	m_LoggerPtr->LogWarning("Calling method AreInstancesReadyToBeUsed() on Condensed mode!");
-	return false;
 }
 
 bool PacketResource::IgnorePhysicalDataChanges() const
@@ -424,54 +340,30 @@ bool PacketResource::ConstructionFailed() const
     return m_ConstructFailed;
 }
 
-void PacketResource::MakeInstanceReference(PacketResourceInstance* _instance)
+void PacketResource::IncrementNumberReferences()
 {
-    // Increment the total number of references
-    m_TotalDirectReferences++;
+    m_TotalReferences++;
+}
 
-    // Set the object reference
-    _instance->SetObjectReference(this);
+void PacketResource::DecrementNumberReferences(bool _releaseEnable)
+{
+    bool releaseResource = false;
 
-    // Insert this instance into the instance vector of dependencies
-    if (m_CurrentOperationMode == OperationMode::Edit)
     {
-        m_InstancesThatUsesThisResource.push_back(_instance);
+        std::lock_guard<std::mutex> l(m_ResourceMutex);
+
+        // Do not release the resource if it is being replaced by another, if that's the case this resource
+        // is already in the deletion queue for the resource manager object
+        releaseResource = (m_TotalReferences == 1) && m_ReplacingResource == nullptr && _releaseEnable;
+
+        m_TotalReferences--;
     }
-}
 
-void PacketResource::RemoveInstanceReference(PacketResourceInstance* _instance)
-{
-    assert(m_TotalDirectReferences > 0);
-
-    // Subtract one from the reference count
-    m_TotalDirectReferences--;
-
-    if (m_CurrentOperationMode == OperationMode::Edit)
+    if (releaseResource)
     {
-        // Find the instance object inside the instance vector and remove it, there is no need to use
-        // the mutex because this can only happens on the update phase of the PacketResourceManager
-        for (unsigned int i = 0; i < m_InstancesThatUsesThisResource.size(); i++)
-        {
-            // Compare the pointers
-            if (m_InstancesThatUsesThisResource[i] == _instance)
-            {
-                // Remove it
-                m_InstancesThatUsesThisResource.erase(m_InstancesThatUsesThisResource.begin() + i);
-            }
-        }
+        // Use the resource manager to release this instance
+        m_ResourceManagerPtr->RegisterResourceForDeletion(this);
     }
-}
-
-void PacketResource::IncrementNumberIndirectReferences()
-{
-    std::lock_guard<std::mutex> lock(m_ResourceModificationMutex);
-
-	m_TotalIndirectReferences++;
-}
-
-void PacketResource::DecrementNumberIndirectReferences()
-{
-	m_TotalIndirectReferences--;
 }
 
 uint32_t PacketResource::GetDataSize() const
@@ -481,17 +373,7 @@ uint32_t PacketResource::GetDataSize() const
 
 uint32_t PacketResource::GetTotalNumberReferences() const
 {
-	return m_TotalDirectReferences + m_TotalIndirectReferences;
-}
-
-uint32_t PacketResource::GetTotalNumberDirectReferences() const
-{
-	return m_TotalDirectReferences;
-}
-
-uint32_t PacketResource::GetTotalNumberIndirectReferences() const
-{
-	return m_TotalIndirectReferences;
+	return m_TotalReferences;
 }
 
 PacketResourceFactory* PacketResource::GetFactoryPtr() const
@@ -499,19 +381,14 @@ PacketResourceFactory* PacketResource::GetFactoryPtr() const
 	return m_FactoryPtr;
 }
 
+OperationMode PacketResource::GetOperationMode() const
+{
+    return m_CurrentOperationMode;
+}
+
 PacketResourceData& PacketResource::GetDataRef()
 {
 	return m_Data;
-}
-
-void PacketResource::IncrementNumberDirectReferences()
-{
-    m_TotalDirectReferences++;
-}
-
-void PacketResource::DecrementNumberDirectReferences()
-{
-    m_TotalDirectReferences--;
 }
 
 void PacketResource::IgnoreResourcePhysicalDataChanges()
@@ -605,6 +482,124 @@ bool PacketResource::VerifyPhysicalResourceReferences(ReferenceFixer _fixer, boo
 
 	// Call the validate file references method for the reference manager
 	return m_ReferenceManagerPtr->ValidateFileReferences(m_Hash.GetPath().String(), _fixer, _allOrNothing);
+}
+
+void PacketResource::RegisterReplacingResource(PacketResource* _replacingObject)
+{
+    m_ReplacingResource = _replacingObject;
+}
+
+
+std::optional<PacketResource*> PacketResource::GetReplacingResource() const
+{
+    if (m_ReplacingResource == nullptr)
+    {
+        return std::nullopt;
+    }
+
+    return m_ReplacingResource;
+}
+
+/////////////////////////////////
+// PacketResourceCreationProxy //
+/////////////////////////////////
+
+void PacketResourceCreationProxy::LinkWithProxyInterface(PacketResourceCreationProxyInterface* _proxyInterface)
+{
+    std::lock_guard<std::mutex> l(m_Mutex);
+    assert(m_ProxyInterfacePtr == nullptr);
+    assert(m_IsLinkedWithReference == false);
+
+    m_ProxyInterfacePtr = _proxyInterface;
+    m_IsLinkedWithReference = true;
+}
+
+void PacketResourceCreationProxy::UnlinkFromProxy()
+{
+    std::lock_guard<std::mutex> l(m_Mutex);
+    assert(m_ProxyInterfacePtr != nullptr);
+    assert(m_IsLinkedWithReference == true);
+
+    m_IsLinkedWithReference = false;
+    m_ProxyInterfacePtr = nullptr;
+}
+
+void PacketResourceCreationProxy::ForwardResourceLink(PacketResource * _resource)
+{
+    std::lock_guard<std::mutex> l(m_Mutex);
+
+    if (m_IsLinkedWithReference)
+    {
+        m_ProxyInterfacePtr->ForwardResourceLink(_resource);
+        m_ProxyInterfacePtr = nullptr;
+        m_IsLinkedWithReference = false;
+    }
+    else
+    {
+        // Decrement the resource ref count
+        _resource->DecrementNumberReferences();
+    }
+}
+
+//////////////////////////////////////////
+// PacketResourceCreationProxyInterface //
+//////////////////////////////////////////
+
+PacketResourceCreationProxyInterface::~PacketResourceCreationProxyInterface()
+{
+    if (m_CreationProxy != nullptr)
+    {
+        m_CreationProxy->UnlinkFromProxy();
+    }
+}
+
+PacketResourceCreationProxyInterface::PacketResourceCreationProxyInterface(const PacketResourceCreationProxyInterface& _other)
+{
+    m_CreationProxy = nullptr;
+    m_PendingResourceVariable = nullptr;
+};
+
+PacketResourceCreationProxyInterface& PacketResourceCreationProxyInterface::operator=(const PacketResourceCreationProxyInterface& _other)
+{
+    m_CreationProxy = nullptr;
+    m_PendingResourceVariable = nullptr;
+
+    return *this;
+};
+
+PacketResourceCreationProxyInterface& PacketResourceCreationProxyInterface::operator=(PacketResourceCreationProxyInterface&& _other)
+{
+    m_CreationProxy = std::move(_other.m_CreationProxy);
+    m_PendingResourceVariable = std::move(_other.m_PendingResourceVariable);
+    _other.m_CreationProxy = nullptr;
+    _other.m_PendingResourceVariable = nullptr;
+
+    return *this;
+}
+
+PacketResourceCreationProxyInterface::PacketResourceCreationProxyInterface(PacketResourceCreationProxyInterface&& _other)
+{
+    m_CreationProxy = std::move(_other.m_CreationProxy);
+    m_PendingResourceVariable = std::move(_other.m_PendingResourceVariable);
+    _other.m_CreationProxy = nullptr;
+    _other.m_PendingResourceVariable = nullptr;
+}
+
+void PacketResourceCreationProxyInterface::SetProxyAndResource(PacketResourceCreationProxy* _creationProxy, PacketResource** _resourceVariable)
+{
+    m_CreationProxy = _creationProxy;
+    m_CreationProxy->LinkWithProxyInterface(this);
+
+    m_PendingResourceVariable = _resourceVariable;
+}
+
+void PacketResourceCreationProxyInterface::ForwardResourceLink(PacketResource* _resource)
+{
+    m_CreationProxy = nullptr;
+    *m_PendingResourceVariable = _resource;
+
+    // Increment the resource ref count
+    _resource->IncrementNumberReferences();
 }
 
 ///////////////////////////////////////

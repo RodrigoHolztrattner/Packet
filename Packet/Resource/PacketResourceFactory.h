@@ -64,12 +64,6 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
-	// Request a new instance
-	virtual std::unique_ptr<PacketResourceInstance> RequestInstance(Hash _hash, PacketResourceManager* _resourceManager) = 0;
-
-	// Release a instance
-	virtual void ReleaseInstance(std::unique_ptr<PacketResourceInstance> _instance) = 0;
-
 	// Request a new object
 	virtual std::unique_ptr<PacketResource> RequestObject() = 0;
 	

@@ -1,6 +1,5 @@
 #include "MyFactory.h"
 #include "MyResource.h"
-#include "MyInstance.h"
 
 MyFactory::MyFactory() : Packet::ResourceFactory()
 {
@@ -8,17 +7,6 @@ MyFactory::MyFactory() : Packet::ResourceFactory()
 
 MyFactory::~MyFactory()
 {
-}
-
-std::unique_ptr<Packet::ResourceInstance> MyFactory::RequestInstance(Packet::Hash _hash, 
-                                                                     Packet::ResourceManager* _resourceManager)
-{
-    return std::unique_ptr<Packet::ResourceInstance>(new MyInstance(_hash, _resourceManager, this));
-}
-
-void MyFactory::ReleaseInstance(std::unique_ptr<Packet::ResourceInstance> _instance)
-{
-    _instance.reset();
 }
 
 std::unique_ptr<Packet::Resource> MyFactory::RequestObject()

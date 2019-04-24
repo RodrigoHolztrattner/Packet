@@ -13,6 +13,7 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
+#include <optional>
 
 ///////////////
 // NAMESPACE //
@@ -51,9 +52,11 @@ class PacketResourceWatcher;
 class PacketResourceStorage;
 class PacketReferenceManager;
 class PacketResourceExternalConstructor;
+class PacketResourceCreationProxy;
+class PacketResourceCreationProxyInterface;
 
 template <typename ResourceClass>
-class PacketResourceReferencePtr;
+class PacketResourceReference;
 
 // The structure that will be used to store the resource data, it works like a vector of uint8_t and is allocation 
 // and deallocation must be managed by a factory class
@@ -122,9 +125,11 @@ public:
 	friend PacketResourceStorage;
 	friend PacketResourceInstance;
     friend PacketResourceExternalConstructor;
+    friend PacketResourceCreationProxy;
+    friend PacketResourceCreationProxyInterface;
 
 	template <typename ResourceClass>
-	friend class PacketResourceReferencePtr;
+	friend class PacketResourceReference;
 
 //////////////////
 // CONSTRUCTORS //
@@ -163,10 +168,8 @@ public: //////////
 	// Return the data size
 	uint32_t GetDataSize() const;
 
-	// Return the total number of instances that directly or indirectly references this resource
-	uint32_t GetTotalNumberReferences()         const;
-	uint32_t GetTotalNumberDirectReferences()   const;
-	uint32_t GetTotalNumberIndirectReferences() const;
+	// Return the total number of references
+	uint32_t GetTotalNumberReferences() const;
 
 	// Return the object factory without cast
 	PacketResourceFactory* GetFactoryPtr() const;
@@ -177,6 +180,9 @@ public: //////////
 	{
 		return reinterpret_cast<FactoryClass*>(m_FactoryPtr);
 	}
+
+    // Return the current operation mode
+    OperationMode GetOperationMode() const;
 
 //////////////////////////////////
 public: // PHYSICAL DATA UPDATE //
@@ -217,6 +223,17 @@ public: // PHYSICAL RESOURCE REFERECE //
 	// a debug build)
 	bool VerifyPhysicalResourceReferences(ReferenceFixer _fixer = ReferenceFixer::None, bool _allOrNothing = true);
 
+////////////////////////////
+protected: // REPLACEMENT //
+////////////////////////////
+
+    // Register another resource as the replacement of this one, this will only take effect on edit mode
+    void RegisterReplacingResource(PacketResource* _replacingObject);
+
+    // Return, if set, a resource that must be used instead the current one because it was replaced, this
+    // will only take effect on edit mode
+    std::optional<PacketResource*> GetReplacingResource() const;
+
 ////////////////////
 public: // STATUS //
 ////////////////////
@@ -225,29 +242,11 @@ public: // STATUS //
 	bool IsReady()                   const;
 	bool IsPendingDeletion()         const;
 	bool IsReferenced()              const;
-	bool IsDirectlyReferenced()      const;
-	bool IsIndirectlyReferenced()    const;
 	bool IsPermanent()               const;
     bool IsRuntime()                 const;
     bool IsPendingModifications()    const;
     bool IgnorePhysicalDataChanges() const;
     bool ConstructionFailed()        const;
-
-/////////////////////////////////////
-protected: // INSTANCE REFERENCING //
-/////////////////////////////////////
-
-	// Make a instance reference/remove this resource as its internal resource
-	void MakeInstanceReference(PacketResourceInstance* _instance);
-	void RemoveInstanceReference(PacketResourceInstance* _instance);
-
-    // Make all instances that depends on this resource to be reseted and start pointing to a new resource
-    void ResetLinkedInstances(PacketResource* _newTargetResource);
-
-    // This method will check if all instances that depends on this resource are totally constructed and ready
-    // to be used, this method only works on debug builds and it's not intended to be used on release builds, 
-    // also this method must be called when inside the update method on the PacketResourceManager class
-    bool AreInstancesReadyToBeUsed() const;
 
 /////////////////////////
 protected: // INTERNAL //
@@ -293,13 +292,9 @@ protected: // INTERNAL //
 	// Return the data reference, non const because this should be used to externally release the data (factory)
     PacketResourceData& GetDataRef();
 
-    // Increment/decrement the number of direct references
-    void IncrementNumberDirectReferences();
-    void DecrementNumberDirectReferences();
-
-    // Increment/decrement the number of indirect references
-    void IncrementNumberIndirectReferences();
-    void DecrementNumberIndirectReferences();
+    // Increment/decrement the number of references
+    void IncrementNumberReferences();
+    void DecrementNumberReferences(bool _releaseEnable = true);
 
 ///////////////
 // VARIABLES //
@@ -320,8 +315,7 @@ private: //////
     uint32_t m_CurrentConstructPhaseIndex = 0;
 
 	// The total number of direct and indirect references
-	std::atomic<uint32_t> m_TotalDirectReferences;
-	std::atomic<uint32_t> m_TotalIndirectReferences;
+	std::atomic<uint32_t> m_TotalReferences;
 
 	// The resource data, hash and build info
 	PacketResourceData m_Data;
@@ -335,72 +329,142 @@ private: //////
     PacketFileLoader*       m_FileLoaderPtr;
 	PacketLogger*           m_LoggerPtr;
 
+    // A resource that is replacing this one
+    PacketResource* m_ReplacingResource = nullptr;
+
 	// The current operation mode for the packet system
 	OperationMode m_CurrentOperationMode;
 
-	// This is a vector with all instances that uses this object + a mutex to prevent multiple writes 
-	// at the same time, those variables exist only on debug builds and they offer functionality to 
-	// the runtime detection of resource file changes, providing a way to update all instances that 
-	// points to a given resource object
-	std::vector<PacketResourceInstance*> m_InstancesThatUsesThisResource;
+    // Prevent thread races using this mutex
+    std::mutex m_ResourceMutex;
+};
 
-    // This is the modifications mutex, it is used to prevent thread races when the modification
-    // flag is active, preventing any new reference from being created
-    std::mutex m_ResourceModificationMutex;
+class PacketResourceCreationProxy
+{
+    friend PacketResourceCreationProxyInterface;
+
+public:
+
+    PacketResourceCreationProxy() = default;
+
+    void UnlinkFromProxy();
+    void ForwardResourceLink(PacketResource* _resource);
+
+protected:
+
+    void LinkWithProxyInterface(PacketResourceCreationProxyInterface* _proxyInterface);
+
+private:
+
+    // The proxy interface ptr
+    PacketResourceCreationProxyInterface* m_ProxyInterfacePtr = nullptr;
+
+    // Mutex to prevent any race when assigning the resource/destructing the reference
+    std::mutex m_Mutex;
+
+    // If this proxy is linked with a proxy interface
+    bool m_IsLinkedWithReference = false;
+};
+
+class PacketResourceCreationProxyInterface
+{
+    friend PacketResourceCreationProxy;
+
+public:
+
+    PacketResourceCreationProxyInterface() = default;
+    ~PacketResourceCreationProxyInterface();
+
+    // Copy constructor
+    PacketResourceCreationProxyInterface(const PacketResourceCreationProxyInterface& _other);
+
+    // Assignment operator
+    PacketResourceCreationProxyInterface& operator=(const PacketResourceCreationProxyInterface& _other);
+
+    // Move assignment operator
+    PacketResourceCreationProxyInterface& operator=(PacketResourceCreationProxyInterface&& _other);
+
+    // Our move copy operator
+    PacketResourceCreationProxyInterface(PacketResourceCreationProxyInterface&& _other);
+
+protected:
+
+    // Set the internal objects
+    void SetProxyAndResource(PacketResourceCreationProxy* _creationProxy, PacketResource** _resourceVariable);
+
+    // Forward a resource linkage from the proxy
+    void ForwardResourceLink(PacketResource* _resource);
+
+private:
+
+    // The creation proxy
+    PacketResourceCreationProxy* m_CreationProxy = nullptr;
+
+    // The resource variable that needs to be assigned
+    PacketResource** m_PendingResourceVariable = nullptr;
 };
 
 // The temporary resource reference type
 template <typename ResourceClass>
-class PacketResourceReferencePtr
+class PacketResourceReference : public virtual PacketResourceCreationProxyInterface
 {
     // Friend classes
     friend PacketResource;
     friend PacketResourceInstance;
+    friend PacketResourceManager;
 
 protected:
 
-    // Constructor used by the instance class
-    PacketResourceReferencePtr(ResourceClass* _resource) :
-        m_ResourceObject(_resource),
-        m_PacketResourceObject(_resource)
+    // Register a creation proxy, only callable from the resource manager
+    void RegisterCreationProxy(PacketResourceCreationProxy* _creationProxy)
     {
-        // Increment the total number of temporary references for the resource
-        m_PacketResourceObject->IncrementNumberIndirectReferences();
+        SetProxyAndResource(_creationProxy, reinterpret_cast<PacketResource**>(&m_ResourceObject));
     }
 
 public:
 
     // Default constructor
-    PacketResourceReferencePtr() :
-        m_ResourceObject(nullptr),
-        m_PacketResourceObject(nullptr)
+    PacketResourceReference() :
+        m_ResourceObject(nullptr)
     {
     }
 
-    // Copy constructor disabled
-    PacketResourceReferencePtr(const PacketResourceReferencePtr&) = delete;
+    // Copy constructor
+    PacketResourceReference(const PacketResourceReference& _other) : PacketResourceCreationProxyInterface(_other)
+    {
+        m_ResourceObject = _other.m_ResourceObject;
+        if (m_ResourceObject != nullptr)
+        {
+            m_ResourceObject->IncrementNumberReferences();
+        }
+    };
 
     // Assignment operator
-    PacketResourceReferencePtr& operator=(const PacketResourceReferencePtr&) = delete;
+    PacketResourceReference& operator=(const PacketResourceReference& _other)
+    {
+        m_ResourceObject = _other.m_ResourceObject;
+        if (m_ResourceObject != nullptr)
+        {
+            m_ResourceObject->IncrementNumberReferences();
+        }
+    };
 
     // Move assignment operator
-    PacketResourceReferencePtr& operator=(PacketResourceReferencePtr&& _other)
+    PacketResourceReference& operator=(PacketResourceReference&& _other)
     {
         m_ResourceObject = std::move(_other.m_ResourceObject);
-        m_PacketResourceObject = std::move(_other.m_PacketResourceObject);
         _other.m_ResourceObject = nullptr;
-        _other.m_PacketResourceObject = nullptr;
+
+        PacketResourceCreationProxyInterface::operator=(std::move(_other));
 
         return *this;
     }
 
     // Our move copy operator
-    PacketResourceReferencePtr(PacketResourceReferencePtr&& _other)
+    PacketResourceReference(PacketResourceReference&& _other) noexcept : PacketResourceCreationProxyInterface(std::move(_other))
     {
         m_ResourceObject = std::move(_other.m_ResourceObject);
-        m_PacketResourceObject = std::move(_other.m_PacketResourceObject);
         _other.m_ResourceObject = nullptr;
-        _other.m_PacketResourceObject = nullptr;
     }
 
     // Reset this pointer, unlinking it
@@ -409,8 +473,7 @@ public:
         // If the resource object is valid
         if (m_ResourceObject != nullptr)
         {
-            m_PacketResourceObject->DecrementNumberIndirectReferences();
-            m_PacketResourceObject = nullptr;
+            m_ResourceObject->DecrementNumberReferences();
             m_ResourceObject = nullptr;
         }
     }
@@ -418,29 +481,50 @@ public:
     // Operator to use this as a pointer to the resource object
     ResourceClass* operator->() const
     {
-        return m_ResourceObject;
+        return Get();
     }
 
     // The get method
-    ResourceClass* Get()
+    ResourceClass* Get() const
     {
+        // If we are on edit mode, check if this resource should be replaced
+        if (m_ResourceObject!= nullptr && m_ResourceObject->GetOperationMode() == OperationMode::Edit)
+        {
+            auto replacingResource = m_ResourceObject->GetReplacingResource();
+            if (replacingResource)
+            {
+                // Increment the ref count for the new resource
+                replacingResource.value()->IncrementNumberReferences();
+
+                // Decrement the number of references for the current resource
+                m_ResourceObject->DecrementNumberReferences();
+
+                // Set our new resource object
+                m_ResourceObject = static_cast<ResourceClass*>(replacingResource.value());
+            }
+        }
+
         return m_ResourceObject;
+    }
+
+    operator bool() const
+    {
+        return Get() != nullptr;
     }
 
     // Return if this is valid
     bool IsValid()
     {
-        return m_ResourceObject != nullptr;
+        return Get() != nullptr;
     }
 
     // Destructor
-    virtual ~PacketResourceReferencePtr()
+    virtual ~PacketResourceReference()
     {
         // If the resource object is valid
         if (m_ResourceObject != nullptr)
         {
-            m_PacketResourceObject->DecrementNumberIndirectReferences();
-            m_PacketResourceObject = nullptr;
+            m_ResourceObject->DecrementNumberReferences();
             m_ResourceObject = nullptr;
         }
     }
@@ -448,20 +532,19 @@ public:
 protected:
 
     // The resource object
-    ResourceClass*  m_ResourceObject = nullptr;
-    PacketResource* m_PacketResourceObject = nullptr;
+    mutable ResourceClass* m_ResourceObject = nullptr;
 };
 
 // The temporary editable resource reference type
 template <typename ResourceClass>
-class PacketEditableResourceReferencePtr : public PacketResourceReferencePtr<ResourceClass>
+class PacketEditableResourceReferencePtr : public PacketResourceReference<ResourceClass>
 {
 protected:
 
     // Constructor used by the instance class
     PacketEditableResourceReferencePtr(PacketResourceInstance* _instance, 
                                        ResourceClass* _resource)
-        : PacketResourceReferencePtr<ResourceClass>(_resource)
+        : PacketResourceReference<ResourceClass>(_resource)
     {
         _resource->SetPendingModifications();
     }
@@ -470,7 +553,7 @@ public:
 
     // Default constructor
     PacketEditableResourceReferencePtr() 
-        : PacketResourceReferencePtr<ResourceClass>() {}
+        : PacketResourceReference<ResourceClass>() {}
 };
 
 // A temporary object that should be used to call the resource OnExternalConstruct method, this

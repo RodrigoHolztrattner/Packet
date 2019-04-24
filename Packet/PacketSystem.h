@@ -43,8 +43,6 @@ class PacketResourceFactory;
 class PacketResourceWatcher;
 class PacketReferenceManager;
 class PacketResourceStorage;
-template <typename InstanceClass>
-struct PacketResourceInstancePtr;
 
 ////////////////
 // STRUCTURES //
@@ -86,51 +84,56 @@ public:
                                      std::make_unique<ResourceFactoryClass>(std::forward<Args>(args) ...)});
     }
 
-	// Request an object for the given instance and resource hash
-	template <typename ResourceClass, typename ResourceInstance>
-	bool RequestResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr, 
+	// Request an object for the given resource reference and hash
+	template <typename ResourceClass>
+	bool RequestResource(PacketResourceReference<ResourceClass>& _resourceReference, 
                          Hash _hash,
                          PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
 	{
 		assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
-		return m_ResourceManager->RequestResource(_instancePtr,
+		return m_ResourceManager->RequestResource(_resourceReference,
                                                   m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(), 
                                                   _hash, 
                                                   false,
                                                   _resourceBuildInfo);
 	}
 
-    // Request an object for the given instance and resource hash
-    template <typename ResourceClass, typename ResourceInstance>
-    void RequestRuntimeResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+    // Request an object for the given resource reference and hash
+    template <typename ResourceClass>
+    void RequestRuntimeResource(PacketResourceReference<ResourceClass>& _resourceReference,
                                 PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo(),
                                 std::vector<uint8_t> _resourceData = {})
     {
         assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
-        return m_ResourceManager->RequestRuntimeResource(_instancePtr,
+        return m_ResourceManager->RequestRuntimeResource(_resourceReference,
                                                          m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(),
                                                          _resourceBuildInfo, 
                                                          std::move(_resourceData));
     }
 
-	// Request a permanent object for the given instance and resource hash, the object will not be deleted when it reaches 0
+	// Request a permanent object for the given reference and resource hash, the object will not be deleted when it reaches 0
 	// references, the deletion phase will only occur in conjunction with the storage deletion
 	template <typename ResourceClass, typename ResourceInstance>
-    bool RequestPermanentResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+    bool RequestPermanentResource(PacketResourceReference<ResourceClass>& _resourceReference,
                                   Hash _hash,
                                   PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
 	{
 		assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
-		return m_ResourceManager->RequestResource(_instancePtr, 
+		return m_ResourceManager->RequestResource(_resourceReference, 
                                                   m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(),
                                                   _hash, 
                                                   true, 
                                                   _resourceBuildInfo);
 	}
 
-    // This method will wait until the given instance is ready to be used
+    // This method will wait until the given resource is ready to be used
     // Optionally you can pass a timeout parameter in milliseconds
-    bool WaitForInstance(const PacketResourceInstance* _instance, long long _timeout = -1) const;
+    template <typename ResourceClass>
+    bool WaitForResource(const PacketResourceReference<ResourceClass>& _resourceReference,
+                         long long _timeout = -1) const
+    {
+        return m_ResourceManager->WaitForResource< ResourceClass>(_resourceReference, _timeout);
+    }
 
     // This method will return a vector of resource external constructor object that must be constructed
     // by the user externally (since the resource requires it)

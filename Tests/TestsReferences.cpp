@@ -5,17 +5,16 @@
 
 #include "..\Packet\Packet.h"
 #include "MyResource.h"
-#include "MyInstance.h"
 #include "MyFactory.h"
 #include "HelperMethods.h"
 #include "HelperDefines.h"
 
-Packet::ResourceReferencePtr<MyResource> DummyMethod(Packet::ResourceReferencePtr<MyResource> _reference)
+Packet::ResourceReference<MyResource> DummyMethod(Packet::ResourceReference<MyResource> _reference)
 {
     return _reference;
 }
 
-SCENARIO("Resource references can be requested from instances", "[reference]")
+SCENARIO("Resource references can be be used to access resources", "[reference]")
 {
     GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
     {
@@ -29,28 +28,28 @@ SCENARIO("Resource references can be requested from instances", "[reference]")
             std::string resourcePath = ResourceDirectory + "/dummy.txt";
             CreateResourceFile(resourcePath);
 
-            WHEN("An instance request that resource")
+            WHEN("An resource is requested")
             {
-                Packet::ResourceInstancePtr<MyInstance> resourceInstance;
+                Packet::ResourceReference<MyResource> resourceReference;
 
                 packetSystem.RequestResource<MyResource>(
-                    resourceInstance,
+                    resourceReference,
                     Packet::Hash(resourcePath));
 
-                packetSystem.WaitForInstance(resourceInstance.Get());
+                packetSystem.WaitForResource(resourceReference);
 
-                AND_WHEN("A resource reference is requested from that instance")
+                AND_WHEN("A new resource reference is created from the old one")
                 {
-                    Packet::ResourceReferencePtr<MyResource> resourceReference = resourceInstance->GetResourceReference<MyResource>();
+                    Packet::ResourceReference<MyResource> newResourceReference = resourceReference;
 
                     THEN("The reference is valid")
                     {
-                        REQUIRE(resourceReference.IsValid() == true);
+                        REQUIRE(newResourceReference.IsValid() == true);
                     }
 
-                    AND_WHEN("The initial instance is reseted")
+                    AND_WHEN("The initial reference is reseted")
                     {
-                        resourceInstance.Reset();
+                        resourceReference.Reset();
 
                         THEN("The number of resources inside the packet system will be kept at 1 since there is an active reference")
                         {
@@ -59,65 +58,65 @@ SCENARIO("Resource references can be requested from instances", "[reference]")
                                 return packetSystem.GetAproximatedResourceAmount() == 1;
                             }, 1000));
                         }
+                    }
+                }
 
-                        AND_WHEN("The resource is moved to another variable")
+                AND_WHEN("The resource is moved to another variable")
+                {
+                    Packet::ResourceReference<MyResource> otherResourceReference = std::move(resourceReference);
+
+                    THEN("The old reference must not be valid")
+                    {
+                        REQUIRE(resourceReference.IsValid() == false);
+                    }
+
+                    AND_THEN("The other reference must be valid")
+                    {
+                        REQUIRE(otherResourceReference.IsValid() == true);
+                    }
+
+                    AND_THEN("The number of resources inside the packet system will be kept at 1 since there is an active reference")
+                    {
+                        REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
                         {
-                            Packet::ResourceReferencePtr<MyResource> otherResourceReference = std::move(resourceReference);
+                            return packetSystem.GetAproximatedResourceAmount() == 1;
+                        }, 1000));
+                    }
+                }
 
-                            THEN("The old reference must not be valid")
-                            {
-                                REQUIRE(resourceReference.IsValid() == false);
-                            }
+                AND_WHEN("The resource is passed to another function and captured back")
+                {
+                    Packet::ResourceReference<MyResource> returnedResourceReference = DummyMethod(std::move(resourceReference));
 
-                            AND_THEN("The other reference must be valid")
-                            {
-                                REQUIRE(otherResourceReference.IsValid() == true);
-                            }
+                    THEN("The old reference must not be valid")
+                    {
+                        REQUIRE(resourceReference.IsValid() == false);
+                    }
 
-                            AND_THEN("The number of resources inside the packet system will be kept at 1 since there is an active reference")
-                            {
-                                REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
-                                {
-                                    return packetSystem.GetAproximatedResourceAmount() == 1;
-                                }, 1000));
-                            }
-                        }
+                    AND_THEN("The returned reference must be valid")
+                    {
+                        REQUIRE(returnedResourceReference.IsValid() == true);
+                    }
 
-                        AND_WHEN("The resource is passed to another function and captured back")
+                    AND_THEN("The number of resources inside the packet system will be kept at 1 since there is an active reference")
+                    {
+                        REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
                         {
-                            Packet::ResourceReferencePtr<MyResource> returnedResourceReference = DummyMethod(std::move(resourceReference));
+                            return packetSystem.GetAproximatedResourceAmount() == 1;
+                        }, 1000));
+                    }
+                }
 
-                            THEN("The old reference must not be valid")
-                            {
-                                REQUIRE(resourceReference.IsValid() == false);
-                            }
+                AND_WHEN("The resource is passed to another function and not captured back")
+                {
+                    DummyMethod(std::move(resourceReference));
 
-                            AND_THEN("The returned reference must be valid")
-                            {
-                                REQUIRE(returnedResourceReference.IsValid() == true);
-                            }
-
-                            AND_THEN("The number of resources inside the packet system will be kept at 1 since there is an active reference")
-                            {
-                                REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
-                                {
-                                    return packetSystem.GetAproximatedResourceAmount() == 1;
-                                }, 1000));
-                            }
-                        }
-
-                        AND_WHEN("The resource is passed to another function and not captured back")
+                    AND_THEN("The number of resources on the packet system must be equal to zero after some time")
+                    {
+                        REQUIRE(MustChangeToTrueAfterTimeout([&]()
                         {
-                            DummyMethod(std::move(resourceReference));
-
-                            AND_THEN("The number of resources on the packet system must be equal to zero after some time")
-                            {
-                                REQUIRE(MustChangeToTrueAfterTimeout([&]()
-                                {
-                                    return packetSystem.GetAproximatedResourceAmount() == 0;
-                                }, 5000));
-                            }
-                        }
+                            return packetSystem.GetAproximatedResourceAmount() == 0;
+                        }, 5000));
                     }
                 }
             }

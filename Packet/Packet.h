@@ -9,7 +9,6 @@
 #include "PacketConfig.h"
 
 #include "Resource/PacketResource.h"
-#include "Resource/PacketResourceInstance.h"
 #include "Resource/PacketResourceFactory.h"
 #include "Resource/PacketResourceManager.h"
 #include "PacketSystem.h"
@@ -30,7 +29,6 @@ PacketNamespaceBegin(Packet)
 ////////////
 
 typedef __development__Packet::PacketResource				     Resource;
-typedef __development__Packet::PacketResourceInstance		     ResourceInstance;
 typedef __development__Packet::PacketResourceFactory		     ResourceFactory;
 typedef __development__Packet::PacketResourceExternalConstructor ResourceExternalConstructor;
 
@@ -44,11 +42,8 @@ typedef __development__Packet::PacketResourceData			     ResourceData;
 typedef __development__Packet::PacketResourceBuildInfo		     ResourceBuildInfo;
 typedef __development__Packet::ThreadIndexRetrieveMethod	     ThreadIndexRetrieveMethod;
 
-template <typename InstanceClass>
-using ResourceInstancePtr           = __development__Packet::PacketResourceInstancePtr<InstanceClass>;
-
 template <typename ResourceClass>
-using ResourceReferencePtr          = __development__Packet::PacketResourceReferencePtr<ResourceClass>;
+using ResourceReference          = __development__Packet::PacketResourceReference<ResourceClass>;
 
 template <typename ResourceClass>
 using EditableResourceReferencePtr  = __development__Packet::PacketEditableResourceReferencePtr<ResourceClass>;

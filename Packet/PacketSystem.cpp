@@ -74,12 +74,6 @@ bool PacketSystem::Initialize(OperationMode _operationMode, std::string _packetM
 	return true;
 }
 
-bool PacketSystem::WaitForInstance(const PacketResourceInstance* _instance,
-                                   long long _timeout) const
-{
-    return m_ResourceManager->WaitForInstance(_instance, _timeout);
-}
-
 std::vector<PacketResourceExternalConstructor> PacketSystem::GetResourceExternalConstructors()
 {
     return m_ResourceManager->GetResourceExternalConstructors();

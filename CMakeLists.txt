@@ -95,25 +95,43 @@ SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc")
 SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od")
 
 add_library(${PROJECT_NAME} STATIC
+  Packet/Packet.h
   Packet/PacketCondensedModeFileLoader.cpp
+  Packet/PacketCondensedModeFileLoader.h
   Packet/PacketCOndenser.cpp
+  Packet/PacketCOndenser.h
   Packet/PacketEditModeFileLoader.cpp
+  Packet/PacketEditModeFileLoader.h
   Packet/PacketReferenceManager.cpp
+  Packet/PacketReferenceManager.h
   Packet/PacketScanner.cpp
+  Packet/PacketScanner.h
   Packet/PacketSystem.cpp
+  Packet/PacketSystem.h
   Packet/Resource/PacketResource.cpp
+  Packet/Resource/PacketResource.h
   Packet/Resource/PacketResourceDeleter.cpp
+  Packet/Resource/PacketResourceDeleter.h
   Packet/Resource/PacketResourceFactory.cpp
+  Packet/Resource/PacketResourceFactory.h
   Packet/Resource/PacketResourceHolder.cpp
-  Packet/Resource/PacketResourceInstance.cpp
+  Packet/Resource/PacketResourceHolder.h
   Packet/Resource/PacketResourceLoader.cpp
+  Packet/Resource/PacketResourceLoader.h
   Packet/Resource/PacketResourceManager.cpp
+  Packet/Resource/PacketResourceManager.h
   Packet/Resource/PacketResourceStorage.cpp
+  Packet/Resource/PacketResourceStorage.h
   Packet/Resource/PacketResourceWatcher.cpp
+  Packet/Resource/PacketResourceWatcher.h
   Packet/ThirdParty/FileWatcher/FileWatcher.cpp
+  Packet/ThirdParty/FileWatcher/FileWatcher.h
   Packet/ThirdParty/FileWatcher/FileWatcherLinux.cpp
+  Packet/ThirdParty/FileWatcher/FileWatcherLinux.h
   Packet/ThirdParty/FileWatcher/FileWatcherOSX.cpp
-  Packet/ThirdParty/FileWatcher/FileWatcherWin32.cpp)
+  Packet/ThirdParty/FileWatcher/FileWatcherOSX.h
+  Packet/ThirdParty/FileWatcher/FileWatcherWin32.cpp
+  Packet/ThirdParty/FileWatcher/FileWatcherWin32.h)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER Packet/Packet.h)
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/Packet/ThirdParty/FileWatcher")
@@ -162,11 +180,9 @@ SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /O
 
 add_executable(${TEST_PROJECT_NAME} 
   Tests/TestsMain.cpp
-  Tests/TestsInstances.cpp
   Tests/TestsReferences.cpp
   Tests/TestsResourceReplace.cpp
   Tests/MyResource.cpp
-  Tests/MyInstance.cpp
   Tests/MyFactory.cpp)
 
 target_include_directories(${TEST_PROJECT_NAME} PUBLIC ${catch2_SOURCE_DIR}/single_include)

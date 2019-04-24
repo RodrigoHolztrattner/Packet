@@ -43,6 +43,8 @@ PacketDevelopmentNamespaceBegin(Packet)
 // TYPEDEFS //
 //////////////
 
+#define ThreadSleepTimeMS 3
+
 ////////////////
 // FORWARDING //
 ////////////////
@@ -55,9 +57,6 @@ class PacketReferenceManager;
 class PacketResourceFactory;
 class PacketResourceWatcher;
 class PacketSystem;
-
-template <typename InstanceClass>
-struct PacketResourceInstancePtr;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketResourceManager
@@ -89,8 +88,8 @@ public: //////////
 // MAIN METHODS //
 protected: ///////
 
-    template <typename ResourceInstance>
-    bool RequestResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+    template <typename ResourceClass>
+    bool RequestResource(PacketResourceReference<ResourceClass>& _resourceReference,
                          PacketResourceFactory* _factoryPtr, 
                          Hash _hash, 
                          bool _isPersistent,
@@ -110,38 +109,38 @@ protected: ///////
             return false;
         }
 
-        // Create a new resource instance object
-        std::unique_ptr<PacketResourceInstance> newInstance = _factoryPtr->RequestInstance(_hash, this);
+        // Get a proxy for this resource reference
+        auto resourceCreationProxy = GetResourceCreationProxy();
 
-        // Link the new instance with the instance ptr, takes ownership from the unique_ptr
-        _instancePtr.InstanceLink(std::move(newInstance));
+        // Register the creation proxy
+        _resourceReference.RegisterCreationProxy(resourceCreationProxy.get());
 
-        // Add this new instance to our evaluation queue
-        m_InstancesPendingEvaluation.enqueue({ _instancePtr.Get(), 
+        // Add this new creation data into our processing queue
+        m_ResourceCreateProxyQueue.enqueue({ std::move(resourceCreationProxy),
                                              _factoryPtr, 
                                              _resourceBuildInfo,
                                              _hash,
                                              _isPersistent,
                                              false, 
-                                             {} });
+                                             std::vector<uint8_t>() });
 
         return true;
     }
 
-    template <typename ResourceInstance>
-    void RequestRuntimeResource(PacketResourceInstancePtr<ResourceInstance>& _instancePtr,
+    template <typename ResourceClass>
+    void RequestRuntimeResource(PacketResourceReference<ResourceClass>& _resourceReference,
                                 PacketResourceFactory* _factoryPtr,
                                 PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo(),
                                 std::vector<uint8_t> _resourceData = {})
     {
-        // Create a new resource instance object
-        std::unique_ptr<PacketResourceInstance> newInstance = _factoryPtr->RequestInstance(Hash(), this);
+        // Get a proxy for this resource reference
+        auto resourceCreationProxy = GetResourceCreationProxy();
 
-        // Link the new instance with the instance ptr, takes ownership from the unique_ptr
-        _instancePtr.InstanceLink(std::move(newInstance));
+        // Register the creation proxy
+        _resourceReference.RegisterCreationProxy(resourceCreationProxy.get());
 
-        // Add this new instance to our evaluation queue
-        m_InstancesPendingEvaluation.enqueue({ _instancePtr.Get(),
+        // Add this new creation data into our processing queue
+        m_ResourceCreateProxyQueue.enqueue({ std::move(resourceCreationProxy),
                                              _factoryPtr, 
                                              _resourceBuildInfo,
                                              Hash(), 
@@ -150,16 +149,43 @@ protected: ///////
                                              std::move(_resourceData)});
     }
   
-    // This method will wait until the given instance is ready to be used
+    // This method will wait until the given resource is ready to be used
     // Optionally you can pass a timeout parameter in milliseconds
-    bool WaitForInstance(const PacketResourceInstance* _instance,
-                        long long _timeout = -1) const;
+    template <typename ResourceClass>
+    bool WaitForResource(const PacketResourceReference<ResourceClass>& _resourceReference,
+                         long long _timeout = -1) const
+    {
+        clock_t initialTime = clock();
+        clock_t currentTime = initialTime;
+        while (true)
+        {
+            if (_timeout != -1 &&
+                double(currentTime - initialTime) / CLOCKS_PER_SEC >= double(_timeout) / 1000)
+            {
+                return false;
+            }
+
+            if (_resourceReference)
+            {
+                return true;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(ThreadSleepTimeMS));
+
+            currentTime = clock();
+        }
+
+        return false;
+    }
 
     // This method will return a vector of resource external constructor object that must be constructed
     // by the user externally (since the resource requires it)
     std::vector<PacketResourceExternalConstructor> GetResourceExternalConstructors();
 
 protected:
+
+    // Return a valid usable resource creation proxy object
+    std::unique_ptr<PacketResourceCreationProxy> GetResourceCreationProxy();
 
     // This method return the approximated number of resources that are pending deletion
     uint32_t GetApproximatedNumberResourcesPendingDeletion();
@@ -171,14 +197,9 @@ protected:
 	// update phase. This method won't be called when on release or non edit builds
 	void OnResourceDataChanged(PacketResource* _resource);
 
-	// Release an resource instance, this method must be called only by a packet resource instance ptr when it is deleted without
-	// being moved to another variable using move semantics
-	void ReleaseInstanceOnUnlink(std::unique_ptr<PacketResourceInstance> _instance);
-
-	// This method must be called by a instance object that needs to be reconstructed, this method must be
-	// called when doing the update phase here on this class (doesn't need to be called necessarily inside
-	// this object but we must ensure we are doing an update)
-	void ReconstructInstance(PacketResourceInstance* _instance);
+	// Called directly by a resource when its reference count reaches zero, this will insert the resource
+    // into the deletion queue
+	void RegisterResourceForDeletion(PacketResource* _resourcePtr);
 
     // This method will register a resource to be modified after it reaches 0 indirect references
     // Only the resource should call this method
@@ -195,24 +216,23 @@ protected:
 private: //////
 
     typedef std::tuple<
-        PacketResourceInstance*,
+        std::unique_ptr<PacketResourceCreationProxy>,
         PacketResourceFactory*,
         PacketResourceBuildInfo,
         Hash,
         bool,
         bool,
         std::vector<uint8_t>>
-        InstanceEvaluationData;
-    
-    // Instance queues/vectors
-    moodycamel::ConcurrentQueue<InstanceEvaluationData>                  m_InstancesPendingEvaluation;
-    std::vector<PacketResourceInstance*>                                 m_InstancesPendingConstruction;
-    moodycamel::ConcurrentQueue<std::unique_ptr<PacketResourceInstance>> m_InstancesPendingReleaseEvaluation;
-    std::vector<std::unique_ptr<PacketResourceInstance>>                 m_InstancesPendingRelease;
+        ResourceCreationData;
 
+    // Proxy queues
+    moodycamel::ConcurrentQueue<ResourceCreationData>                         m_ResourceCreateProxyQueue;
+    moodycamel::ConcurrentQueue<std::unique_ptr<PacketResourceCreationProxy>> m_ResourceCreateProxyFreeQueue;
+   
     // Resource queues/vector
-    moodycamel::ConcurrentQueue<PacketResource*> m_ResourcesPendingExternalConstruction;
-    std::vector<std::unique_ptr<PacketResource>> m_ResourcesPendingDeletion;
+    moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingExternalConstruction;
+    moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingDeletionEvaluation;
+    std::vector<std::unique_ptr<PacketResource>>                             m_ResourcesPendingDeletion;
     std::vector<std::pair<std::unique_ptr<PacketResource>, PacketResource*>> m_ResourcesPendingReplacement;
     moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingModificationEvaluation;
     std::vector<PacketResource*>                                             m_ResourcesPendingModification;

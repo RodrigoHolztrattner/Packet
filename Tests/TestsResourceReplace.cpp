@@ -5,7 +5,6 @@
 
 #include "..\Packet\Packet.h"
 #include "MyResource.h"
-#include "MyInstance.h"
 #include "MyFactory.h"
 #include "HelperMethods.h"
 #include "HelperDefines.h"
@@ -24,44 +23,29 @@ SCENARIO("Resources can be replaced if their file content changes", "[replace]")
             std::string resourcePath = ResourceDirectory + "/dummy.txt";
             CreateResourceFile(resourcePath);
 
-            WHEN("An instance request that resource")
+            WHEN("An resource is requested")
             {
-                Packet::ResourceInstancePtr<MyInstance> resourceInstance;
+                Packet::ResourceReference<MyResource> resourceReference;
 
                 packetSystem.RequestResource<MyResource>(
-                    resourceInstance,
+                    resourceReference,
                     Packet::Hash(resourcePath));
-            
-                packetSystem.WaitForInstance(resourceInstance.Get(), MaximumTimeoutWaitMS);
 
-                THEN("The number of calls for the instance method must reflect the current usage")
-                {
-                    REQUIRE(resourceInstance->GetOnConstructTotalCalls() == 1);
-                    REQUIRE(resourceInstance->GetOnDependenciesFulfilledTotalCalls() == 1);
-                    REQUIRE(resourceInstance->GetOnDeleteTotalCalls() == 0);
-                }
+                packetSystem.WaitForResource(resourceReference, MaximumTimeoutWaitMS);
+
+                MyResource* internalResourcePtr = resourceReference.Get();
 
                 AND_WHEN("The resource file changes")
                 {
                     UpdateResourceFile(resourcePath);
 
-                    THEN("The number of calls for the instance method must reflect the current usage after some time")
+                    THEN("The reference resource must be updated to reference the new resource some time after")
                     {
                         REQUIRE(MustChangeToTrueUntilTimeout([&]()
                         {
-                            return resourceInstance->GetOnConstructTotalCalls() == 2;
-                        }, MaximumTimeoutWaitMS));
-
-                        REQUIRE(MustChangeToTrueUntilTimeout([&]()
-                        {
-                            return resourceInstance->GetOnDependenciesFulfilledTotalCalls() == 2;
-                        }, MaximumTimeoutWaitMS));
-
-                        REQUIRE(MustChangeToTrueUntilTimeout([&]()
-                        {
-                            return resourceInstance->GetOnDeleteTotalCalls() == 1;
-                        }, MaximumTimeoutWaitMS));
-                    } 
+                            return resourceReference.Get() != internalResourcePtr;
+                        }, 1000));
+                    }
                 }
             }
         }
