@@ -498,13 +498,14 @@ public:
 
     operator bool() const
     {
-        return Get() != nullptr;
+        return IsValid();
     }
 
     // Return if this is valid
-    bool IsValid()
+    bool IsValid() const
     {
-        return Get() != nullptr;
+        ResourceClass* resource = Get();
+        return resource != nullptr && resource->IsValid();
     }
 
     // Destructor
