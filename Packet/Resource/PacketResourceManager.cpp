@@ -282,7 +282,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         auto& [newResource, originalResource] = m_ResourcesPendingReplacement[i];
 
         // Check if both the original and the new resources are ready
-        if (originalResource->IsReady() && newResource->IsReady())
+        if (originalResource->IsValid() && newResource->IsValid())
         {
             // Update the resource watched
             m_ResourceWatcherPtr->UpdateWatchedResource(newResource.get());
@@ -384,7 +384,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         std::unique_ptr<PacketResource>& resourceUniquePtr = m_ResourcesPendingDeletion[i];
 
         // Verify is this resource is ready, if not we need to wait until it is totally evaluated
-        if (!resourceUniquePtr->IsReady())
+        if (!resourceUniquePtr->IsValid())
         {
             continue;
         }

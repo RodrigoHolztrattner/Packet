@@ -225,7 +225,7 @@ void PacketResource::BeginModifications()
     m_ResourceMutex.unlock();
 }
 
-bool PacketResource::IsReady() const
+bool PacketResource::IsValid() const
 {
 	return m_WasLoaded
         && m_WasConstructed
