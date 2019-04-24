@@ -345,22 +345,18 @@ class PacketResourceCreationProxy
 
 public:
 
-    PacketResourceCreationProxy() = default;
-
-    void UnlinkFromProxy();
+    // Forward a resource linkage, will be called asynchronously by the resource manager
     void ForwardResourceLink(PacketResource* _resource);
 
 protected:
 
+    // Called by a proxy interface when the resource manager is configuring a reference to be loaded/created
     void LinkWithProxyInterface(PacketResourceCreationProxyInterface* _proxyInterface);
 
 private:
 
     // The proxy interface ptr
     PacketResourceCreationProxyInterface* m_ProxyInterfacePtr = nullptr;
-
-    // Mutex to prevent any race when assigning the resource/destructing the reference
-    std::mutex m_Mutex;
 
     // If this proxy is linked with a proxy interface
     bool m_IsLinkedWithReference = false;
@@ -370,37 +366,20 @@ class PacketResourceCreationProxyInterface
 {
     friend PacketResourceCreationProxy;
 
-public:
-
-    PacketResourceCreationProxyInterface() = default;
-    ~PacketResourceCreationProxyInterface();
-
-    // Copy constructor
-    PacketResourceCreationProxyInterface(const PacketResourceCreationProxyInterface& _other);
-
-    // Assignment operator
-    PacketResourceCreationProxyInterface& operator=(const PacketResourceCreationProxyInterface& _other);
-
-    // Move assignment operator
-    PacketResourceCreationProxyInterface& operator=(PacketResourceCreationProxyInterface&& _other);
-
-    // Our move copy operator
-    PacketResourceCreationProxyInterface(PacketResourceCreationProxyInterface&& _other);
-
 protected:
 
     // Set the internal objects
     void SetProxyAndResource(PacketResourceCreationProxy* _creationProxy, PacketResource** _resourceVariable);
 
-    // Forward a resource linkage from the proxy
+    // Forward a resource linkage from the proxy, will be called asynchronously by the proxy object
     void ForwardResourceLink(PacketResource* _resource);
 
-private:
+protected:
 
-    // The creation proxy
+    // The creation proxy linked
     PacketResourceCreationProxy* m_CreationProxy = nullptr;
 
-    // The resource variable that needs to be assigned
+    // The resource variable that needs to be assigned, a pointer to the resource pointer of the upper reference class
     PacketResource** m_PendingResourceVariable = nullptr;
 };
 
@@ -418,7 +397,7 @@ protected:
     // Register a creation proxy, only callable from the resource manager
     void RegisterCreationProxy(PacketResourceCreationProxy* _creationProxy)
     {
-        SetProxyAndResource(_creationProxy, reinterpret_cast<PacketResource**>(&m_ResourceObject));
+        SetProxyAndResource(_creationProxy, &m_ResourceObject);
     }
 
 public:
@@ -430,8 +409,10 @@ public:
     }
 
     // Copy constructor
-    PacketResourceReference(const PacketResourceReference& _other) : PacketResourceCreationProxyInterface(_other)
+    PacketResourceReference(const PacketResourceReference& _other)
     {
+        m_CreationProxy = nullptr;
+        m_PendingResourceVariable = nullptr;
         m_ResourceObject = _other.m_ResourceObject;
         if (m_ResourceObject != nullptr)
         {
@@ -442,6 +423,8 @@ public:
     // Assignment operator
     PacketResourceReference& operator=(const PacketResourceReference& _other)
     {
+        m_CreationProxy = nullptr;
+        m_PendingResourceVariable = nullptr;
         m_ResourceObject = _other.m_ResourceObject;
         if (m_ResourceObject != nullptr)
         {
@@ -453,18 +436,24 @@ public:
     PacketResourceReference& operator=(PacketResourceReference&& _other)
     {
         m_ResourceObject = std::move(_other.m_ResourceObject);
+        m_CreationProxy = std::move(_other.m_CreationProxy);
+        m_PendingResourceVariable = std::move(_other.m_PendingResourceVariable);
         _other.m_ResourceObject = nullptr;
-
-        PacketResourceCreationProxyInterface::operator=(std::move(_other));
+        _other.m_CreationProxy = nullptr;
+        _other.m_PendingResourceVariable = nullptr;
 
         return *this;
     }
 
     // Our move copy operator
-    PacketResourceReference(PacketResourceReference&& _other) noexcept : PacketResourceCreationProxyInterface(std::move(_other))
+    PacketResourceReference(PacketResourceReference&& _other)
     {
+        m_CreationProxy = std::move(_other.m_CreationProxy);
+        m_PendingResourceVariable = std::move(_other.m_PendingResourceVariable);
         m_ResourceObject = std::move(_other.m_ResourceObject);
         _other.m_ResourceObject = nullptr;
+        _other.m_CreationProxy = nullptr;
+        _other.m_PendingResourceVariable = nullptr;
     }
 
     // Reset this pointer, unlinking it
@@ -500,11 +489,11 @@ public:
                 m_ResourceObject->DecrementNumberReferences();
 
                 // Set our new resource object
-                m_ResourceObject = static_cast<ResourceClass*>(replacingResource.value());
+                m_ResourceObject = replacingResource.value();
             }
         }
 
-        return m_ResourceObject;
+        return static_cast<ResourceClass*>(m_ResourceObject);
     }
 
     operator bool() const
@@ -521,6 +510,13 @@ public:
     // Destructor
     virtual ~PacketResourceReference()
     {
+        // Wait until the proxy update our information, we cannot release this reference too fast
+        // if the resource asynchronous processment thread was unable to reach us yet
+        while (m_CreationProxy != nullptr)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
         // If the resource object is valid
         if (m_ResourceObject != nullptr)
         {
@@ -532,7 +528,7 @@ public:
 protected:
 
     // The resource object
-    mutable ResourceClass* m_ResourceObject = nullptr;
+    mutable PacketResource* m_ResourceObject = nullptr;
 };
 
 // The temporary editable resource reference type

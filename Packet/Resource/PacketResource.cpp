@@ -506,7 +506,6 @@ std::optional<PacketResource*> PacketResource::GetReplacingResource() const
 
 void PacketResourceCreationProxy::LinkWithProxyInterface(PacketResourceCreationProxyInterface* _proxyInterface)
 {
-    std::lock_guard<std::mutex> l(m_Mutex);
     assert(m_ProxyInterfacePtr == nullptr);
     assert(m_IsLinkedWithReference == false);
 
@@ -514,20 +513,8 @@ void PacketResourceCreationProxy::LinkWithProxyInterface(PacketResourceCreationP
     m_IsLinkedWithReference = true;
 }
 
-void PacketResourceCreationProxy::UnlinkFromProxy()
-{
-    std::lock_guard<std::mutex> l(m_Mutex);
-    assert(m_ProxyInterfacePtr != nullptr);
-    assert(m_IsLinkedWithReference == true);
-
-    m_IsLinkedWithReference = false;
-    m_ProxyInterfacePtr = nullptr;
-}
-
 void PacketResourceCreationProxy::ForwardResourceLink(PacketResource * _resource)
 {
-    std::lock_guard<std::mutex> l(m_Mutex);
-
     if (m_IsLinkedWithReference)
     {
         m_ProxyInterfacePtr->ForwardResourceLink(_resource);
@@ -545,46 +532,6 @@ void PacketResourceCreationProxy::ForwardResourceLink(PacketResource * _resource
 // PacketResourceCreationProxyInterface //
 //////////////////////////////////////////
 
-PacketResourceCreationProxyInterface::~PacketResourceCreationProxyInterface()
-{
-    if (m_CreationProxy != nullptr)
-    {
-        m_CreationProxy->UnlinkFromProxy();
-    }
-}
-
-PacketResourceCreationProxyInterface::PacketResourceCreationProxyInterface(const PacketResourceCreationProxyInterface& _other)
-{
-    m_CreationProxy = nullptr;
-    m_PendingResourceVariable = nullptr;
-};
-
-PacketResourceCreationProxyInterface& PacketResourceCreationProxyInterface::operator=(const PacketResourceCreationProxyInterface& _other)
-{
-    m_CreationProxy = nullptr;
-    m_PendingResourceVariable = nullptr;
-
-    return *this;
-};
-
-PacketResourceCreationProxyInterface& PacketResourceCreationProxyInterface::operator=(PacketResourceCreationProxyInterface&& _other)
-{
-    m_CreationProxy = std::move(_other.m_CreationProxy);
-    m_PendingResourceVariable = std::move(_other.m_PendingResourceVariable);
-    _other.m_CreationProxy = nullptr;
-    _other.m_PendingResourceVariable = nullptr;
-
-    return *this;
-}
-
-PacketResourceCreationProxyInterface::PacketResourceCreationProxyInterface(PacketResourceCreationProxyInterface&& _other)
-{
-    m_CreationProxy = std::move(_other.m_CreationProxy);
-    m_PendingResourceVariable = std::move(_other.m_PendingResourceVariable);
-    _other.m_CreationProxy = nullptr;
-    _other.m_PendingResourceVariable = nullptr;
-}
-
 void PacketResourceCreationProxyInterface::SetProxyAndResource(PacketResourceCreationProxy* _creationProxy, PacketResource** _resourceVariable)
 {
     m_CreationProxy = _creationProxy;
@@ -595,11 +542,12 @@ void PacketResourceCreationProxyInterface::SetProxyAndResource(PacketResourceCre
 
 void PacketResourceCreationProxyInterface::ForwardResourceLink(PacketResource* _resource)
 {
-    m_CreationProxy = nullptr;
     *m_PendingResourceVariable = _resource;
 
     // Increment the resource ref count
     _resource->IncrementNumberReferences();
+
+    m_CreationProxy = nullptr;
 }
 
 ///////////////////////////////////////
