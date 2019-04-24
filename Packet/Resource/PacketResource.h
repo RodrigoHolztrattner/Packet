@@ -430,6 +430,8 @@ public:
         {
             m_ResourceObject->IncrementNumberReferences();
         }
+
+        return *this;
     };
 
     // Move assignment operator
@@ -504,6 +506,11 @@ public:
     // Return if this is valid
     bool IsValid() const
     {
+        /*
+            If you are having compiler errors here, make sure that:
+            - You are including all necessary resources when verifying if a resource instance is valid
+            - You are overriding the 'IsValid()' method and it's set to be public
+        */
         ResourceClass* resource = Get();
         return resource != nullptr && resource->IsValid();
     }
