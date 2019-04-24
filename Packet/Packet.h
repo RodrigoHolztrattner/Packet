@@ -46,7 +46,7 @@ template <typename ResourceClass>
 using ResourceReference          = __development__Packet::PacketResourceReference<ResourceClass>;
 
 template <typename ResourceClass>
-using EditableResourceReferencePtr  = __development__Packet::PacketEditableResourceReferencePtr<ResourceClass>;
+using EditableResourceReference  = __development__Packet::PacketEditableResourceReference<ResourceClass>;
 
 // Packet
 PacketNamespaceEnd(Packet)

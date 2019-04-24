@@ -533,12 +533,12 @@ protected:
 
 // The temporary editable resource reference type
 template <typename ResourceClass>
-class PacketEditableResourceReferencePtr : public PacketResourceReference<ResourceClass>
+class PacketEditableResourceReference : public PacketResourceReference<ResourceClass>
 {
 protected:
 
     // Constructor used by the instance class
-    PacketEditableResourceReferencePtr(PacketResourceInstance* _instance, 
+    PacketEditableResourceReference(PacketResourceInstance* _instance, 
                                        ResourceClass* _resource)
         : PacketResourceReference<ResourceClass>(_resource)
     {
@@ -548,7 +548,7 @@ protected:
 public:
 
     // Default constructor
-    PacketEditableResourceReferencePtr() 
+    PacketEditableResourceReference() 
         : PacketResourceReference<ResourceClass>() {}
 };
 
