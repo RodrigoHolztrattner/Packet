@@ -239,7 +239,7 @@ public: // STATUS //
 ////////////////////
 
 	// Return the status of this resource
-	bool IsReady()                   const;
+	virtual bool IsReady()           const;
 	bool IsPendingDeletion()         const;
 	bool IsReferenced()              const;
 	bool IsPermanent()               const;
