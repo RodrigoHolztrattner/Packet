@@ -493,7 +493,7 @@ public:
             }
         }
 
-        return static_cast<ResourceClass*>(m_ResourceObject);
+        return reinterpret_cast<ResourceClass*>(m_ResourceObject);
     }
 
     operator bool() const
