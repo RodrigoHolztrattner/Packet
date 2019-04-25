@@ -10,19 +10,19 @@
 // Using namespace Peasant
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketResourceManager::PacketResourceManager(OperationMode _operationMode, 
-	PacketResourceStorage* _storagePtr,
-	PacketFileLoader* _fileLoaderPtr, 
-	PacketReferenceManager* _referenceManagerPtr, 
-	PacketResourceWatcher* _resourceWatcherPtr, 
-	PacketLogger* _loggerPtr) :
-	m_OperationMode(_operationMode), 
-	m_ResourceStoragePtr(_storagePtr),
-	m_FileLoaderPtr(_fileLoaderPtr), 
-	m_ReferenceManagerPtr(_referenceManagerPtr),
-	m_ResourceLoader(_fileLoaderPtr, _referenceManagerPtr, this, _loggerPtr, _operationMode),
-	m_ResourceWatcherPtr(_resourceWatcherPtr), 
-	m_Logger(_loggerPtr)
+PacketResourceManager::PacketResourceManager(OperationMode _operationMode,
+                                             PacketResourceStorage* _storagePtr,
+                                             PacketFileLoader* _fileLoaderPtr,
+                                             PacketReferenceManager* _referenceManagerPtr,
+                                             PacketResourceWatcher* _resourceWatcherPtr,
+                                             PacketLogger* _loggerPtr) :
+    m_OperationMode(_operationMode),
+    m_ResourceStoragePtr(_storagePtr),
+    m_FileLoaderPtr(_fileLoaderPtr),
+    m_ReferenceManagerPtr(_referenceManagerPtr),
+    m_ResourceLoader(_fileLoaderPtr, _referenceManagerPtr, this, _loggerPtr, _operationMode),
+    m_ResourceWatcherPtr(_resourceWatcherPtr),
+    m_Logger(_loggerPtr)
 {
     if (m_OperationMode == OperationMode::Edit)
     {
@@ -70,7 +70,7 @@ PacketResourceManager::~PacketResourceManager()
     {
         for (auto& replacementInfo : m_ResourcesPendingReplacement)
         {
-            auto&[newResourceUniquePtr, originalResource] = replacementInfo;
+            auto& [newResourceUniquePtr, originalResource] = replacementInfo;
 
             // Get the original resource ownership
             auto originalResourceUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(originalResource);
@@ -95,18 +95,15 @@ PacketResourceManager::~PacketResourceManager()
 
     // Resources pending construction
     {
-        // Sorry but we are closed today
+        // Sorry but we are closed today, do nothing with these requests since
+        // all references should be already released by now and their respective
+        // resources should already be on the deletion vector
         PacketResource* resource;
         while (m_ResourcesPendingExternalConstruction.try_dequeue(resource))
         {
-            // Get the original resource ownership
-            auto resourceUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resource);
-
-            // Set it to be destroyed right below
-            m_ResourcesPendingDeletion.push_back(std::move(resourceUniquePtr));
-        } 
+        }
     }
-    
+
     // Resources pending modifications
     {
         // We don't need to do anything about this pointer
@@ -127,53 +124,89 @@ PacketResourceManager::~PacketResourceManager()
         }
     }
 
-    // Gather all resources on the deletion evaluation queue and move to the deletion vector
-    while (true)
+    ///////////////////////
+    // RESOURCE DELETION //
+    ///////////////////////
+
+    // Since resources could have references to another resources and we will only release these references if the
+    // first one is destroyed, we must keep checking if there is a new resource on the m_ResourcesPendingDeletionEvaluation
+    // queue because that is the location new resources are going to be put in the above happens
+    bool resourceDeletionIsStable = true;
+    do
     {
-        PacketResource* resourcePtr;
-        if (!m_ResourcesPendingDeletionEvaluation.try_dequeue(resourcePtr))
+        // Reset the do-while check variable
+        resourceDeletionIsStable = true;
+
+        // Gather all resources on the deletion evaluation queue and move to the deletion vector
+        while (true)
         {
-            break;
+            PacketResource* resourcePtr;
+            if (!m_ResourcesPendingDeletionEvaluation.try_dequeue(resourcePtr))
+            {
+                break;
+            }
+
+            // Remove this object from the storage, taking its ownership back
+            std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resourcePtr);
+            if (objectUniquePtr == nullptr)
+            {
+                // This resource was already set to be deleted, this happened because it was a permanent resource that
+                // another resource had a dependency on, all permanent resource were moved to the m_ResourcesPendingDeletion
+                // vector (so their ownership was already taken) but the resource couldn't be deleted because its parent
+                // still had a reference to it, after looping a few times the parent finally released this resource and
+                // it was added to this queue (m_ResourcesPendingDeletionEvaluation) but its unique_ptr is already on the
+                // m_ResourcesPendingDeletion vector waiting to be destroyed, we don't need to do anything
+                continue;
+            }
+
+            // Move this resource to our deletion vector
+            m_ResourcesPendingDeletion.push_back(std::move(objectUniquePtr));
         }
 
-        // Remove this object from the storage, taking its ownership back
-        std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resourcePtr);
-
-        // Move this resource to our deletion vector
-        m_ResourcesPendingDeletion.push_back(std::move(objectUniquePtr));
-    }
-
-    // Resources pending deletion
-    {
-        // Just normally delete these resources
-        for (auto& resource : m_ResourcesPendingDeletion)
+        // Resources pending deletion
         {
-            // This resource can't be referenced, if it has references this means that some instance or resource 
-            // reference is still active when the packet system was set to shutdown, the correct behavior is
-            // to release/destroy every other object before releasing the main system
-            assert(!resource->IsReferenced() && "Packet resource system is being deleted but some resources are \
- still active (they have instances and/or resource references), this will probably lead into exceptions!");
+            // For each resource pending deletion
+            for (int i = static_cast<int>(m_ResourcesPendingDeletion.size() - 1); i >= 0; i--)
+            {
+                // Get the resource ptr
+                std::unique_ptr<PacketResource>& resource = m_ResourcesPendingDeletion[i];
 
-            // Remove this resource watch (not enabled on release and non-edit builds)
-            m_ResourceWatcherPtr->RemoveWatch(resource.get());
+                // If this resource is referenced it's because it was a permanent resource and some other resource
+                // had a dependency on it, since we moved all permanent resource into the m_ResourcesPendingDeletion
+                // vector its owner (the parent resource) is also inside this vector. We should ignore the resource
+                // for now until it's parent is deleted and it is finally possible to delete it
+                if (resource->IsReferenced())
+                {
+                    continue;
+                }
 
-            // Set pending deletion for this resource
-            resource->SetPendingDeletion();
+                // Remove this resource watch (not enabled on release and non-edit builds)
+                m_ResourceWatcherPtr->RemoveWatch(resource.get());
 
-            // Add this object into the deletion queue, takes ownership
-            m_ResourceDeleter.DeleteObject(std::move(resource), resource->GetFactoryPtr());
+                // Set pending deletion for this resource
+                resource->SetPendingDeletion();
+
+                // Add this object into the deletion queue, takes ownership
+                m_ResourceDeleter.DeleteObject(std::move(resource), resource->GetFactoryPtr());
+
+                // Set that we deleted some resources
+                resourceDeletionIsStable = false;
+
+                // Remove the resource from this queue
+                m_ResourcesPendingDeletion.erase(m_ResourcesPendingDeletion.begin() + i);
+            }
         }
 
-        m_ResourcesPendingDeletion.clear();
-    }
+        // Keep looping until there are no more deletions available
+    } while (!resourceDeletionIsStable);
 
-    assert(m_ResourceCreateProxyQueue.size_approx()               == 0);
-    assert(m_ResourcesPendingExternalConstruction.size_approx()   == 0);
-    assert(m_ResourcesPendingDeletionEvaluation.size_approx()     == 0);
-    assert(m_ResourcesPendingDeletion.size()                      == 0);
-    assert(m_ResourcesPendingReplacement.size()                   == 0);
+    assert(m_ResourceCreateProxyQueue.size_approx() == 0);
+    assert(m_ResourcesPendingExternalConstruction.size_approx() == 0);
+    assert(m_ResourcesPendingDeletionEvaluation.size_approx() == 0);
+    assert(m_ResourcesPendingDeletion.size() == 0);
+    assert(m_ResourcesPendingReplacement.size() == 0);
     assert(m_ResourcesPendingModificationEvaluation.size_approx() == 0);
-    assert(m_ResourcesPendingModification.size()                  == 0);
+    assert(m_ResourcesPendingModification.size() == 0);
 }
 
 
@@ -190,7 +223,7 @@ std::vector<PacketResourceExternalConstructor> PacketResourceManager::GetResourc
     return std::move(outConstructors);
 }
 
-void PacketResourceManager::RegisterResourceForDeletion(PacketResource* _resourcePtr)
+void PacketResourceManager::RegisterResourceForDeletion(PacketResource * _resourcePtr)
 {
     // If this is a permanent resource, do not register it
     if (!_resourcePtr->IsPermanent())
@@ -236,7 +269,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         }
 
         // Get the info
-        auto&[creationProxy, factory, buildInfo, hash, isPermanent, isRuntime, resourceData] = resourceCreationData;
+        auto& [creationProxy, factory, buildInfo, hash, isPermanent, isRuntime, resourceData] = resourceCreationData;
 
         // Check if we need to create and load this resource
         PacketResource* resource = m_ResourceStoragePtr->FindObject(hash, buildInfo.buildFlags, isRuntime);
@@ -379,6 +412,12 @@ void PacketResourceManager::AsynchronousResourceProcessment()
 
         // Remove this object from the storage, taking its ownership back
         std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resourcePtr);
+        if (objectUniquePtr == nullptr)
+        {
+            // This resource was already set to be deleted, there are expected occasions (like the one mentioned
+            // on the IsReferenced() check above) that will make a resource be released multiple times
+            continue;
+        }
 
         // Remove this resource watch (not enabled on release and non-edit builds)
         m_ResourceWatcherPtr->RemoveWatch(objectUniquePtr.get());
@@ -430,17 +469,17 @@ void PacketResourceManager::AsynchronousResourceProcessment()
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
-void PacketResourceManager::RegisterResourceForModifications(PacketResource* _resource)
+void PacketResourceManager::RegisterResourceForModifications(PacketResource * _resource)
 {
     m_ResourcesPendingModificationEvaluation.enqueue(_resource);
 }
 
-void PacketResourceManager::RegisterResourceForExternalConstruction(PacketResource* _resource)
+void PacketResourceManager::RegisterResourceForExternalConstruction(PacketResource * _resource)
 {
     m_ResourcesPendingExternalConstruction.enqueue(_resource);
 }
 
-void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
+void PacketResourceManager::OnResourceDataChanged(PacketResource * _resource)
 {
     // Disabled on non edit builds
     if (m_OperationMode != OperationMode::Edit)
@@ -448,27 +487,27 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
         return;
     }
 
-	// Check if this resource ignore physical data changes
-	if (_resource->IgnorePhysicalDataChanges())
-	{
-		return;
-	}
+    // Check if this resource ignore physical data changes
+    if (_resource->IgnorePhysicalDataChanges())
+    {
+        return;
+    }
 
-	// Check if this resource is pending deletion
-	if (_resource->IsPendingDeletion() || !_resource->IsReferenced())
-	{
-		// We can't proceed with this resource on its current status
-		m_Logger->LogWarning(std::string("Found file modification event on file: \"")
-			.append(_resource->GetHash().GetPath().String())
-			.append("\", but the resource is pending deletion, ignoring this!")
-			.c_str());
+    // Check if this resource is pending deletion
+    if (_resource->IsPendingDeletion() || !_resource->IsReferenced())
+    {
+        // We can't proceed with this resource on its current status
+        m_Logger->LogWarning(std::string("Found file modification event on file: \"")
+                             .append(_resource->GetHash().GetPath().String())
+                             .append("\", but the resource is pending deletion, ignoring this!")
+                             .c_str());
 
-		return;
-	}
+        return;
+    }
 
-	// Check if we already have this resource inside the replace queue (this shouldn't be slow because 
-	// we aren't supposed to have multiple resources here)
-	// Check
+    // Check if we already have this resource inside the replace queue (this shouldn't be slow because 
+    // we aren't supposed to have multiple resources here)
+    // Check
     for (auto& replaceInfo : m_ResourcesPendingReplacement)
     {
         if (replaceInfo.second->GetHash() == _resource->GetHash())
@@ -483,21 +522,21 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
         }
     }
 
-	// Also check the deletion queue
-	for (auto& deletionRequest : m_ResourcesPendingDeletion)
-	{
-		// Compare the hashes
-		if (deletionRequest->GetHash() == _resource->GetHash())
-		{
-			// There is no need to set it again, duplicated call
-			m_Logger->LogWarning(std::string("Found file modification event on file: \"")
-				.append(_resource->GetHash().GetPath().String())
-				.append("\" but resource is being deleted, ignoring it!")
-				.c_str());
+    // Also check the deletion queue
+    for (auto& deletionRequest : m_ResourcesPendingDeletion)
+    {
+        // Compare the hashes
+        if (deletionRequest->GetHash() == _resource->GetHash())
+        {
+            // There is no need to set it again, duplicated call
+            m_Logger->LogWarning(std::string("Found file modification event on file: \"")
+                                 .append(_resource->GetHash().GetPath().String())
+                                 .append("\" but resource is being deleted, ignoring it!")
+                                 .c_str());
 
-			return;
-		}
-	}
+            return;
+        }
+    }
 
     // Check if the old resource already have a replacing resource
     if (_resource->GetReplacingResource())
@@ -529,10 +568,10 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     }
 
     // Load this resource
-    auto resourceUniquePtr = m_ResourceLoader.LoadObject(_resource->GetFactoryPtr(), 
+    auto resourceUniquePtr = m_ResourceLoader.LoadObject(_resource->GetFactoryPtr(),
                                                          _resource->GetHash(),
                                                          _resource->GetBuildInfo(),
-                                                         _resource->IsPermanent(), 
+                                                         _resource->IsPermanent(),
                                                          false,
                                                          {});
 
@@ -545,12 +584,12 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     {
         m_ResourcesPendingExternalConstruction.enqueue(resourceUniquePtr.get());
     }
-    else if(!resourceUniquePtr->ConstructionFailed())
+    else if (!resourceUniquePtr->ConstructionFailed())
     {
         // If this resource doesn't need external construct, call it here to set the internal flags
         resourceUniquePtr->BeginExternalConstruct(nullptr);
     }
-    
-	// Move the resource into the replace queue
+
+    // Move the resource into the replace queue
     m_ResourcesPendingReplacement.push_back({ std::move(resourceUniquePtr), _resource });
 }
