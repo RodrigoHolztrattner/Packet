@@ -504,50 +504,24 @@ std::optional<PacketResource*> PacketResource::GetReplacingResource() const
 // PacketResourceCreationProxy //
 /////////////////////////////////
 
-void PacketResourceCreationProxy::LinkWithProxyInterface(PacketResourceCreationProxyInterface* _proxyInterface)
+void PacketResourceCreationProxy::ForwardResourceLink(PacketResource* _resource)
 {
-    assert(m_ProxyInterfacePtr == nullptr);
-    assert(m_IsLinkedWithReference == false);
+    std::lock_guard<std::mutex> l(m_Mutex);
 
-    m_ProxyInterfacePtr = _proxyInterface;
-    m_IsLinkedWithReference = true;
-}
+    // Increment the number of references for this resource
+    _resource->IncrementNumberReferences();
 
-void PacketResourceCreationProxy::ForwardResourceLink(PacketResource * _resource)
-{
-    if (m_IsLinkedWithReference)
+    // If we have a valid ptr to the resource reference internal resource, update it
+    if (m_ResourceReferenceVariable != nullptr)
     {
-        m_ProxyInterfacePtr->ForwardResourceLink(_resource);
-        m_ProxyInterfacePtr = nullptr;
-        m_IsLinkedWithReference = false;
+        *m_ResourceReferenceVariable = _resource;
+        m_ResourceReferenceVariable = nullptr;
     }
     else
     {
-        // Decrement the resource ref count
+        // Decrement the number of references for the resource since it won't be used
         _resource->DecrementNumberReferences();
     }
-}
-
-//////////////////////////////////////////
-// PacketResourceCreationProxyInterface //
-//////////////////////////////////////////
-
-void PacketResourceCreationProxyInterface::SetProxyAndResource(PacketResourceCreationProxy* _creationProxy, PacketResource** _resourceVariable)
-{
-    m_CreationProxy = _creationProxy;
-    m_CreationProxy->LinkWithProxyInterface(this);
-
-    m_PendingResourceVariable = _resourceVariable;
-}
-
-void PacketResourceCreationProxyInterface::ForwardResourceLink(PacketResource* _resource)
-{
-    *m_PendingResourceVariable = _resource;
-
-    // Increment the resource ref count
-    _resource->IncrementNumberReferences();
-
-    m_CreationProxy = nullptr;
 }
 
 ///////////////////////////////////////

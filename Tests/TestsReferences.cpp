@@ -11,7 +11,7 @@
 
 Packet::ResourceReference<MyResource> DummyMethod(Packet::ResourceReference<MyResource> _reference)
 {
-    return _reference;
+    return std::move(_reference);
 }
 
 SCENARIO("Resource references can be be used to access resources", "[reference]")
@@ -36,27 +36,30 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
                     resourceReference,
                     Packet::Hash(resourcePath));
 
-                packetSystem.WaitForResource(resourceReference);
-
-                AND_WHEN("A new resource reference is created from the old one")
+                AND_WHEN("We wait until the resource reference is valid")
                 {
-                    Packet::ResourceReference<MyResource> newResourceReference = resourceReference;
+                    packetSystem.WaitForResource(resourceReference);
 
-                    THEN("The reference is valid")
+                    AND_WHEN("A new resource reference is created from the old one")
                     {
-                        REQUIRE(newResourceReference.IsValid() == true);
-                    }
+                        Packet::ResourceReference<MyResource> newResourceReference = resourceReference;
 
-                    AND_WHEN("The initial reference is reseted")
-                    {
-                        resourceReference.Reset();
-
-                        THEN("The number of resources inside the packet system will be kept at 1 since there is an active reference")
+                        THEN("The reference is valid")
                         {
-                            REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
+                            REQUIRE(newResourceReference.IsValid() == true);
+                        }
+
+                        AND_WHEN("The initial reference is reseted")
+                        {
+                            resourceReference.Reset();
+
+                            THEN("The number of resources inside the packet system will be kept at 1 since there is an active reference")
                             {
-                                return packetSystem.GetAproximatedResourceAmount() == 1;
-                            }, 1000));
+                                REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
+                                                                         {
+                                                                             return packetSystem.GetAproximatedResourceAmount() == 1;
+                                                                         }, 1000));
+                            }
                         }
                     }
                 }
@@ -65,28 +68,35 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
                 {
                     Packet::ResourceReference<MyResource> otherResourceReference = std::move(resourceReference);
 
-                    THEN("The old reference must not be valid")
+                    AND_WHEN("We wait this new reference variable to be valid")
                     {
-                        REQUIRE(resourceReference.IsValid() == false);
-                    }
+                        packetSystem.WaitForResource(otherResourceReference);
 
-                    AND_THEN("The other reference must be valid")
-                    {
-                        REQUIRE(otherResourceReference.IsValid() == true);
-                    }
-
-                    AND_THEN("The number of resources inside the packet system will be kept at 1 since there is an active reference")
-                    {
-                        REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
+                        THEN("The old reference must not be valid")
                         {
-                            return packetSystem.GetAproximatedResourceAmount() == 1;
-                        }, 1000));
-                    }
+                            REQUIRE(resourceReference.IsValid() == false);
+                        }
+
+                        AND_THEN("The other reference must be valid")
+                        {
+                            REQUIRE(otherResourceReference.IsValid() == true);
+                        }
+
+                        AND_THEN("The number of resources inside the packet system will be kept at 1 since there is an active reference")
+                        {
+                            REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
+                                                                     {
+                                                                         return packetSystem.GetAproximatedResourceAmount() == 1;
+                                                                     }, 1000));
+                        }
+                    }   
                 }
 
-                AND_WHEN("The resource is passed to another function and captured back")
+                AND_WHEN("The resource is passed to another function and captured back and also waited on")
                 {
                     Packet::ResourceReference<MyResource> returnedResourceReference = DummyMethod(std::move(resourceReference));
+
+                    packetSystem.WaitForResource(returnedResourceReference);
 
                     THEN("The old reference must not be valid")
                     {

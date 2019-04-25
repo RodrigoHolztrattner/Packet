@@ -367,6 +367,16 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             break;
         }
 
+        // Check if this resource didn't acquire any reference after it was set to be released, this
+        // could happened if two references requested it, it was created and for some reason the first
+        // reference was released before acquiring a reference to it, that would cause the resource to
+        // be enqueued to deletion even if the second reference wanna use it
+        if (resourcePtr->IsReferenced())
+        {
+            // Just ignore this resource
+            continue;
+        }
+
         // Remove this object from the storage, taking its ownership back
         std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resourcePtr);
 
