@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <functional>
 #include <iostream>
+#include <nlohmann/json.hpp>
 
 /////////////
 // DEFINES //
@@ -33,8 +34,15 @@ PacketDevelopmentNamespaceBegin(Packet)
 // DEFINES / ENUMS //
 /////////////////////
 
-// The maximum file path name
-static const int FilePathSize					= 128;
+// The maximum file path name size (including the null terminated char, max length 119)
+static const int FilePathSize					= 120;
+
+// The maximum file type name size
+static const int FileTypeSize                   = 32;
+
+// The icon image length and total size
+static const int IconLengthSize                 = 64;
+static const int IconTotalSize                  = IconLengthSize * IconLengthSize * 4;
 
 // The maximum package file size and the maximum number of files inside each package
 static const uint64_t MaximumPackageSize		= 536870912;
@@ -239,26 +247,29 @@ struct PacketResourceBuildInfo
 };
 
 // The path type
-struct Path
+template <uint32_t TotalSize>
+struct FixedSizeString
 {
-	Path() {}
-	Path(char* _str)
+    FixedSizeString() {}
+    FixedSizeString(char* _str)
 	{
-		strcpy_s(m_PathString, _str);
-	}
-	Path(std::string& _str)
+        std::string temp(_str);
+        std::copy(temp.begin(), temp.end(), m_PathString.data());
+    }
+    FixedSizeString(std::string& _str)
 	{
-		strcpy_s(m_PathString, _str.c_str());
-	}
+        std::copy(_str.begin(), _str.end(), m_PathString.data());
+    }
 	
-	Path& operator =(const char* _str)
+    FixedSizeString& operator =(const char* _str)
 	{
-		strcpy_s(m_PathString, _str);
-		return *this;
+        std::string temp(_str);
+        std::copy(temp.begin(), temp.end(), m_PathString.data());
+        return *this;
 	}
-	Path& operator =(const std::string _str) 
+    FixedSizeString& operator =(const std::string _str)
 	{
-		strcpy_s(m_PathString, _str.c_str());
+        std::copy(_str.begin(), _str.end(), m_PathString.data());
 		return *this;
 	}
 
@@ -272,7 +283,7 @@ struct Path
 		return m_PathString;
 	}
 
-	friend std::ostream& operator<< (std::ostream& _stream, const Path& _path) 
+	friend std::ostream& operator<< (std::ostream& _stream, const FixedSizeString& _path)
 	{
 		return _stream << _path.m_PathString;
 	}
@@ -282,13 +293,52 @@ struct Path
 		return strcmp(_str, m_PathString) == 0;
 	}
 
+    const std::array<char, TotalSize>& GetRaw() const
+    {
+        return m_PathString;
+    }
+
+    std::array<char, TotalSize>& GetRaw()
+    {
+        return m_PathString;
+    }
+
 private:
 
-	char m_PathString[FilePathSize];
+	std::array<char, TotalSize> m_PathString;
 };
 
+namespace ns {
+    template <uint32_t TotalSize>
+    void to_json(nlohmann::json& j, const FixedSizeString<TotalSize>& s) {
+        
+        j = nlohmann::json{ {"Path", s.GetRaw()}};
+    }
+
+    template <uint32_t TotalSize>
+    void from_json(const nlohmann::json& j, FixedSizeString<TotalSize>& s) {
+        j.at("Path").get_to(s.GetRaw());
+    }
+} // namespace ns
+
+typedef FixedSizeString<FilePathSize> Path;
+typedef FixedSizeString<FileTypeSize> FileType;
+typedef uint64_t FileDataPosition;
+typedef uint64_t FileDataSize;
+
+namespace ns {
+    void to_json(nlohmann::json& j, const Path& s) {
+
+        j = nlohmann::json{ {"Path", s.GetRaw()} };
+    }
+
+    void from_json(const nlohmann::json& j, Path& s) {
+        j.at("Path").get_to(s.GetRaw());
+    }
+} // namespace ns
+
 // The hash primitive type
-typedef std::size_t HashPrimitive;
+typedef uint64_t HashPrimitive;
 
 // The hash type
 struct Hash
@@ -341,8 +391,8 @@ struct Hash
 private:
 
 	// The hash properties
+    Path m_Path;
 	HashPrimitive m_Hash;
-	Path m_Path;
 };
 
 // The condensed header info
