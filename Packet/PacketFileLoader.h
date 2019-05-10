@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: PacketEditModeFileLoader.h
+// Filename: PacketFileLoader.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
@@ -7,10 +7,7 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketScanner.h"
-#include "PacketCondenser.h"
-
-#include <string>
+#include "PacketFile.h"
 
 ///////////////
 // NAMESPACE //
@@ -31,52 +28,45 @@
 // Packet data explorer
 PacketDevelopmentNamespaceBegin(Packet)
 
-////////////////
-// FORWARDING //
-////////////////
-
-////////////////
-// STRUCTURES //
-////////////////
+// Classes we know
+class PacketFile;
+class PacketReferenceManager;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class name: PacketEditModeFileLoader
+// Class name: PacketFileLoader
 ////////////////////////////////////////////////////////////////////////////////
-class PacketEditModeFileLoader : public PacketFileLoader
+class PacketFileLoader
 {
 public:
+
+    // Friend classes
+    friend PacketReferenceManager;
 
 //////////////////
 // CONSTRUCTORS //
 public: //////////
 
 	// Constructor / destructor
-	PacketEditModeFileLoader(std::string _packetManifestDirectory, PacketLogger* _logger);
-	~PacketEditModeFileLoader();
+	PacketFileLoader();
+	~PacketFileLoader();
 
 //////////////////
 // MAIN METHODS //
 public: //////////
 
-	// Check if a given file exist
-	bool FileExist(Hash _fileHash) const override;
+    // Load a file
+    virtual std::unique_ptr<PacketFile> LoadFile(Hash _file_hash) const = 0;
 
-	// Return a file size
-	uint64_t GetFileSize(Hash _fileHash) const override;
+    // Load a file raw data
+    virtual std::vector<uint8_t> LoadFileRawData(Hash _file_hash) const = 0;
 
-	// Get the file data
-	bool GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash) const override;
-
-	// Pack all files
-	bool ConstructPacket() override;
+    // Load a file references data
+    virtual std::optional<PacketFileReferences> LoadFileReferences(Hash _file_hash) const = 0;
 
 ///////////////
 // VARIABLES //
 private: //////
 
-	// The helper objects
-	PacketScanner m_Scanner;
-	PacketCondenser m_PacketCondenser;
 };
 
 // Packet data explorer

@@ -2,13 +2,12 @@
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketSystem.h"
-#include <filesystem>
-#include "PacketEditModeFileLoader.h"
-#include "PacketCondensedModeFileLoader.h"
-#include "PacketReferenceManager.h"
-#include "Resource/PacketResourceFactory.h"
-#include "Resource/PacketResourceWatcher.h"
-#include "Resource/PacketResourceManager.h"
+
+#include "PacketFileIndexer.h"
+#include "PacketPlainFileIndexer.h"
+
+#include "PacketFileLoader.h"
+#include "PacketPlainFileLoader.h"
 
 ///////////////
 // NAMESPACE //
@@ -23,74 +22,33 @@ PacketSystem::PacketSystem()
 
 PacketSystem::~PacketSystem()
 {
-    // We need to respect an order of destruction here to prevent accessing deleted objects
-    m_ResourceManager.reset();
-    m_ResourceWatcher.reset();
-    m_ResourceStorage.reset();
-    m_ReferenceManager.reset();
-    m_RegisteredFactories.clear();
-    m_FileLoader.reset();
-    m_Logger.reset();
 }
 
-bool PacketSystem::Initialize(OperationMode _operationMode, std::string _packetManifestDirectory, std::unique_ptr<PacketLogger>&& _logger)
+bool PacketSystem::Initialize(OperationMode _operation_mode, std::filesystem::path _resource_path, std::unique_ptr<PacketLogger>&& _logger)
 {
-	// Set the data
-	m_PacketFolderPath = _packetManifestDirectory;
-	m_Logger = std::move(_logger);
-	m_OperationMode = std::move(_operationMode);
+    // Set the resource path and the operation mode
+    assert(_operation_mode == OperationMode::Undefined);
+    m_OperationMode = _operation_mode;
+    m_ResourcePath = _resource_path;
 
-	// Create and initialize the reference manager
-	m_ReferenceManager = std::make_unique<PacketReferenceManager>();
-	m_ReferenceManager->Initialize(_packetManifestDirectory, m_Logger.get());
+    // Depending on our operation mode, create the appropriated internal objects
+    if (m_OperationMode == OperationMode::Plain)
+    {
+        m_FileIndexer = std::make_unique<PacketPlainFileIndexer>();
+        m_FileLoader = std::make_unique<PacketPlainFileLoader>(*m_FileIndexer);
+        m_FileImporter = std::make_unique<PacketFileImporter>();
+    }
+    // Condensed
+    else
+    {
+        // m_FileIndexer = std::make_unique<PacketCondensedFileIndexer>();
+    }
 
-	// Create our file loader using the given operation mode
-	if (_operationMode == OperationMode::Edit)
-	{
-		// Create the file loader
-		m_FileLoader = std::make_unique<PacketEditModeFileLoader>(_packetManifestDirectory, m_Logger.get());
-	}
-	// Condensed
-	else
-	{
-		// Create the file loader
-		m_FileLoader = std::make_unique<PacketCondensedModeFileLoader>(_packetManifestDirectory, m_Logger.get());
-	}
-
-	// Create the resource storage
-	m_ResourceStorage = std::make_unique<PacketResourceStorage>();
-
-	// Create the resource watcher
-	m_ResourceWatcher = std::make_unique<PacketResourceWatcher>(_operationMode);
-
-	// Create the resource manager
-	m_ResourceManager = std::make_unique<PacketResourceManager>(_operationMode, 
-		m_ResourceStorage.get(), 
-		m_FileLoader.get(), 
-		m_ReferenceManager.get(), 
-		m_ResourceWatcher.get(), 
-		m_Logger.get());
+    // Initialize the file indexer
+    if (!m_FileIndexer->Initialize(_resource_path))
+    {
+        return false;
+    }
 
 	return true;
-}
-
-std::vector<PacketResourceExternalConstructor> PacketSystem::GetResourceExternalConstructors()
-{
-    return m_ResourceManager->GetResourceExternalConstructors();
-}
-
-uint32_t PacketSystem::GetAproximatedResourceAmount() const
-{
-    return m_ResourceStorage->GetAproximatedResourceAmount() + 
-        m_ResourceManager->GetApproximatedNumberResourcesPendingDeletion();
-}
-
-bool PacketSystem::FileExist(Hash _fileHash) const
-{
-	return m_FileLoader->FileExist(_fileHash);
-}
-
-bool PacketSystem::ConstructPacket()
-{
-	return m_FileLoader->ConstructPacket();
 }

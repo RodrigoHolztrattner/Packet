@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: PacketSystem.h
+// Filename: PacketPlainFileLoader.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
@@ -7,6 +7,7 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
+#include "PacketFileLoader.h"
 
 ///////////////
 // NAMESPACE //
@@ -16,17 +17,13 @@
 PacketDevelopmentNamespaceBegin(Packet)
 
 // Classes we know
+class PacketFile;
 class PacketFileIndexer;
-class PacketFileImporter;
-class PacketFileConverter;
-class PacketFileLoader;
-
-typedef std::function<std::optional<PacketFileConverter*>(std::string)> RetrieveFileConverterByExtensionFunc;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class name: PacketSystem
+// Class name: PacketPlainFileLoader
 ////////////////////////////////////////////////////////////////////////////////
-class PacketSystem
+class PacketPlainFileLoader : public PacketFileLoader
 {
 public:
 
@@ -35,28 +32,28 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketSystem();
-	~PacketSystem();
+	PacketPlainFileLoader(const PacketFileIndexer& _file_indexer);
+	~PacketPlainFileLoader();
 
 //////////////////
 // MAIN METHODS //
 public: //////////
 
-	// Initialize this object
-	bool Initialize(OperationMode _operation_mode, std::filesystem::path _resource_path, std::unique_ptr<PacketLogger>&& _logger = std::make_unique<PacketLogger>());
+    // Load a file
+    std::unique_ptr<PacketFile> LoadFile(Hash _file_hash) const final;
+
+    // Load a file raw data
+    std::vector<uint8_t> LoadFileRawData(Hash _file_hash) const final;
+
+    // Load a file references data
+    std::optional<PacketFileReferences> LoadFileReferences(Hash _file_hash) const final;
 
 ///////////////
 // VARIABLES //
 private: //////
 
-    // The resource path and operation mode
-    std::filesystem::path m_ResourcePath;
-    OperationMode m_OperationMode = OperationMode::Undefined;
-
-	// Our internal objects
-    std::unique_ptr<PacketFileIndexer>  m_FileIndexer;
-    std::unique_ptr<PacketFileImporter> m_FileImporter;
-	std::unique_ptr<PacketFileLoader>   m_FileLoader;
+    // A reference to the file indexer
+    const PacketFileIndexer& m_FileIndexer;
 };
 
 // Packet data explorer

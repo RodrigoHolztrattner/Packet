@@ -8,9 +8,13 @@
 //////////////
 #include <cstdint>
 #include <string>
+#include <optional>
 #include <filesystem>
 #include <functional>
 #include <iostream>
+#include <fstream>
+#include <ctti/type_id.hpp>
+#include <ctti/static_value.hpp>
 #include <nlohmann/json.hpp>
 
 /////////////
@@ -34,6 +38,12 @@ PacketDevelopmentNamespaceBegin(Packet)
 // DEFINES / ENUMS //
 /////////////////////
 
+// Our current version
+static const uint32_t PacketVersion             = 0;
+
+// The file magic, used to verify the initial integrity
+static const uint32_t FileMagic                 = 699555;
+
 // The maximum file path name size (including the null terminated char, max length 119)
 static const int FilePathSize					= 120;
 
@@ -56,6 +66,9 @@ static const std::string CondensedInfoName		= "Data";
 static const std::string CondensedInfoExtension = ".manifest";
 static const std::string TemporaryFileExtension = ".temp";
 
+// The internal folder that shouldn't be compressed
+static const std::string InternalFolderName     = "Internal";
+
 // The current condensed file minor and major versions
 static const uint16_t CondensedMinorVersion		= 1;
 static const uint16_t CondensedMajorVersion		= 0;
@@ -63,7 +76,8 @@ static const uint16_t CondensedMajorVersion		= 0;
 // The operation modes
 enum class OperationMode
 {
-	Edit, 
+    Undefined,
+	Plain, 
 	Condensed
 };
 
@@ -432,81 +446,11 @@ struct CondensedFileInfo
 	InternalFileInfo fileInfos[MaximumPackageFiles];
 };
 
-// PacketFileLoader interface
-class PacketFileLoader
+// Merge a resource path with a file path, returning a filesystem path to it
+std::filesystem::path MergeSystemPathWithFilePath(std::filesystem::path _system_path, Path _file_path)
 {
-public:
-
-	// Constructor
-	PacketFileLoader(std::string _packetManifestDirectory, PacketLogger* _logger) : m_PacketFolderPath(_packetManifestDirectory), m_Logger(_logger) {}
-
-//////////////////
-// MAIN METHODS //
-public: //////////
-
-	// Check if a given file exist
-	virtual bool FileExist(Hash _fileHash) const = 0;
-
-	// Return a file size
-	virtual uint64_t GetFileSize(Hash _fileHash) const = 0;
-
-	// Get the file data
-	virtual bool GetFileData(uint8_t* _dataOut, uint64_t _bufferSize, Hash _fileHash) const = 0;
-
-	// Pack all files
-	virtual bool ConstructPacket() = 0;
-
-///////////////
-// VARIABLES //
-protected: ////
-
-	std::string m_PacketFolderPath;
-	PacketLogger* m_Logger;
-};
-
-template <typename ObjectType>
-struct GlobalInstance
-{
-	// Constructor
-	GlobalInstance()
-	{
-		// Create a new instance in case of nullptr
-		if (m_InternalObject == nullptr)
-		{
-			m_InternalObject = new ObjectType();
-		}
-	}
-
-	// Return the instance
-	const static ObjectType* GetInstance()
-	{
-		return m_InternalObject;
-	}
-
-	// Access the internal object
-	GlobalInstance operator=(ObjectType* _other)
-	{
-		m_InternalObject = _other;
-		return *this;
-	}
-
-	operator ObjectType*()
-	{
-		return m_InternalObject;
-	}
-
-	// Access the internal object
-	ObjectType* operator->() const
-	{
-		//m_iterator is a map<int, MyClass>::iterator in my code.
-		return m_InternalObject;
-	}
-
-private:
-
-	// The internal object
-	static ObjectType* m_InternalObject;
-};
+    return _system_path.string() + std::string("/") + _file_path.String();
+}
 
 template <typename ObjectType>
 class FutureReference
