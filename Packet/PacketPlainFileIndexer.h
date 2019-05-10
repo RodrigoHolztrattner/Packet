@@ -34,19 +34,17 @@
 // Packet data explorer
 PacketDevelopmentNamespaceBegin(Packet)
 
-////////////////
-// FORWARDING //
-////////////////
-
-////////////////
-// STRUCTURES //
-////////////////
+// Classes we know
+class PacketFileImporter;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketPlainFileIndexer
 ////////////////////////////////////////////////////////////////////////////////
 class PacketPlainFileIndexer : public PacketFileIndexer
 {
+    // Friend classes
+    friend PacketFileImporter;
+
     struct IndexData
     {
         // The file header
@@ -72,24 +70,32 @@ public: //////////
 public: //////////
 
     // Initialize this indexer, populating its file map
-    virtual bool Initialize(std::filesystem::path _resource_path) = 0;
+    bool Initialize(std::filesystem::path _resource_path) final;
 
     // Return if a given file is indexed by its path hash by this indexer
-    virtual bool IsFileIndexed(HashPrimitive _file_hash) const = 0;
+    bool IsFileIndexed(HashPrimitive _file_hash) const final;
+
+    // Return a file load information (its path, the location inside the file and its total size)
+    FileLoadInformation RetrieveFileLoadInformation(HashPrimitive _file_hash) const final;
 
     // Return a const reference to a file header
-    virtual const FileHeader& GetFileHeader(HashPrimitive _file_hash) const = 0;
+    const FileHeader& GetFileHeader(HashPrimitive _file_hash) const final;
 
     // Return a cost reference to a file icon data
-    virtual const std::vector<uint8_t>& GetFileIconData(HashPrimitive _file_hash) const = 0;
+    const std::vector<uint8_t>& GetFileIconData(HashPrimitive _file_hash) const final;
+
+protected:
+
+    // Insert a resource index info into our map
+    void InsertFileIndexData(Path _file_path);
+
+    // Remove a resource index info from our map
+    void RemoveFileIndexData(Path _file_path);
 
 private:
 
     // Scan the resource path for files recursively and populate our info map
-    void ScanResourcePath(std::filesystem::path _resource_path);
-
-    // Insert a resource index info into our map
-    void InsertResourceIndexData(std::filesystem::path _resource_path);
+    void ScanSystemForFiles(std::filesystem::path _resource_path);
 
 ///////////////
 // VARIABLES //

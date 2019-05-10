@@ -23,12 +23,42 @@ bool PacketPlainFileIndexer::Initialize(std::filesystem::path _resource_path)
 
 
     // Scan the resource path
-    ScanResourcePath(_resource_path);
+    ScanSystemForFiles(_resource_path);
 
     return true;
 }
 
-void PacketPlainFileIndexer::ScanResourcePath(std::filesystem::path _resource_path)
+bool PacketPlainFileIndexer::IsFileIndexed(HashPrimitive _file_hash) const
+{
+    return m_IndexDatas.find(_file_hash) != m_IndexDatas.end();
+}
+
+PacketFileIndexer::FileLoadInformation PacketPlainFileIndexer::RetrieveFileLoadInformation(HashPrimitive _file_hash) const
+{
+    // TODO:
+}
+
+const FileHeader& PacketPlainFileIndexer::GetFileHeader(HashPrimitive _file_hash) const
+{
+    if (m_IndexDatas.find(_file_hash) == m_IndexDatas.end())
+    {
+        throw "Invalid file hash";
+    }
+
+    return m_IndexDatas.find(_file_hash)->second.file_header;
+}
+
+const std::vector<uint8_t>& PacketPlainFileIndexer::GetFileIconData(HashPrimitive _file_hash) const
+{
+    if (m_IndexDatas.find(_file_hash) == m_IndexDatas.end())
+    {
+        throw "Invalid file hash";
+    }
+
+    return m_IndexDatas.find(_file_hash)->second.icon_data;
+}
+
+void PacketPlainFileIndexer::ScanSystemForFiles(std::filesystem::path _resource_path)
 {
     // This method will recursively construct the packet tree
     std::function<void(const std::filesystem::path&)> ScanResourcePathRecursive = [&](const std::filesystem::path& _current_path)
@@ -43,7 +73,7 @@ void PacketPlainFileIndexer::ScanResourcePath(std::filesystem::path _resource_pa
             if (std::filesystem::is_regular_file(p))
             {
                 // Gather this resource data and insert it into our index
-                InsertResourceIndexData(path);
+                InsertFileIndexData(ConvertSystemPathIntoInternalPath(_resource_path, path));
             }
             // Folder (ignore the internal folder)
             else if(path.filename() != InternalFolderName)
@@ -58,7 +88,7 @@ void PacketPlainFileIndexer::ScanResourcePath(std::filesystem::path _resource_pa
     ScanResourcePathRecursive(_resource_path);
 }
 
-void PacketPlainFileIndexer::InsertResourceIndexData(std::filesystem::path _resource_path)
+void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
 {
 
 
@@ -66,4 +96,9 @@ void PacketPlainFileIndexer::InsertResourceIndexData(std::filesystem::path _reso
 
 
     // m_IndexDatas
+}
+
+void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
+{
+
 }

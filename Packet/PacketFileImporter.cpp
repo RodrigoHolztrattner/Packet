@@ -2,6 +2,7 @@
 // Filename: PacketFileImporter.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketFileImporter.h"
+#include "PacketPlainFileIndexer.h"
 #include "PacketFileIndexer.h"
 #include "PacketFileLoader.h"
 #include "PacketReferenceManager.h"
@@ -68,7 +69,7 @@ bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original
     PacketFileConverter* converter = nullptr;
     {
         auto iter = m_Converters.find(file_extension);
-        converter = iter == m_Converters.end() ? m_DefaultConverter.get() : iter->second.get();
+        converter = (iter == m_Converters.end() ? m_DefaultConverter.get() : iter->second.get());
     }
 
     // Open the file and check if we are ok to proceed
@@ -219,7 +220,7 @@ bool PacketFileImporter::WriteInternalFile(
     }
 
     // Insert a new entry on the file plain indexer
-    // ...
+    static_cast<PacketPlainFileIndexer&>(m_FileIndexer).InsertFileIndexData(_target_path);
 }
 
 bool PacketFileImporter::CopyInternalFile(Path _source_file_path, Path _target_file_path) const

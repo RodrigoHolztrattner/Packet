@@ -50,11 +50,13 @@ struct FileHeader;
 ////////////////////////////////////////////////////////////////////////////////
 class PacketFileIndexer
 {
+protected:
+
     struct FileLoadInformation
     {
-        Path _file_path;
-        FileDataPosition _file_data_position = 0;
-        FileDataSize _file_data_size = 0;
+        Path file_path;
+        FileDataPosition file_data_position = 0;
+        FileDataSize file_data_size = 0;
 
         const FileHeader& file_header;
         const std::vector<uint8_t>& _file_icon_data;

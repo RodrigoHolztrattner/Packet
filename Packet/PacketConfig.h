@@ -265,12 +265,12 @@ template <uint32_t TotalSize>
 struct FixedSizeString
 {
     FixedSizeString() {}
-    FixedSizeString(char* _str)
+    FixedSizeString(const char* _str)
 	{
         std::string temp(_str);
         std::copy(temp.begin(), temp.end(), m_PathString.data());
     }
-    FixedSizeString(std::string& _str)
+    FixedSizeString(const std::string& _str)
 	{
         std::copy(_str.begin(), _str.end(), m_PathString.data());
     }
@@ -302,7 +302,7 @@ struct FixedSizeString
 		return _stream << _path.m_PathString;
 	}
 
-	bool Compare(const char* _str)
+	bool Compare(const char* _str) const
 	{
 		return strcmp(_str, m_PathString) == 0;
 	}
@@ -452,6 +452,15 @@ std::filesystem::path MergeSystemPathWithFilePath(std::filesystem::path _system_
     return _system_path.string() + std::string("/") + _file_path.String();
 }
 
+// Convert a filesystem path to an internal path using the system resource path
+Path ConvertSystemPathIntoInternalPath(std::filesystem::path _system_path, std::filesystem::path _file_path)
+{
+    auto nit = _system_path.begin();
+    for (auto bit = _file_path.begin(); bit != _file_path.end(); ++bit, ++nit);
+    auto resulting_path = std::filesystem::path(nit, _system_path.end());
+    return resulting_path.string();
+}
+
 template <typename ObjectType>
 class FutureReference
 {
@@ -495,8 +504,5 @@ private:
 	// The internal object
 	ObjectType* m_InternalObject;
 };
-
-template <typename ObjectType>
-ObjectType* GlobalInstance<ObjectType>::m_InternalObject = nullptr;
 
 PacketDevelopmentNamespaceEnd(Packet)
