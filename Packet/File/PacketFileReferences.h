@@ -6,7 +6,7 @@
 //////////////
 // INCLUDES //
 //////////////
-#include "PacketConfig.h"
+#include "../PacketConfig.h"
 #include <string>
 #include <unordered_map>
 #include <set>

@@ -6,11 +6,10 @@
 //////////////
 // INCLUDES //
 //////////////
-#include "PacketConfig.h"
+#include "../PacketConfig.h"
+#include "PacketFileHeader.h"
 #include "PacketFileReferences.h"
-#include "Resource/PacketResourceManager.h"
-#include <ctti//type_id.hpp>
-#include <ctti//static_value.hpp>
+#include "../Resource/PacketResourceManager.h"
 
 #include <string>
 #include <unordered_map>
@@ -47,28 +46,6 @@ class PacketFile;
 // STRUCTURES //
 ////////////////
 
-struct FileHeader
-{
-    // Magic
-    uint32_t magic = FileMagic;
-
-    // Basic information
-    uint32_t      version    = 0;
-    FileType      file_type  = 0;
-    HashPrimitive file_hash  = 0;
-    FileDataSize  total_size = 0;
-    // Last updated time
-    // Other data
-
-    // Data positions inside the file
-    FileDataPosition icon_position              = 0;
-    FileDataPosition properties_position        = 0;
-    FileDataPosition original_data_position     = 0;
-    FileDataPosition intermediate_data_position = 0;
-    FileDataPosition final_data_position        = 0;
-    FileDataPosition references_data_position   = 0;
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketFile
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,19 +62,21 @@ class PacketFile
 public: //////////
 
 	// Constructor / destructor
-	PacketFile(FileHeader _fileHeaderReference, const std::vector<uint8_t> _fileIconDataReference, bool _is_internal_file);
+	PacketFile(PacketFileHeader _fileHeaderReference, const std::vector<uint8_t> _fileIconDataReference, bool _is_internal_file);
 	~PacketFile();
 
 //////////////////
 // MAIN METHODS //
 public: //////////
 
-    // Create an internal/external file from the given data
-    static std::unique_ptr<PacketFile> CreateInternalFromData(std::vector<uint8_t>&& _file_data);
-    static std::unique_ptr<PacketFile> CreateExternalFromData(std::vector<uint8_t>&& _file_data);
+    // Create a file from the given raw data
+    static std::unique_ptr<PacketFile> CreateFileFromRawData(std::vector<uint8_t>&& _file_data);
+
+    // Transform a file into raw data
+    // static std::vector<uint8_t> CreateRawDataFromFile(std::unique_ptr<PacketFile> _file); // Not necessary?
 
     // Generate an internal file data from its separated data parts
-    static std::vector<uint8_t> GenerateInternalFileData(
+    static std::vector<uint8_t> GenerateFileFromDataParts(
         HashPrimitive          _file_hash,
         FileType               _file_type,
         std::vector<uint8_t>&& _icon_data,
@@ -109,6 +88,7 @@ public: //////////
         std::set<Path>&&       _file_dependencies);
 
     // Break a file into its small data, this will consume the file unique ptr
+    /*
     static bool BreakFileIntoDatas(
         std::unique_ptr<PacketFile> _file,
         std::vector<uint8_t>&       _icon_data,
@@ -116,10 +96,8 @@ public: //////////
         std::vector<uint8_t>&       _original_data,
         std::vector<uint8_t>&       _intermediate_data,
         std::vector<uint8_t>&       _final_data,
-        PacketFileReferences&       _file_references_parsed);
-
-    // Transform a file into raw data
-    static std::vector<uint8_t> TransformFileIntoRawData(std::unique_ptr<PacketFile> _file);
+        PacketFileReferences&       _file_references_parsed); // Not necessary?
+    */
 
     // Return a const reference to the original data
     const std::vector<uint8_t>& GetOriginalData() const;
@@ -134,7 +112,7 @@ public: //////////
     const std::vector<uint8_t>& GetIconData() const;
 
     // Get this file header
-    const FileHeader& GetFileHeader() const;
+    const PacketFileHeader& GetFileHeader() const;
 
     // Get this file properties json
     const nlohmann::json& GetFileProperties() const;
@@ -145,16 +123,13 @@ public: //////////
     // Return if this is an internal file (not indexed)
     bool IsInternalFile() const;
 
-protected:
-
-    // Get this file references (non-const)
-    PacketFileReferences& GetNonConstFileReferences();
+private:
 
     // Set this file data, must be called by a loader
-    void SetData(std::vector<uint8_t>&& _propertiesData, 
+    void SetData(std::vector<uint8_t>&& _propertiesData,
                  std::vector<uint8_t>&& _originalData,
                  std::vector<uint8_t>&& _intermediateData,
-                 std::vector<uint8_t>&& _finalData, 
+                 std::vector<uint8_t>&& _finalData,
                  std::vector<uint8_t>&& _referencesData);
 
     // Parse the properties data into a json format
@@ -168,7 +143,7 @@ protected:
 protected: ////
 
     // A reference to this file header and its icon that must be hold by the system
-    FileHeader           m_FileHeader;
+    PacketFileHeader     m_FileHeader;
     std::vector<uint8_t> m_FileIconData;
 
     // Remaining file data

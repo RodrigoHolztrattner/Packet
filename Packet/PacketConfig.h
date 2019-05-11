@@ -91,6 +91,19 @@ enum class ReferenceFixer
 	NameAndExtensionOrSizeAndExtension
 };
 
+
+// The file parts
+enum class FilePart
+{
+    Header,
+    IconData,
+    PropertiesData,
+    OriginalData,
+    IntermediateData,
+    FinalData,
+    ReferencesData
+};
+
 /////////////
 // METHODS //
 /////////////

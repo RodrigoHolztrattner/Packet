@@ -7,7 +7,8 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketFile.h"
+#include "File/PacketFileHeader.h"
+#include "File/PacketFile.h"
 
 ///////////////
 // NAMESPACE //
@@ -60,8 +61,8 @@ public: //////////
     // Load a file raw data
     virtual std::vector<uint8_t> LoadFileRawData(Hash _file_hash) const = 0;
 
-    // Load a file references data
-    virtual std::optional<PacketFileReferences> LoadFileReferences(Hash _file_hash) const = 0;
+    // Load a file data part
+    virtual std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> LoadFileDataPart(Hash _file_hash, FilePart _file_part) const = 0;
 
 ///////////////
 // VARIABLES //

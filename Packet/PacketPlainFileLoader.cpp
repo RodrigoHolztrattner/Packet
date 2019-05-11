@@ -20,48 +20,7 @@ PacketPlainFileLoader::~PacketPlainFileLoader()
 
 std::unique_ptr<PacketFile> PacketPlainFileLoader::LoadFile(Hash _file_hash) const
 {
-    std::unique_ptr<PacketFile> result_file;
-
-    // Transform the file hash into a valid path
-    std::filesystem::path file_path = _file_hash.GetPath().String();
-
-    // Check if the file exist and is valid
-    if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
-    {
-        // Invalid file
-        return nullptr;
-    }
-
-    // Open the file and check if we are ok to proceed
-    std::ifstream file(_file_hash.GetPath().String(), std::ios::binary);
-    if (!file.is_open())
-    {
-        // Error opening the file!
-        return nullptr;
-    }
-
-    // Reserve space for the entire file
-    std::vector<uint8_t> entire_file_data(std::filesystem::file_size(file_path));
-
-    // Read the entire file data
-    entire_file_data.insert(entire_file_data.begin(),
-               std::istream_iterator<uint8_t>(file),
-               std::istream_iterator<uint8_t>());
-
-    // Close the file
-    file.close();
-
-    // Check if this is a packet file or any ordinary file
-    // ...
-
-    // Packet file
-    {
-        // Create the file from the loaded data
-        result_file = PacketFile::CreateInternalFromData(std::move(entire_file_data));
-    }
-    // CreateExternalFromData
-
-    return result_file;
+    return PacketFile::CreateFileFromRawData(LoadFileRawData(_file_hash));
 }
 
 std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) const
@@ -98,32 +57,57 @@ std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) con
     return entire_file_data;
 }
 
-std::optional<PacketFileReferences> PacketPlainFileLoader::LoadFileReferences(Hash _file_hash) const
+std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> PacketPlainFileLoader::LoadFileDataPart(Hash _file_hash, FilePart _file_part) const
 {
-    auto loaded_file = LoadFile(_file_hash);
-    if (!loaded_file)
+    // Transform the file hash into a valid path
+    std::filesystem::path file_path = _file_hash.GetPath().String();
+
+    // Check if the file exist and is valid
+    if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
+    {
+        // Invalid file
+        return std::nullopt;
+    }
+
+    // Open the file and check if we are ok to proceed
+    std::ifstream file(_file_hash.GetPath().String(), std::ios::binary);
+    if (!file.is_open())
+    {
+        // Error opening the file!
+        return std::nullopt;
+    }
+
+    // Load the file header data
+    std::vector<uint8_t> file_header_data(sizeof(PacketFileHeader::FileHeaderData));
+    if (!file.read(reinterpret_cast<char*>(&file_header_data[0]), file_header_data.size() * sizeof(uint8_t)))
     {
         return std::nullopt;
     }
 
-    return loaded_file->GetFileReferences();
+    // Get the file header
+    auto file_header = PacketFileHeader::CreateFromRawData(file_header_data);
+    if (!file_header)
+    {
+        return std::nullopt;
+    }
+
+    // Determine the read location and the size for the selected file part
+    FileDataPosition file_data_part_location = file_header->GetDataPosition(_file_part);
+    FileDataSize file_data_part_size         = file_header->GetDataSize(_file_part);
+    
+    // See to the target location
+    file.seekg(file.beg() + file_data_part_location);
+
+    // Read the target data
+    std::vector<uint8_t> target_data(file_data_part_size);
+    if (!file.read(reinterpret_cast<char*>(&target_data[0]), target_data.size() * sizeof(uint8_t)))
+    {
+        return std::nullopt;
+    }
+
+    {
+        // Can't create directly
+        std::tuple<PacketFileHeader, std::vector<uint8_t>> temp = { file_header.value(), std::move(target_data) };
+        return std::move(temp);
+    }
 }
-
-/*
-
-    Path file_path;
-    FileDataPosition file_data_position = 0;
-    FileDataSize file_data_size = 0;
-
-        // Retrieve the file load information
-        auto file_load_info = m_FileIndexer.RetrieveFileLoadInformation(_file_hash);
-
-        // Set the file path, data position and data size
-        file_path = file_load_info._file_path;
-        file_data_position = file_load_info._file_data_position;
-        file_data_size = file_load_info._file_data_size;
-
-        // Initialize the result file
-        result_file = std::make_unique<PacketFile>(file_load_info.file_header, file_load_info._file_icon_data);
-
-*/
