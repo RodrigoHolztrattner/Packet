@@ -91,13 +91,13 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file) const
         // For each dependency that must be deleted
         for (auto& dependency : delete_dependencies)
         {
-            m_ReferenceManager.RemoveDependency(dependency, _file->GetFileHeader().GetPath());
+            m_ReferenceManager.RemoveReferenceLink(dependency, _file->GetFileHeader().GetPath());
         }
 
         // For each dependency that must be added
         for (auto& dependency : add_dependencies)
         {
-            m_ReferenceManager.AddDependency(dependency, _file->GetFileHeader().GetPath());
+            m_ReferenceManager.AddReferenceLink(dependency, _file->GetFileHeader().GetPath());
         }
 
         // For each link, open the target file and make it depend on this file new path, 

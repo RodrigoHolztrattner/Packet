@@ -67,6 +67,8 @@ protected:
     static PacketFileReferences CreateFromSets(std::set<Path> _file_links,
                                                std::set<Path> _file_dependencies);
 
+    static std::vector<uint8_t> TransformIntoData(PacketFileReferences _references);
+
     nlohmann::json SaveIntoJSON() const;
 
     // Add a new entry on the files that depends on this one

@@ -4,6 +4,7 @@
 #include "PacketReferenceManager.h"
 #include "File/PacketFile.h"
 #include "PacketFileLoader.h"
+#include "PacketFileSaver.h"
 #include "PacketFileImporter.h"
 #include <filesystem>
 #include <fstream>
@@ -13,8 +14,9 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketReferenceManager::PacketReferenceManager(const PacketFileLoader& _file_loader, const PacketFileImporter& _file_importer) :
+PacketReferenceManager::PacketReferenceManager(const PacketFileLoader& _file_loader, const PacketFileSaver& _file_saver, const PacketFileImporter& _file_importer) :
     m_FileLoader(_file_loader), 
+    m_FileSaver(_file_saver), 
     m_FileImporter(_file_importer)
 {
 	// Set the initial data
@@ -25,60 +27,64 @@ PacketReferenceManager::~PacketReferenceManager()
 {
 }
 
+bool PacketReferenceManager::RegisterDependenciesForFile(std::set<Path> _file_dependencies, Path _file_path) const
+{
+    // For each dependency
+    for (auto& dependency : _file_dependencies)
+    {
+        // Add a reference link
+        if (!AddReferenceLink(_file_path, dependency))
+        {
+            // This should never happen if we follow all procedures correctly
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) const
 {
-    // Load the target file
-    auto referenced_file = m_FileLoader.LoadFile(Hash(_file_path));
-    if (!referenced_file)
+    auto file_references_opt = m_FileLoader.LoadFileDataPart(Hash(_file_path), FilePart::ReferencesData);
+    if (!file_references_opt)
     {
         // This should never happen if we follow all procedures correctly
         return false;
     }
+    auto [header, references_data] = file_references_opt.value();
+    auto references = PacketFileReferences::CreateFromData(references_data);
 
-    // Get the file references (non const reference variable)
-    PacketFileReferences& file_references = referenced_file->GetNonConstFileReferences();
+    // Add the link
+    references.AddFileLink(_reference);
 
-    // Add the new entry
-    file_references.AddFileLink(_reference);
+    // Transform back to data
+    references_data = PacketFileReferences::TransformIntoData(references);
 
-    // Retrieve the edited file raw data
-    auto file_raw_data = PacketFile::TransformFileIntoRawData(std::move(referenced_file));
-
-    // Write the file data into a system file
-    if (!m_FileImporter.WriteFileDataIntoInternalFile(_file_path, std::move(file_raw_data)))
-    {
-        // This should never happen if we follow all procedures correctly
-        return false;
-    }
+    // Save this file reference data
+    m_FileSaver.SaveFile(header, FilePart::ReferencesData, std::move(references_data));
 
     return true;
 }
 
 bool PacketReferenceManager::RemoveReferenceLink(Path _file_path, Path _reference) const
 {
-    // Load the target file
-    auto referenced_file = m_FileLoader.LoadFile(Hash(_file_path));
-    if (!referenced_file)
+    auto file_references_opt = m_FileLoader.LoadFileDataPart(Hash(_file_path), FilePart::ReferencesData);
+    if (!file_references_opt)
     {
         // This should never happen if we follow all procedures correctly
         return false;
     }
+    auto [header, references_data] = file_references_opt.value();
+    auto references = PacketFileReferences::CreateFromData(references_data);
 
-    // Get the file references (non const reference variable)
-    PacketFileReferences& file_references = referenced_file->GetNonConstFileReferences();
+    // Remove the link
+    references.RemoveFileLink(_reference);
 
-    // Remove the entry
-    file_references.RemoveFileLink(_reference);
+    // Transform back to data
+    references_data = PacketFileReferences::TransformIntoData(references);
 
-    // Retrieve the edited file raw data
-    auto file_raw_data = PacketFile::TransformFileIntoRawData(std::move(referenced_file));
-
-    // Write the file data into a system file
-    if (!m_FileImporter.WriteFileDataIntoInternalFile(_file_path, std::move(file_raw_data)))
-    {
-        // This should never happen if we follow all procedures correctly
-        return false;
-    }
+    // Save this file reference data
+    m_FileSaver.SaveFile(header, FilePart::ReferencesData, std::move(references_data));
 
     return true;
 }

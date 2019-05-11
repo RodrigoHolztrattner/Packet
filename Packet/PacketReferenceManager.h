@@ -21,6 +21,7 @@ PacketDevelopmentNamespaceBegin(Packet)
 // Classes we know
 class PacketFile;
 class PacketFileLoader;
+class PacketFileSaver;
 class PacketFileImporter;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,18 +37,12 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketReferenceManager(const PacketFileLoader& _file_loader, const PacketFileImporter& _file_importer);
+	PacketReferenceManager(const PacketFileLoader& _file_loader, const PacketFileSaver& _file_saver, const PacketFileImporter& _file_importer);
 	~PacketReferenceManager();
 
     // This method will receive a set of dependencies and a file path, it will register a link for each
     // file inside that map targeting the given file path
     bool RegisterDependenciesForFile(std::set<Path> _file_dependencies, Path _file_path) const;
-
-    // Add a dependency for the given file path
-    bool AddDependency(Path _file_path, Path _dependency_path) const;
-
-    // Remove a dependency for the given file path
-    bool RemoveDependency(Path _file_path, Path _dependency_path) const;
 
     // Add a reference link to a given file
     bool AddReferenceLink(Path _file_path, Path _reference) const;
@@ -75,7 +70,8 @@ public: //////////
 private: //////
 
     // Our file loader and importer references
-    const PacketFileLoader& m_FileLoader;
+    const PacketFileLoader&   m_FileLoader;
+    const PacketFileSaver&    m_FileSaver;
     const PacketFileImporter& m_FileImporter;
 
 };

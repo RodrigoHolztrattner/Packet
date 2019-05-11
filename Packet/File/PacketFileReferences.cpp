@@ -91,6 +91,11 @@ nlohmann::json PacketFileReferences::SaveIntoJSON() const
     {"FileDependencies", m_FileDependencies} };
 }
 
+std::vector<uint8_t> PacketFileReferences::TransformIntoData(PacketFileReferences _references)
+{
+    return _references.SaveIntoJSON();
+}
+
 void PacketFileReferences::AddFileLink(Path _new_link)
 {
     m_FileLinks.insert(_new_link);
