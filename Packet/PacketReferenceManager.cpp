@@ -2,6 +2,7 @@
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketReferenceManager.h"
+#include "File/PacketFile.h"
 #include "PacketFileLoader.h"
 #include "PacketFileImporter.h"
 #include <filesystem>
@@ -13,8 +14,8 @@
 PacketUsingDevelopmentNamespace(Packet)
 
 PacketReferenceManager::PacketReferenceManager(const PacketFileLoader& _file_loader, const PacketFileImporter& _file_importer) :
-    m_FileLoaderReference(_file_loader), 
-    m_FileImporterReference(_file_importer)
+    m_FileLoader(_file_loader), 
+    m_FileImporter(_file_importer)
 {
 	// Set the initial data
 	// ...
@@ -27,7 +28,7 @@ PacketReferenceManager::~PacketReferenceManager()
 bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) const
 {
     // Load the target file
-    auto referenced_file = m_FileLoaderReference.LoadFile(Hash(_file_path));
+    auto referenced_file = m_FileLoader.LoadFile(Hash(_file_path));
     if (!referenced_file)
     {
         // This should never happen if we follow all procedures correctly
@@ -44,7 +45,7 @@ bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) 
     auto file_raw_data = PacketFile::TransformFileIntoRawData(std::move(referenced_file));
 
     // Write the file data into a system file
-    if (!m_FileImporterReference.WriteFileDataIntoInternalFile(_file_path, std::move(file_raw_data)))
+    if (!m_FileImporter.WriteFileDataIntoInternalFile(_file_path, std::move(file_raw_data)))
     {
         // This should never happen if we follow all procedures correctly
         return false;
@@ -56,7 +57,7 @@ bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) 
 bool PacketReferenceManager::RemoveReferenceLink(Path _file_path, Path _reference) const
 {
     // Load the target file
-    auto referenced_file = m_FileLoaderReference.LoadFile(Hash(_file_path));
+    auto referenced_file = m_FileLoader.LoadFile(Hash(_file_path));
     if (!referenced_file)
     {
         // This should never happen if we follow all procedures correctly
@@ -73,7 +74,7 @@ bool PacketReferenceManager::RemoveReferenceLink(Path _file_path, Path _referenc
     auto file_raw_data = PacketFile::TransformFileIntoRawData(std::move(referenced_file));
 
     // Write the file data into a system file
-    if (!m_FileImporterReference.WriteFileDataIntoInternalFile(_file_path, std::move(file_raw_data)))
+    if (!m_FileImporter.WriteFileDataIntoInternalFile(_file_path, std::move(file_raw_data)))
     {
         // This should never happen if we follow all procedures correctly
         return false;
@@ -82,7 +83,7 @@ bool PacketReferenceManager::RemoveReferenceLink(Path _file_path, Path _referenc
     return true;
 }
 
-bool PacketReferenceManager::RedirectReferences(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const
+bool PacketReferenceManager::RedirectLinks(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const
 {
     // TODO: Create a method that will only update the references instead having to load the entire file to save it again
 
@@ -91,7 +92,7 @@ bool PacketReferenceManager::RedirectReferences(std::set<Path> _referenced_files
     for (auto& referenced_file_path : _referenced_files_paths)
     {
         // Load the target file
-        auto referenced_file_data = m_FileLoaderReference.LoadFileRawData(Hash(referenced_file_path));
+        auto referenced_file_data = m_FileLoader.LoadFileRawData(Hash(referenced_file_path));
         if (referenced_file_data.size() == 0)
         {
             // This should never happen if we follow all procedures correctly
@@ -103,7 +104,7 @@ bool PacketReferenceManager::RedirectReferences(std::set<Path> _referenced_files
         SubstituteAllPathReferences(referenced_file_data, _old_path, _new_path);
 
         // Write the file data into a system file
-        if (!m_FileImporterReference.WriteFileDataIntoInternalFile(referenced_file_path, std::move(referenced_file_data)))
+        if (!m_FileImporter.WriteFileDataIntoInternalFile(referenced_file_path, std::move(referenced_file_data)))
         {
             // This should never happen if we follow all procedures correctly
             operation_result = false;
@@ -112,6 +113,42 @@ bool PacketReferenceManager::RedirectReferences(std::set<Path> _referenced_files
     }
 
     return operation_result;
+}
+
+std::pair<std::set<Path>, std::set<Path>> PacketReferenceManager::RetrieveDependencyDiffFromOriginalFile(const std::unique_ptr<PacketFile>& _file) const
+{
+    // Get the original references
+    auto original_references_data_opt = m_FileLoader.LoadFileDataPart(Hash(_file->GetFileHeader().GetOriginalPath()), FilePart::ReferencesData);
+    if (!original_references_data_opt)
+    {
+        assert(false && "Trying to retrieve the original file references but its data is invalid!");
+        return { {}, {} };
+    }
+    auto [header, original_references_data] = original_references_data_opt.value();
+    auto original_dependencies = PacketFileReferences::CreateFromData(original_references_data).GetFileDependencies();
+
+    // Get the current dependencies
+    auto current_dependencies = _file->GetFileReferences().GetFileDependencies();
+
+    // Determine the delete diff
+    std::set<Path> delete_diff;
+    std::set_difference(
+        original_dependencies.begin(),
+        original_dependencies.end(),
+        current_dependencies.begin(),
+        current_dependencies.end(),
+        delete_diff);
+
+    // Determine the add diff
+    std::set<Path> add_diff;
+    std::set_difference(
+        current_dependencies.begin(),
+        current_dependencies.end(),
+        original_dependencies.begin(),
+        original_dependencies.end(),
+        add_diff);
+
+    return { std::move(delete_diff), std::move(add_diff) };
 }
 
 #include <string_view>

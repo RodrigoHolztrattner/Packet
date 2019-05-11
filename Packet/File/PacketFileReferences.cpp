@@ -18,6 +18,11 @@ PacketFileReferences::~PacketFileReferences()
 {
 }
 
+void PacketFileReferences::ClearFileLinks()
+{
+    m_FileLinks.clear();
+}
+
 const std::set<Path>& PacketFileReferences::GetFileLinks() const
 {
     return m_FileLinks;

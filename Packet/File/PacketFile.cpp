@@ -8,6 +8,10 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
+PacketFile::PacketFile()
+{
+}
+
 PacketFile::PacketFile(PacketFileHeader _fileHeaderReference, const std::vector<uint8_t> _fileIconDataReference, bool _is_internal_file) :
     m_FileHeader(_fileHeaderReference), 
     m_FileIconData(_fileIconDataReference), 
@@ -67,6 +71,25 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_
                          std::move(intermediate_data), 
                          std::move(final_data), 
                          std::move(references_data));
+
+    return result_file;
+}
+
+std::unique_ptr<PacketFile> PacketFile::DuplicateFile(const std::unique_ptr<PacketFile>& _file)
+{
+    std::unique_ptr<PacketFile> result_file = std::make_unique<PacketFile>();
+
+    // Duplicate all the data
+    result_file->m_FileHeader           = _file->m_FileHeader;
+    result_file->m_FileIconData         = _file->m_FileIconData;
+    result_file->m_PropertiesData       = _file->m_PropertiesData;
+    result_file->m_OriginalData         = _file->m_OriginalData;
+    result_file->m_IntermediateData     = _file->m_IntermediateData;
+    result_file->m_FinalData            = _file->m_FinalData;
+    result_file->m_ReferencesData       = _file->m_ReferencesData;
+    result_file->m_ParsedPropertiesData = _file->m_ParsedPropertiesData;
+    result_file->m_ParsedFileReferences = _file->m_ParsedFileReferences;
+    result_file->m_IsInternalFile       = _file->m_IsInternalFile;
 
     return result_file;
 }
@@ -187,6 +210,11 @@ bool PacketFile::BreakFileIntoDatas(
 }
 */
 
+const std::vector<uint8_t>& PacketFile::GetPropertiesData() const
+{
+    return m_PropertiesData;
+}
+
 const std::vector<uint8_t>& PacketFile::GetOriginalData() const
 {
     return m_OriginalData;
@@ -200,6 +228,11 @@ const std::vector<uint8_t>& PacketFile::GetIntermediateData() const
 const std::vector<uint8_t>& PacketFile::GetFinalData() const
 {
     return m_FinalData;
+}
+
+const std::vector<uint8_t>& PacketFile::GetReferencesData() const
+{
+    return m_ReferencesData;
 }
 
 const std::vector<uint8_t>& PacketFile::GetIconData() const

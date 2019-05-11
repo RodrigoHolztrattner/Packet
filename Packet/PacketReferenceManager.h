@@ -19,6 +19,7 @@
 PacketDevelopmentNamespaceBegin(Packet)
 
 // Classes we know
+class PacketFile;
 class PacketFileLoader;
 class PacketFileImporter;
 
@@ -38,6 +39,16 @@ public: //////////
 	PacketReferenceManager(const PacketFileLoader& _file_loader, const PacketFileImporter& _file_importer);
 	~PacketReferenceManager();
 
+    // This method will receive a set of dependencies and a file path, it will register a link for each
+    // file inside that map targeting the given file path
+    bool RegisterDependenciesForFile(std::set<Path> _file_dependencies, Path _file_path) const;
+
+    // Add a dependency for the given file path
+    bool AddDependency(Path _file_path, Path _dependency_path) const;
+
+    // Remove a dependency for the given file path
+    bool RemoveDependency(Path _file_path, Path _dependency_path) const;
+
     // Add a reference link to a given file
     bool AddReferenceLink(Path _file_path, Path _reference) const;
 
@@ -45,7 +56,12 @@ public: //////////
     bool RemoveReferenceLink(Path _file_path, Path _reference) const;
 
     // Make all referenced files point to another reference path
-    bool RedirectReferences(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const;
+    bool RedirectLinks(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const;
+
+    // This method will load the original file, retrieve its dependencies and get the difference
+    // between the current file, returning 2 maps, the first is the dependencies that must be
+    // removed and the second is all dependencies that must be added
+    std::pair<std::set<Path>, std::set<Path>> RetrieveDependencyDiffFromOriginalFile(const std::unique_ptr<PacketFile>& _file) const;
 
 //////////////////
 // MAIN METHODS //
@@ -59,8 +75,8 @@ public: //////////
 private: //////
 
     // Our file loader and importer references
-    const PacketFileLoader& m_FileLoaderReference;
-    const PacketFileImporter& m_FileImporterReference;
+    const PacketFileLoader& m_FileLoader;
+    const PacketFileImporter& m_FileImporter;
 
 };
 

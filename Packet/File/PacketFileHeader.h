@@ -67,10 +67,15 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
+    // Set the file path, any file link will only be adjusted when saving this file,
+    // the only collateral change this will make is also changing the hash
+    void SetPath(Path _file_path);
+
     // Return this header info
     uint32_t GetVersion()      const;
     FileType GetFileType()     const;
     Path GetPath()             const;
+    Path GetOriginalPath()     const;
     HashPrimitive GetHash()    const;
     FileDataSize GetFileSize() const;
 
@@ -83,6 +88,9 @@ protected:
     // Create a header from the given file raw data, the data must be valid
     static std::optional<PacketFileHeader> CreateFromRawData(const std::vector<uint8_t>& _data);
 
+    // Return a header data pointer to the given file raw data, if valid
+    static FileHeaderData* GetHeaderDataPtr(std::vector<uint8_t>& _data);
+
     // Get this header as pure data
     std::vector<uint8_t> GetRawData() const;
 
@@ -92,6 +100,10 @@ protected: ////
 
     // The header data
     FileHeaderData m_HeaderData;
+
+    // The original path this header had when it was created, used mainly to update references
+    // when updating a file
+    Path m_OriginalPath;
 };
 
 // Packet data explorer

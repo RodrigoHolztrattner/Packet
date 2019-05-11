@@ -39,8 +39,29 @@ std::optional<PacketFileHeader> PacketFileHeader::CreateFromRawData(const std::v
     // Create the file header object and set its data
     PacketFileHeader file_header = {};
     file_header.m_HeaderData = file_header_data;
+    file_header.m_OriginalPath = file_header_data.file_path;
 
     return file_header;
+}
+
+PacketFileHeader::FileHeaderData* PacketFileHeader::GetHeaderDataPtr(std::vector<uint8_t>& _data)
+{
+    // Check if the data can handle at least the header size
+    if (_data.size() < sizeof(PacketFileHeader::FileHeaderData))
+    {
+        // Invalid file size!
+        return nullptr;
+    }
+
+    auto* file_header_data = reinterpret_cast<PacketFileHeader::FileHeaderData*>(&_data[0]);
+
+    // Check if the magic number is right
+    if (file_header_data->magic != FileMagic)
+    {
+        return nullptr;
+    }
+
+    return file_header_data;
 }
 
 std::vector<uint8_t> PacketFileHeader::GetRawData() const
@@ -48,6 +69,12 @@ std::vector<uint8_t> PacketFileHeader::GetRawData() const
     std::vector<uint8_t> header_data(sizeof(PacketFileHeader::FileHeaderData));
     *(reinterpret_cast<PacketFileHeader::FileHeaderData*>(header_data.data())) = m_HeaderData;
     return std::move(header_data);
+}
+
+void PacketFileHeader::SetPath(Path _file_path)
+{
+    m_HeaderData.file_path = _file_path;
+    m_HeaderData.file_hash = Hash(_file_path);
 }
 
 uint32_t PacketFileHeader::GetVersion() const
@@ -63,6 +90,11 @@ FileType PacketFileHeader::GetFileType() const
 Path PacketFileHeader::GetPath() const
 {
     return m_HeaderData.file_path;
+}
+
+Path PacketFileHeader::GetOriginalPath() const
+{
+    return m_OriginalPath;
 }
 
 HashPrimitive PacketFileHeader::GetHash() const

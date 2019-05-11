@@ -474,6 +474,14 @@ Path ConvertSystemPathIntoInternalPath(std::filesystem::path _system_path, std::
     return resulting_path.string();
 }
 
+// Compare 2 path filenames
+bool CompareFilenames(Path _first, Path _second)
+{
+    // TODO:
+    assert(false);
+    return false;
+}
+
 template <typename ObjectType>
 class FutureReference
 {

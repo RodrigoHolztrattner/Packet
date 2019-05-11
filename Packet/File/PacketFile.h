@@ -65,6 +65,10 @@ public: //////////
 	PacketFile(PacketFileHeader _fileHeaderReference, const std::vector<uint8_t> _fileIconDataReference, bool _is_internal_file);
 	~PacketFile();
 
+private:
+
+    PacketFile();
+
 //////////////////
 // MAIN METHODS //
 public: //////////
@@ -73,7 +77,11 @@ public: //////////
     static std::unique_ptr<PacketFile> CreateFileFromRawData(std::vector<uint8_t>&& _file_data);
 
     // Transform a file into raw data
-    // static std::vector<uint8_t> CreateRawDataFromFile(std::unique_ptr<PacketFile> _file); // Not necessary?
+    static std::vector<uint8_t> CreateRawDataFromFile(std::unique_ptr<PacketFile> _file); // Necessary when saving the file!
+
+    // Duplicate the given file, caution with this, change the path before saving it and if applicable, 
+    // remove all links before doing it
+    static std::unique_ptr<PacketFile> DuplicateFile(const std::unique_ptr<PacketFile>& _file);
 
     // Generate an internal file data from its separated data parts
     static std::vector<uint8_t> GenerateFileFromDataParts(
@@ -99,6 +107,12 @@ public: //////////
         PacketFileReferences&       _file_references_parsed); // Not necessary?
     */
 
+    // Get this file icon data
+    const std::vector<uint8_t>& GetIconData() const;
+
+    // Return a const reference to the properties data
+    const std::vector<uint8_t>& GetPropertiesData() const;
+
     // Return a const reference to the original data
     const std::vector<uint8_t>& GetOriginalData() const;
 
@@ -108,8 +122,8 @@ public: //////////
     // Return a const reference to the final data
     const std::vector<uint8_t>& GetFinalData() const;
 
-    // Get this file icon data
-    const std::vector<uint8_t>& GetIconData() const;
+    // Return a const reference to the references data
+    const std::vector<uint8_t>& GetReferencesData() const;
 
     // Get this file header
     const PacketFileHeader& GetFileHeader() const;

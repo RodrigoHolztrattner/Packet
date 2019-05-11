@@ -47,6 +47,11 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
+    // Clear this file links, this should be used with extreme caution since it could
+    // potentially result in invalid files, use only if copying a file and after its
+    // new path was already set
+    void ClearFileLinks();
+
     // Return a set of all files that depends on this one
     const std::set<Path>& GetFileLinks() const;
 
