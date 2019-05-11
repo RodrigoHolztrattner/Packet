@@ -125,63 +125,42 @@ std::vector<uint8_t> PacketFile::CreateRawDataFromFile(std::unique_ptr<PacketFil
 }
 */
 
-std::vector<uint8_t> PacketFile::GenerateFileFromDataParts(
-    HashPrimitive          _file_hash,
+std::unique_ptr<PacketFile> PacketFile::GenerateFileFromData(
+    Path                   _file_path,
     FileType               _file_type,
     std::vector<uint8_t>&& _icon_data,
     std::vector<uint8_t>&& _properties_data,
     std::vector<uint8_t>&& _original_data, 
     std::vector<uint8_t>&& _intermediate_data,
     std::vector<uint8_t>&& _final_data,
-    std::set<Path>&&       _files_that_depends_on_this,
     std::set<Path>&&       _file_dependencies)
 {
-    // Determine the positions
-    FileDataPosition icon_position              = sizeof(PacketFileHeader);
-    FileDataPosition properties_position        = icon_position + _icon_data.size();
-    FileDataPosition original_data_position     = properties_position + _properties_data.size();
-    FileDataPosition intermediate_data_position = original_data_position + _original_data.size();
-    FileDataPosition final_data_position        = intermediate_data_position + _intermediate_data.size();
-    FileDataPosition references_data_position   = final_data_position + _final_data.size();
+    // Create an empty file header data object and set its initial values
+    PacketFileHeader file_header;
+    file_header.SetFileType(_file_type);
+    file_header.SetPath(_file_path);
 
     // Create the file references object and generate the vector data
     PacketFileReferences file_references = PacketFileReferences::CreateFromSets(
-        std::move(_files_that_depends_on_this),
+        {},
         std::move(_file_dependencies));
-    std::vector<uint8_t> file_references_data = file_references.SaveIntoJSON();
+    std::vector<uint8_t> file_references_data = PacketFileReferences::TransformIntoData(file_references);
 
-    // Determine the total size
-    FileDataSize file_total_size = sizeof(FileHeader)
-        + _icon_data.size()
-        + _properties_data.size()
-        + _intermediate_data.size()
-        + _final_data.size()
-        + file_references_data.size();
+    // Create a new empty file
+    std::unique_ptr<PacketFile> new_file = std::make_unique<PacketFile>();
 
-    // Set the initial data for the file header
-    FileHeader file_header                 = {};
-    file_header.magic                      = FileMagic;
-    file_header.version                    = PacketVersion;
-    file_header.file_type                  = _file_type;
-    file_header.file_hash                  = _file_hash;
-    file_header.icon_position              = icon_position;
-    file_header.properties_position        = properties_position;
-    file_header.original_data_position     = original_data_position;
-    file_header.intermediate_data_position = intermediate_data_position;
-    file_header.final_data_position        = final_data_position;
-    file_header.references_data_position   = references_data_position;
+    // Set the new file header
+    new_file->m_FileHeader = file_header;
 
-    // Compose the file data
-    std::vector<uint8_t> file_data(file_total_size);
-    *(reinterpret_cast<FileHeader*>(file_data.data())) = file_header;
-    std::copy(_icon_data.begin(), _icon_data.end(), file_data.begin() + icon_position);
-    std::copy(_properties_data.begin(), _properties_data.end(), file_data.begin() + properties_position);
-    std::copy(_original_data.begin(), _original_data.end(), file_data.begin() + original_data_position);
-    std::copy(_intermediate_data.begin(), _intermediate_data.end(), file_data.begin() + intermediate_data_position);
-    std::copy(_final_data.begin(), _final_data.end(), file_data.begin() + final_data_position);
-    std::copy(file_references_data.begin(), file_references_data.end(), file_data.begin() + references_data_position);
+    // Set its data
+    new_file->UpdateFilePart(FilePart::IconData, std::move(_icon_data));
+    new_file->UpdateFilePart(FilePart::PropertiesData, std::move(_properties_data));
+    new_file->UpdateFilePart(FilePart::OriginalData, std::move(_original_data));
+    new_file->UpdateFilePart(FilePart::IntermediateData, std::move(_intermediate_data));
+    new_file->UpdateFilePart(FilePart::FinalData, std::move(_final_data));
+    new_file->UpdateFilePart(FilePart::ReferencesData, std::move(file_references_data));
 
-    return std::move(file_data);
+    return std::move(new_file);
 }
 
 /*
@@ -255,14 +234,80 @@ const PacketFileReferences& PacketFile::GetFileReferences() const
     return m_ParsedFileReferences;
 }
 
-PacketFileReferences& PacketFile::GetNonConstFileReferences()
-{
-    return m_ParsedFileReferences;
-}
-
 bool PacketFile::IsInternalFile() const
 {
     return m_IsInternalFile;
+}
+
+void PacketFile::ClearFileLinks()
+{
+    // Clear the links and update the data
+    m_ParsedFileReferences.ClearFileLinks();
+    m_ReferencesData = PacketFileReferences::TransformIntoData(m_ParsedFileReferences);
+}
+
+bool PacketFile::UpdateFilePart(FilePart _file_part, std::vector<uint8_t>&& _data)
+{
+    // Cannot update the header
+    if (_file_part == FilePart::Header)
+    {
+        return false;
+    }
+
+    FileDataSize old_data_size = 0;
+    switch (_file_part)
+    {
+        case FilePart::IconData:
+        {
+            old_data_size = m_FileIconData.size();
+            m_FileIconData = _data;
+            break;
+        }
+        case FilePart::PropertiesData:
+        {
+            old_data_size = m_PropertiesData.size();
+            m_PropertiesData = _data;
+            ParseProperties();
+            break;
+        }
+        case FilePart::OriginalData:
+        {
+            old_data_size = m_OriginalData.size();
+            m_OriginalData = _data;
+            break;
+        }
+        case FilePart::IntermediateData:
+        {
+            old_data_size = m_IntermediateData.size();
+            m_IntermediateData = _data;
+            break;
+        }
+        case FilePart::FinalData:
+        {
+            old_data_size = m_FinalData.size();
+            m_FinalData = _data;
+            break;
+        }
+        case FilePart::ReferencesData:
+        {
+            old_data_size = m_ReferencesData.size();
+            m_ReferencesData = _data;
+            ParseReferences();
+            break;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+    
+    // Determine the size difference
+    FileDataSize size_difference = _data.size() - old_data_size;
+
+    // Update the header file size
+    m_FileHeader.SetFileSize(m_FileHeader.GetFileSize() + size_difference);
+
+    return true;
 }
 
 void PacketFile::SetData(std::vector<uint8_t>&& _propertiesData,

@@ -38,9 +38,10 @@ PacketDevelopmentNamespaceBegin(Packet)
 // Classes we know
 class PacketFileLoader;
 class PacketPlainFileLoader;
+class PacketFileSaver;
 class PacketCompressedFileLoader;
 class PacketReferenceManager;
-class PacketFile;
+class PacketFileManager;
 
 ////////////////
 // STRUCTURES //
@@ -53,8 +54,10 @@ class PacketFile
 {
     // Friend classes
     friend PacketFileLoader;
+    friend PacketFileSaver;
     friend PacketPlainFileLoader;
     friend PacketCompressedFileLoader;
+    friend PacketFileManager;
     friend PacketReferenceManager;
 
 //////////////////
@@ -83,16 +86,16 @@ public: //////////
     // remove all links before doing it
     static std::unique_ptr<PacketFile> DuplicateFile(const std::unique_ptr<PacketFile>& _file);
 
-    // Generate an internal file data from its separated data parts
-    static std::vector<uint8_t> GenerateFileFromDataParts(
-        HashPrimitive          _file_hash,
+    // Generate an internal file data from its separated data parts, all necessary links will be
+    // added when attempting to save this file into disk
+    static std::unique_ptr<PacketFile> GenerateFileFromData(
+        Path                   _file_path,
         FileType               _file_type,
         std::vector<uint8_t>&& _icon_data,
         std::vector<uint8_t>&& _properties_data,
         std::vector<uint8_t>&& _original_data,
         std::vector<uint8_t>&& _intermediate_data,
         std::vector<uint8_t>&& _final_data,
-        std::set<Path>&&       _files_that_depends_on_this,
         std::set<Path>&&       _file_dependencies);
 
     // Break a file into its small data, this will consume the file unique ptr
@@ -136,6 +139,16 @@ public: //////////
 
     // Return if this is an internal file (not indexed)
     bool IsInternalFile() const;
+
+protected:
+
+    // Clear this file links, this should be used with extreme caution since it could
+    // potentially result in invalid files, use only if copying a file and after its
+    // new path was already set
+    void ClearFileLinks();
+
+    // Update a file data part
+    bool UpdateFilePart(FilePart _file_part, std::vector<uint8_t>&& _data);
 
 private:
 

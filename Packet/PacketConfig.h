@@ -13,6 +13,7 @@
 #include <functional>
 #include <iostream>
 #include <fstream>
+#include <set>
 #include <ctti/type_id.hpp>
 #include <ctti/static_value.hpp>
 #include <nlohmann/json.hpp>
@@ -91,7 +92,6 @@ enum class ReferenceFixer
 	NameAndExtensionOrSizeAndExtension
 };
 
-
 // The file parts
 enum class FilePart
 {
@@ -103,6 +103,23 @@ enum class FilePart
     FinalData,
     ReferencesData
 };
+
+// Import file flags
+enum class FileImportFlagBits
+{
+    None,
+    Overwrite
+};
+
+// Write file flags
+enum class FileWriteFlagBits
+{
+    None,
+    CreateIfInexistent
+};
+
+typedef uint32_t FileImportFlags;
+typedef uint32_t FileWriteFlags;
 
 /////////////
 // METHODS //
@@ -302,12 +319,12 @@ struct FixedSizeString
 
 	operator const char*() const
 	{
-		return m_PathString;
+		return m_PathString.data();
 	}
 
 	const char* String() const
 	{
-		return m_PathString;
+		return m_PathString.data();
 	}
 
 	friend std::ostream& operator<< (std::ostream& _stream, const FixedSizeString& _path)
@@ -481,6 +498,17 @@ bool CompareFilenames(Path _first, Path _second)
     assert(false);
     return false;
 }
+
+typedef std::function<bool(
+    Path,
+    FileType,
+    std::vector<uint8_t>&&,
+    std::vector<uint8_t>&&,
+    std::vector<uint8_t>&&,
+    std::vector<uint8_t>&&,
+    std::vector<uint8_t>&&,
+    std::set<Path>&&,
+    FileWriteFlags)> FileWriteCallback;
 
 template <typename ObjectType>
 class FutureReference

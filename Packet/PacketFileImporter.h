@@ -7,7 +7,6 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
-#include "PacketFileConverter.h"
 #include <string>
 #include <map>
 #include <set>
@@ -31,26 +30,10 @@
 // Packet data explorer
 PacketDevelopmentNamespaceBegin(Packet)
 
-// Import file flags
-enum class FileImportFlagBits
-{
-    None,
-    Overwrite
-};
-
-// Write file flags
-enum class FileWriteFlagBits
-{
-    None, 
-    CreateIfInexistent
-};
-
-typedef uint32_t FileImportFlags;
-typedef uint32_t FileWriteFlags;
-
 // Classes we know
 class PacketFileIndexer;
 class PacketFileLoader;
+class PacketFileConverter;
 class PacketReferenceManager;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,10 +50,12 @@ class PacketFileImporter
 public: //////////
 
 	// Constructor / destructor
-	PacketFileImporter(PacketFileIndexer& _file_indexer, 
-                       const PacketFileLoader& _file_loader,
-                       const PacketReferenceManager& _reference_manager, 
-                       std::wstring _resource_path);
+	PacketFileImporter(PacketFileIndexer&                                _file_indexer, 
+                       const PacketFileLoader&                           _file_loader,
+                       const PacketReferenceManager&                     _reference_manager, 
+                       FileWriteCallback                                 _file_write_callback,
+                       std::function<PacketFileConverter* (std::string)> _retrieve_converter_for_type_callback, 
+                       std::wstring                                      _resource_path);
 	~PacketFileImporter();
 
 //////////////////
@@ -80,34 +65,10 @@ public: //////////
     // Initialize this file importer
     bool Initialize();
 
-    // Register a new converter
-    void RegisterFileConverter(std::string _file_extension, std::unique_ptr<PacketFileConverter> _file_converter);
-
     // Import an external file
     bool ImportExternalFile(std::filesystem::path _file_original_path, Path _target_path, FileImportFlags _import_flags = 0) const;
 
-    // Write to an internal file, if the file doesn't exist it will be created if specified by the FileWriteFlags
-    bool WriteInternalFile(
-        Path                   _target_path,
-        FileType               _file_type,
-        std::vector<uint8_t>&& _icon_data,
-        std::vector<uint8_t>&& _properties_data,
-        std::vector<uint8_t>&& _original_data,
-        std::vector<uint8_t>&& _intermediate_data,
-        std::vector<uint8_t>&& _final_data,
-        std::set<Path>&&       _file_dependencies,
-        FileWriteFlags         _write_flags = 0) const;
-
-    // Copy an internal file to another location
-    bool CopyInternalFile(Path _source_file_path, Path _target_file_path) const;
-
-    // Move an internal file to another location
-    bool MoveInternalFile(Path _source_file_path, Path _target_file_path) const;
-
 protected:
-
-    // Write a file data into an internal file, this doesn't check if the file should be overwritten
-    bool WriteFileDataIntoInternalFile(Path _file_path, std::vector<uint8_t>&& _file_data) const;
 
 ///////////////
 // VARIABLES //
@@ -127,6 +88,9 @@ private: //////
     // Our map with all registered converters with their extensions
     std::map<std::string, std::unique_ptr<PacketFileConverter>> m_Converters;
 
+    // Our callbacks
+    FileWriteCallback                                 m_FileWriteCallback;
+    std::function<PacketFileConverter* (std::string)> m_RetrieveConverterForTypeCallback;
 };
 
 // Packet data explorer

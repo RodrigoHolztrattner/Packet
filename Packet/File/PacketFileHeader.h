@@ -38,11 +38,11 @@ public:
         uint32_t magic = FileMagic;
 
         // Basic information
-        uint32_t      version    = 0;
+        uint32_t      version    = PacketVersion;
         FileType      file_type  = 0;
         Path          file_path  = 0;
         HashPrimitive file_hash  = 0;
-        FileDataSize  total_size = 0;
+        FileDataSize  total_size = sizeof(FileHeaderData);
         // Last updated time
         // Other data
 
@@ -88,8 +88,15 @@ protected:
     // Create a header from the given file raw data, the data must be valid
     static std::optional<PacketFileHeader> CreateFromRawData(const std::vector<uint8_t>& _data);
 
+    // Create a header from the given header data
+    static std::optional<PacketFileHeader> CreateFromHeaderData(FileHeaderData _header_data);
+
     // Return a header data pointer to the given file raw data, if valid
     static FileHeaderData* GetHeaderDataPtr(std::vector<uint8_t>& _data);
+
+    // Set this header info
+    void SetFileSize(FileDataSize _file_size);
+    void SetFileType(FileType _file_type);
 
     // Get this header as pure data
     std::vector<uint8_t> GetRawData() const;

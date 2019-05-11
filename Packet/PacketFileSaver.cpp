@@ -129,10 +129,21 @@ bool PacketFileSaver::SaveFile(const PacketFileHeader& _file_header, FilePart _f
         return false;
     }
 
-    // TODO:
-    // ...
+    // Load the file
+    auto file = m_FileLoader.LoadFile(Hash(_file_header.GetPath()));
+    if (!file)
+    {
+        return false;
+    }
 
-    return false;
+    // Update the data part
+    if (!file->UpdateFilePart(_file_part, std::move(_file_data_part)))
+    {
+        return false;
+    }
+
+    // Save the file
+    return SaveFile(std::move(file));
 }
 
 bool PacketFileSaver::SaveFileHelper(std::unique_ptr<PacketFile> _file) const

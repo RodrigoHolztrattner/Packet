@@ -157,14 +157,12 @@ std::pair<std::set<Path>, std::set<Path>> PacketReferenceManager::RetrieveDepend
     return { std::move(delete_diff), std::move(add_diff) };
 }
 
-#include <string_view>
-
 void PacketReferenceManager::SubstituteAllPathReferences(std::vector<uint8_t>& _file_data, Path _lookup_path, Path _new_path) const
 {
     // TODO: This can be easily parallelized
 
     // Get the lookup string and the new path string
-    std::string lookup_string = _lookup_path.String();
+    std::string lookup_string   = _lookup_path.String();
     std::string new_path_string = _new_path.String();
 
     std::string string_data(_file_data.begin(), _file_data.end());

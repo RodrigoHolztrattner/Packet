@@ -44,6 +44,22 @@ std::optional<PacketFileHeader> PacketFileHeader::CreateFromRawData(const std::v
     return file_header;
 }
 
+std::optional<PacketFileHeader> PacketFileHeader::CreateFromHeaderData(FileHeaderData _header_data)
+{
+    // Check if the magic number is right
+    if (_header_data.magic != FileMagic)
+    {
+        return std::nullopt;
+    }
+
+    // Create the file header object and set its data
+    PacketFileHeader file_header = {};
+    file_header.m_HeaderData = _header_data;
+    file_header.m_OriginalPath = _header_data.file_path;
+
+    return file_header;
+}
+
 PacketFileHeader::FileHeaderData* PacketFileHeader::GetHeaderDataPtr(std::vector<uint8_t>& _data)
 {
     // Check if the data can handle at least the header size
@@ -62,6 +78,16 @@ PacketFileHeader::FileHeaderData* PacketFileHeader::GetHeaderDataPtr(std::vector
     }
 
     return file_header_data;
+}
+
+void PacketFileHeader::SetFileSize(FileDataSize _file_size)
+{
+    m_HeaderData.total_size = _file_size;
+}
+
+void PacketFileHeader::SetFileType(FileType _file_type)
+{
+    m_HeaderData.file_type = _file_type;
 }
 
 std::vector<uint8_t> PacketFileHeader::GetRawData() const
@@ -94,6 +120,12 @@ Path PacketFileHeader::GetPath() const
 
 Path PacketFileHeader::GetOriginalPath() const
 {
+    std::string original_path = m_OriginalPath.String();
+    if (original_path.length() == 0)
+    {
+        return m_HeaderData.file_path;
+    }
+
     return m_OriginalPath;
 }
 
