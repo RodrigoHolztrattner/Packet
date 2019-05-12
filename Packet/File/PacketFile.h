@@ -65,7 +65,7 @@ class PacketFile
 public: //////////
 
 	// Constructor / destructor
-	PacketFile(PacketFileHeader _fileHeaderReference, const std::vector<uint8_t> _fileIconDataReference, bool _is_internal_file);
+	PacketFile(PacketFileHeader _fileHeaderReference, bool _is_internal_file);
 	~PacketFile();
 
 private:
@@ -80,7 +80,12 @@ public: //////////
     static std::unique_ptr<PacketFile> CreateFileFromRawData(std::vector<uint8_t>&& _file_data);
 
     // Transform a file into raw data
-    static std::vector<uint8_t> CreateRawDataFromFile(std::unique_ptr<PacketFile> _file); // Necessary when saving the file!
+    static std::vector<uint8_t> CreateRawDataFromFile(std::unique_ptr<PacketFile> _file);
+
+    // Convert an external file into a packet file, the resulting file will only have its final data set
+    // and cannot be saved, to proper create a packet file the external one must be imported using
+    // the PacketFileImporter class
+    static std::unique_ptr<PacketFile> CreateFileFromExternal(std::vector<uint8_t>&& _file_data);
 
     // Duplicate the given file, caution with this, change the path before saving it and if applicable, 
     // remove all links before doing it
@@ -97,18 +102,6 @@ public: //////////
         std::vector<uint8_t>&& _intermediate_data,
         std::vector<uint8_t>&& _final_data,
         std::set<Path>&&       _file_dependencies);
-
-    // Break a file into its small data, this will consume the file unique ptr
-    /*
-    static bool BreakFileIntoDatas(
-        std::unique_ptr<PacketFile> _file,
-        std::vector<uint8_t>&       _icon_data,
-        std::vector<uint8_t>&       _properties_data,
-        std::vector<uint8_t>&       _original_data,
-        std::vector<uint8_t>&       _intermediate_data,
-        std::vector<uint8_t>&       _final_data,
-        PacketFileReferences&       _file_references_parsed); // Not necessary?
-    */
 
     // Get this file icon data
     const std::vector<uint8_t>& GetIconData() const;
@@ -137,8 +130,8 @@ public: //////////
     // Get this file references
     const PacketFileReferences& GetFileReferences() const;
 
-    // Return if this is an internal file (not indexed)
-    bool IsInternalFile() const;
+    // Return if this is an external file (not indexed)
+    bool IsExternalFile() const;
 
 protected:
 
@@ -153,7 +146,8 @@ protected:
 private:
 
     // Set this file data, must be called by a loader
-    void SetData(std::vector<uint8_t>&& _propertiesData,
+    void SetData(std::vector<uint8_t>&& _iconData,
+                 std::vector<uint8_t>&& _propertiesData,
                  std::vector<uint8_t>&& _originalData,
                  std::vector<uint8_t>&& _intermediateData,
                  std::vector<uint8_t>&& _finalData,

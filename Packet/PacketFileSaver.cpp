@@ -31,7 +31,7 @@ PacketFileSaver::~PacketFileSaver()
 bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file) const
 {
     // Check if the file is valid
-    if (!_file)
+    if (!_file || _file->IsExternalFile())
     {
         return false;
     }
@@ -51,7 +51,6 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file) const
         - To copy a file, we must:                Duplicate original file + Save duplicated one
         - To create a new file, we must:          Save the new file
         - Update existing file, we must:          Save updated file
-    
     */
 
     // If the original file doesn't exist, we are creating a new one
@@ -132,6 +131,12 @@ bool PacketFileSaver::SaveFile(const PacketFileHeader& _file_header, FilePart _f
     // Load the file
     auto file = m_FileLoader.LoadFile(Hash(_file_header.GetPath()));
     if (!file)
+    {
+        return false;
+    }
+
+    // Do not update if the file is an external file
+    if (file->IsExternalFile())
     {
         return false;
     }

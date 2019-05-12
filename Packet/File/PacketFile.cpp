@@ -12,9 +12,8 @@ PacketFile::PacketFile()
 {
 }
 
-PacketFile::PacketFile(PacketFileHeader _fileHeaderReference, const std::vector<uint8_t> _fileIconDataReference, bool _is_internal_file) :
+PacketFile::PacketFile(PacketFileHeader _fileHeaderReference, bool _is_internal_file) :
     m_FileHeader(_fileHeaderReference), 
-    m_FileIconData(_fileIconDataReference), 
     m_IsInternalFile(_is_internal_file)
 {
 	// Set the initial data
@@ -25,20 +24,48 @@ PacketFile::~PacketFile()
 {
 }
 
+std::unique_ptr<PacketFile> PacketFile::CreateFileFromExternal(std::vector<uint8_t>&& _file_data)
+{
+    // The file data must be valid
+    if (_file_data.size() == 0)
+    {
+        return nullptr;
+    }
+
+    // Create an empty file header data object and set its initial values
+    PacketFileHeader file_header;
+    file_header.SetFileType("external");
+    file_header.SetPath("external");
+
+    // Create a new empty file marked as external one
+    std::unique_ptr<PacketFile> new_file = std::make_unique<PacketFile>(file_header, false);
+
+    // Set its final data
+    new_file->UpdateFilePart(FilePart::FinalData, std::move(_file_data));
+
+    return new_file;
+}
+
 std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_t>&& _file_data)
 {
     std::unique_ptr<PacketFile> result_file;
 
-    // Get the file header
+    // Get the file header, this will attempt to load the header from the file data and
+    // check the magic number, it can return false if the file is invalid or if it isn't
+    // a valid packet file
     auto file_header = PacketFileHeader::CreateFromRawData(_file_data);
     if (!file_header)
     {
-        // Invalid file header or size!
-        return nullptr;
+        // Invalid file header! Try to create as an external file data
+        return CreateFileFromExternal(std::move(_file_data));
     }
 
     // Check the version
-    // ...
+    if (file_header->GetVersion() != PacketVersion)
+    {
+        // Invalid version!
+        return nullptr;
+    }
 
     // Determine the data locations
     auto icon_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::IconData);
@@ -63,13 +90,14 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_
     std::vector<uint8_t> references_data = std::vector<uint8_t>(final_data_begin, final_data_end);
 
     // Initialize the result file
-    result_file = std::make_unique<PacketFile>(file_header, std::move(icon_data), true);
+    result_file = std::make_unique<PacketFile>(file_header, true);
 
     // Set the data
-    result_file->SetData(std::move(properties_data), 
-                         std::move(original_data), 
-                         std::move(intermediate_data), 
-                         std::move(final_data), 
+    result_file->SetData(std::move(icon_data),
+                         std::move(properties_data),
+                         std::move(original_data),
+                         std::move(intermediate_data),
+                         std::move(final_data),
                          std::move(references_data));
 
     return result_file;
@@ -77,6 +105,12 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_
 
 std::unique_ptr<PacketFile> PacketFile::DuplicateFile(const std::unique_ptr<PacketFile>& _file)
 {
+    // Do not duplicate a non packet file
+    if (_file->IsExternalFile())
+    {
+        return nullptr;
+    }
+
     std::unique_ptr<PacketFile> result_file = std::make_unique<PacketFile>();
 
     // Duplicate all the data
@@ -94,36 +128,35 @@ std::unique_ptr<PacketFile> PacketFile::DuplicateFile(const std::unique_ptr<Pack
     return result_file;
 }
 
-/*
 std::vector<uint8_t> PacketFile::CreateRawDataFromFile(std::unique_ptr<PacketFile> _file)
 {
-    if (!_file)
+    // Check if the file is valid
+    if (!_file || _file->IsExternalFile())
     {
         return {};
     }
 
-    HashPrimitive file_hash = _file->m_FileHeader.GetHash();
-    FileType file_type = _file->m_FileHeader.GetFileType();
-    std::vector<uint8_t> icon_data = std::move(_file->m_FileIconData);
-    std::vector<uint8_t> properties_data = std::move(_file->m_PropertiesData);
-    std::vector<uint8_t> original_data = std::move(_file->m_OriginalData);
+    // Get all the datas
+    std::vector<uint8_t> header_data       = _file->GetFileHeader().GetRawData();
+    std::vector<uint8_t> icon_data         = std::move(_file->m_FileIconData);
+    std::vector<uint8_t> properties_data   = std::move(_file->m_PropertiesData);
+    std::vector<uint8_t> original_data     = std::move(_file->m_OriginalData);
     std::vector<uint8_t> intermediate_data = std::move(_file->m_IntermediateData);
-    std::vector<uint8_t> final_data = std::move(_file->m_FinalData);
-    std::set<Path> files_that_depends_on_this = _file->m_ParsedFileReferences.GetFileLinks();
-    std::set<Path> file_dependencies = _file->m_ParsedFileReferences.GetFileDependencies();
+    std::vector<uint8_t> final_data        = std::move(_file->m_FinalData);
+    std::vector<uint8_t> references_data   = PacketFileReferences::TransformIntoData(_file->GetFileReferences());
 
-    return GenerateInternalFileData(
-        file_hash,
-        file_type,
-        std::move(icon_data),
-        std::move(properties_data),
-        std::move(original_data),
-        std::move(intermediate_data),
-        std::move(final_data),
-        std::move(files_that_depends_on_this),
-        std::move(file_dependencies));
+    // Compose the final data
+    std::vector<uint8_t> final_data;
+    std::copy(header_data.begin(), header_data.end(), std::back_inserter(final_data));
+    std::copy(icon_data.begin(), icon_data.end(), std::back_inserter(final_data));
+    std::copy(properties_data.begin(), properties_data.end(), std::back_inserter(final_data));
+    std::copy(original_data.begin(), original_data.end(), std::back_inserter(final_data));
+    std::copy(intermediate_data.begin(), intermediate_data.end(), std::back_inserter(final_data));
+    std::copy(final_data.begin(), final_data.end(), std::back_inserter(final_data));
+    std::copy(references_data.begin(), references_data.end(), std::back_inserter(final_data));
+
+    return final_data;
 }
-*/
 
 std::unique_ptr<PacketFile> PacketFile::GenerateFileFromData(
     Path                   _file_path,
@@ -147,10 +180,7 @@ std::unique_ptr<PacketFile> PacketFile::GenerateFileFromData(
     std::vector<uint8_t> file_references_data = PacketFileReferences::TransformIntoData(file_references);
 
     // Create a new empty file
-    std::unique_ptr<PacketFile> new_file = std::make_unique<PacketFile>();
-
-    // Set the new file header
-    new_file->m_FileHeader = file_header;
+    std::unique_ptr<PacketFile> new_file = std::make_unique<PacketFile>(file_header, true);
 
     // Set its data
     new_file->UpdateFilePart(FilePart::IconData, std::move(_icon_data));
@@ -162,32 +192,6 @@ std::unique_ptr<PacketFile> PacketFile::GenerateFileFromData(
 
     return std::move(new_file);
 }
-
-/*
-bool PacketFile::BreakFileIntoDatas(
-    std::unique_ptr<PacketFile> _file,
-    std::vector<uint8_t>&       _icon_data,
-    std::vector<uint8_t>&       _properties_data,
-    std::vector<uint8_t>&       _original_data,
-    std::vector<uint8_t>&       _intermediate_data,
-    std::vector<uint8_t>&       _final_data,
-    PacketFileReferences&       _file_references_parsed)
-{
-    if (!_file)
-    {
-        return false;
-    }
-
-    _icon_data              = std::move(_file->m_FileIconData);
-    _properties_data        = std::move(_file->m_PropertiesData);
-    _original_data          = std::move(_file->m_OriginalData);
-    _intermediate_data      = std::move(_file->m_IntermediateData);
-    _final_data             = std::move(_file->m_FinalData);
-    _file_references_parsed = std::move(_file->m_ParsedFileReferences);
-
-    return true;
-}
-*/
 
 const std::vector<uint8_t>& PacketFile::GetPropertiesData() const
 {
@@ -234,9 +238,9 @@ const PacketFileReferences& PacketFile::GetFileReferences() const
     return m_ParsedFileReferences;
 }
 
-bool PacketFile::IsInternalFile() const
+bool PacketFile::IsExternalFile() const
 {
-    return m_IsInternalFile;
+    return !m_IsInternalFile;
 }
 
 void PacketFile::ClearFileLinks()
@@ -310,13 +314,15 @@ bool PacketFile::UpdateFilePart(FilePart _file_part, std::vector<uint8_t>&& _dat
     return true;
 }
 
-void PacketFile::SetData(std::vector<uint8_t>&& _propertiesData,
+void PacketFile::SetData(std::vector<uint8_t>&& _iconData,
+                         std::vector<uint8_t>&& _propertiesData,
                          std::vector<uint8_t>&& _originalData,
                          std::vector<uint8_t>&& _intermediateData,
                          std::vector<uint8_t>&& _finalData,
                          std::vector<uint8_t>&& _referencesData)
 {
     // Remaining file data
+    m_FileIconData     = std::move(_iconData);
     m_PropertiesData   = std::move(_propertiesData);
     m_OriginalData     = std::move(_originalData);
     m_IntermediateData = std::move(_intermediateData);
