@@ -14,10 +14,7 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketReferenceManager::PacketReferenceManager(const PacketFileLoader& _file_loader, const PacketFileSaver& _file_saver, const PacketFileImporter& _file_importer) :
-    m_FileLoader(_file_loader), 
-    m_FileSaver(_file_saver), 
-    m_FileImporter(_file_importer)
+PacketReferenceManager::PacketReferenceManager()
 {
 	// Set the initial data
 	// ...
@@ -25,6 +22,12 @@ PacketReferenceManager::PacketReferenceManager(const PacketFileLoader& _file_loa
 
 PacketReferenceManager::~PacketReferenceManager()
 {
+}
+
+void PacketReferenceManager::SetAuxiliarObjects(const PacketFileLoader* _file_loader, const PacketFileSaver* _file_saver)
+{
+    m_FileLoaderPtr = _file_loader;
+    m_FileSaverPtr = _file_saver;
 }
 
 bool PacketReferenceManager::RegisterDependenciesForFile(std::set<Path> _file_dependencies, Path _file_path) const
@@ -45,7 +48,7 @@ bool PacketReferenceManager::RegisterDependenciesForFile(std::set<Path> _file_de
 
 bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) const
 {
-    auto file_references_opt = m_FileLoader.LoadFileDataPart(Hash(_file_path), FilePart::ReferencesData);
+    auto file_references_opt = m_FileLoaderPtr->LoadFileDataPart(Hash(_file_path), FilePart::ReferencesData);
     if (!file_references_opt)
     {
         // This should never happen if we follow all procedures correctly
@@ -61,14 +64,14 @@ bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) 
     references_data = PacketFileReferences::TransformIntoData(references);
 
     // Save this file reference data
-    m_FileSaver.SaveFile(header, FilePart::ReferencesData, std::move(references_data));
+    m_FileSaverPtr->SaveFile(header, FilePart::ReferencesData, std::move(references_data));
 
     return true;
 }
 
 bool PacketReferenceManager::RemoveReferenceLink(Path _file_path, Path _reference) const
 {
-    auto file_references_opt = m_FileLoader.LoadFileDataPart(Hash(_file_path), FilePart::ReferencesData);
+    auto file_references_opt = m_FileLoaderPtr->LoadFileDataPart(Hash(_file_path), FilePart::ReferencesData);
     if (!file_references_opt)
     {
         // This should never happen if we follow all procedures correctly
@@ -84,7 +87,7 @@ bool PacketReferenceManager::RemoveReferenceLink(Path _file_path, Path _referenc
     references_data = PacketFileReferences::TransformIntoData(references);
 
     // Save this file reference data
-    m_FileSaver.SaveFile(header, FilePart::ReferencesData, std::move(references_data));
+    m_FileSaverPtr->SaveFile(header, FilePart::ReferencesData, std::move(references_data));
 
     return true;
 }
@@ -98,7 +101,7 @@ bool PacketReferenceManager::RedirectLinks(std::set<Path> _referenced_files_path
     for (auto& referenced_file_path : _referenced_files_paths)
     {
         // Load the target file
-        auto referenced_file_data = m_FileLoader.LoadFileRawData(Hash(referenced_file_path));
+        auto referenced_file_data = m_FileLoaderPtr->LoadFileRawData(Hash(referenced_file_path));
         if (referenced_file_data.size() == 0)
         {
             // This should never happen if we follow all procedures correctly
@@ -117,7 +120,7 @@ bool PacketReferenceManager::RedirectLinks(std::set<Path> _referenced_files_path
         }
 
         // Write the file data into a system file
-        if (!m_FileSaver.SaveFile(std::move(updated_file)))
+        if (!m_FileSaverPtr->SaveFile(std::move(updated_file)))
         {
             // This should never happen if we follow all procedures correctly
             operation_result = false;
@@ -131,7 +134,7 @@ bool PacketReferenceManager::RedirectLinks(std::set<Path> _referenced_files_path
 std::pair<std::set<Path>, std::set<Path>> PacketReferenceManager::RetrieveDependencyDiffFromOriginalFile(const std::unique_ptr<PacketFile>& _file) const
 {
     // Get the original references
-    auto original_references_data_opt = m_FileLoader.LoadFileDataPart(Hash(_file->GetFileHeader().GetOriginalPath()), FilePart::ReferencesData);
+    auto original_references_data_opt = m_FileLoaderPtr->LoadFileDataPart(Hash(_file->GetFileHeader().GetOriginalPath()), FilePart::ReferencesData);
     if (!original_references_data_opt)
     {
         assert(false && "Trying to retrieve the original file references but its data is invalid!");
@@ -150,7 +153,7 @@ std::pair<std::set<Path>, std::set<Path>> PacketReferenceManager::RetrieveDepend
         original_dependencies.end(),
         current_dependencies.begin(),
         current_dependencies.end(),
-        delete_diff);
+        std::inserter(delete_diff, delete_diff.begin()));
 
     // Determine the add diff
     std::set<Path> add_diff;
@@ -159,7 +162,7 @@ std::pair<std::set<Path>, std::set<Path>> PacketReferenceManager::RetrieveDepend
         current_dependencies.end(),
         original_dependencies.begin(),
         original_dependencies.end(),
-        add_diff);
+        std::inserter(add_diff, add_diff.begin()));
 
     return { std::move(delete_diff), std::move(add_diff) };
 }

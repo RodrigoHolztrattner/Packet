@@ -22,7 +22,6 @@ PacketDevelopmentNamespaceBegin(Packet)
 class PacketFile;
 class PacketFileLoader;
 class PacketFileSaver;
-class PacketFileImporter;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketReferenceManager
@@ -37,8 +36,11 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketReferenceManager(const PacketFileLoader& _file_loader, const PacketFileSaver& _file_saver, const PacketFileImporter& _file_importer);
+	PacketReferenceManager();
 	~PacketReferenceManager();
+
+    // Set auxiliary object pointers
+    void SetAuxiliarObjects(const PacketFileLoader* _file_loader, const PacketFileSaver* _file_saver);
 
     // This method will receive a set of dependencies and a file path, it will register a link for each
     // file inside that map targeting the given file path
@@ -70,9 +72,8 @@ public: //////////
 private: //////
 
     // Our file loader and importer references
-    const PacketFileLoader&   m_FileLoader;
-    const PacketFileSaver&    m_FileSaver;
-    const PacketFileImporter& m_FileImporter;
+    const PacketFileLoader*   m_FileLoaderPtr;
+    const PacketFileSaver*    m_FileSaverPtr;
 
 };
 

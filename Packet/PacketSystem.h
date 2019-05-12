@@ -16,12 +16,7 @@
 PacketDevelopmentNamespaceBegin(Packet)
 
 // Classes we know
-class PacketFileIndexer;
-class PacketFileImporter;
-class PacketFileConverter;
-class PacketFileLoader;
-
-typedef std::function<std::optional<PacketFileConverter*>(std::string)> RetrieveFileConverterByExtensionFunc;
+class PacketFileManager;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketSystem
@@ -54,9 +49,7 @@ private: //////
     OperationMode m_OperationMode = OperationMode::Undefined;
 
 	// Our internal objects
-    std::unique_ptr<PacketFileIndexer>  m_FileIndexer;
-    std::unique_ptr<PacketFileImporter> m_FileImporter;
-	std::unique_ptr<PacketFileLoader>   m_FileLoader;
+    std::unique_ptr<PacketFileManager> m_FileManager;
 };
 
 // Packet data explorer

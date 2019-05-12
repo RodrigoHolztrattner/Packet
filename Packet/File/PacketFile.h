@@ -48,12 +48,9 @@ class PacketFile
 public: //////////
 
 	// Constructor / destructor
+    PacketFile();
 	PacketFile(PacketFileHeader _fileHeaderReference, bool _is_internal_file);
 	~PacketFile();
-
-private:
-
-    PacketFile();
 
 //////////////////
 // MAIN METHODS //
@@ -85,6 +82,10 @@ public: //////////
         std::vector<uint8_t>&& _intermediate_data,
         std::vector<uint8_t>&& _final_data,
         std::set<Path>&&       _file_dependencies);
+
+    // Retrieve the final data for a file, this will consume the file object returning only its final
+    // data as a vector, really useful when loading the file on condensed mode
+    static std::vector<uint8_t> RetrieveFileFinalData(std::unique_ptr<PacketFile> _file);
 
     // Get this file icon data
     const std::vector<uint8_t>& GetIconData() const;

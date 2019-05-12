@@ -96,7 +96,7 @@ std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> PacketPlainFil
     FileDataSize file_data_part_size         = file_header->GetDataSize(_file_part);
     
     // See to the target location
-    file.seekg(file.beg() + file_data_part_location);
+    file.seekg(file_data_part_location, file.beg);
 
     // Read the target data
     std::vector<uint8_t> target_data(file_data_part_size);

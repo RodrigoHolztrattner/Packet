@@ -68,47 +68,22 @@ struct PacketResourceData
 
 	// Our constructors
 	PacketResourceData();
-	PacketResourceData(uint8_t* _data, uint64_t _size);
-    PacketResourceData(uint64_t _size);
-    PacketResourceData(std::vector<uint8_t> _runtimeData);
-
-	// Copy constructor
-	PacketResourceData(PacketResourceData&);
-
-	// The pointer deletion must be done manually
-	~PacketResourceData();
-
-	// Our move assignment operator
-	PacketResourceData& operator=(PacketResourceData&& _other);
-
-	// Our move copy operator (same as above)
-	PacketResourceData(PacketResourceData&& _other);
+    PacketResourceData(std::vector<uint8_t> _data);
 
 	// Return the data
-	const uint8_t* GetData() const;
+	const std::vector<uint8_t>& GetData() const;
 
 	// Return the size
 	uint64_t GetSize() const;
 
-	// Allocates memory for this object
-	virtual bool AllocateMemory(uint64_t _total);
-
-	// Deallocate this object memory
-	virtual void DeallocateMemory();
-
 protected:
 
-    // Return a pointer to this memory enabling it to be written
-    uint8_t* GetwritableData() const;
-
-protected:
-
-	uint8_t* m_Data;
-	uint64_t m_Size;
+    // Set the data
+    void SetData(std::vector<uint8_t>&& _data);
 
 private:
 
-    std::vector<uint8_t> m_RuntimeData;
+    std::vector<uint8_t> m_Data;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -185,23 +160,6 @@ public: //////////
     // Return the current operation mode
     OperationMode GetOperationMode() const;
 
-//////////////////////////////////
-public: // PHYSICAL DATA UPDATE //
-//////////////////////////////////
-
-	// This method will set this resource to ignore physical changes on its data, if the resource file happens to be 
-	// modified or any call to UpdateResourcePhysicalData() method won't be resulting in the destruction of this 
-	// resource and in a creation of a new one, this method will only works when on edit mode for the packet system 
-	void IgnoreResourcePhysicalDataChanges();
-
-	// Update this resource physical data, overwriting it. This method will only works if the packet system is operating on 
-	// edit mode, by default calling this method will result in a future deletion of this resource object and in a creation
-	// of a new resource object with the updated data, if the user needs to update the data at runtime multiple times is 
-	// recommended to batch multiple "data updates" and call this method once in a while (only call this method when there is 
-	// a real need to actually save the data)
-	bool UpdateResourcePhysicalData(const uint8_t* _data, uint64_t _dataSize);
-	bool UpdateResourcePhysicalData(PacketResourceData& _data);
-
 ////////////////////////////
 protected: // REPLACEMENT //
 ////////////////////////////
@@ -224,7 +182,6 @@ public: // STATUS //
 	bool IsPermanent()               const;
     bool IsRuntime()                 const;
     bool IsPendingModifications()    const;
-    bool IgnorePhysicalDataChanges() const;
     bool ConstructionFailed()        const;
 
 /////////////////////////
@@ -281,7 +238,6 @@ private: //////
 
 	// Status
 	bool m_IsPermanentResource       = false;
-	bool m_IgnorePhysicalDataChanges = false;
 	bool m_IsPendingDeletion         = false;
     bool m_WasLoaded                 = false;
     bool m_WasConstructed            = false;

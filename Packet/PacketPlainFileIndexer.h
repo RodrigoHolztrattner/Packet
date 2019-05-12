@@ -37,7 +37,6 @@
 PacketDevelopmentNamespaceBegin(Packet)
 
 // Classes we know
-class PacketFileImporter;
 class PacketFileManager;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +45,6 @@ class PacketFileManager;
 class PacketPlainFileIndexer : public PacketFileIndexer
 {
     // Friend classes
-    friend PacketFileImporter;
     friend PacketFileManager;
 
     struct IndexData

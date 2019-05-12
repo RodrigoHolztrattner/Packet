@@ -66,22 +66,21 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     }
     else
     {
-        // Get the resource size
-        auto resourceSize = m_FileLoader.GetFileSize(_hash);
+        // Load the file
+        auto resource_file = m_FileLoader.LoadFile(_hash);
+        assert(resource_file);
+
+        // Retrieve the file final data
+        std::vector<uint8_t> file_final_data = PacketFile::RetrieveFileFinalData(std::move(resource_file));
 
         // Get a reference to the object data vector directly
-        auto& dataVector = resource->GetDataRef();
+        auto& data_vector = resource->GetDataRef();
 
-        // Using the object factory, allocate the necessary data
-        bool result = resource->GetFactoryPtr()->AllocateData(dataVector, resourceSize);
-        assert(result);
-
-        // Read the file data
-        result = m_FileLoader.GetFileData(dataVector.GetwritableData(), resourceSize, _hash);
-        assert(result);
+        // Set the data
+        data_vector.SetData(std::move(file_final_data));
 
         // Call the BeginLoad() method for this object
-        result = resource->BeginLoad(_isPermanent);
+        bool result = resource->BeginLoad(_isPermanent);
         assert(result);
     }
 

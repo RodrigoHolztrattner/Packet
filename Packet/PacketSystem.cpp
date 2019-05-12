@@ -2,12 +2,7 @@
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketSystem.h"
-
-#include "PacketFileIndexer.h"
-#include "PacketPlainFileIndexer.h"
-
-#include "PacketFileLoader.h"
-#include "PacketPlainFileLoader.h"
+#include "PacketFileManager.h"
 
 ///////////////
 // NAMESPACE //
@@ -31,21 +26,9 @@ bool PacketSystem::Initialize(OperationMode _operation_mode, std::filesystem::pa
     m_OperationMode = _operation_mode;
     m_ResourcePath = _resource_path;
 
-    // Depending on our operation mode, create the appropriated internal objects
-    if (m_OperationMode == OperationMode::Plain)
-    {
-        m_FileIndexer = std::make_unique<PacketPlainFileIndexer>();
-        m_FileLoader = std::make_unique<PacketPlainFileLoader>(*m_FileIndexer);
-        m_FileImporter = std::make_unique<PacketFileImporter>();
-    }
-    // Condensed
-    else
-    {
-        // m_FileIndexer = std::make_unique<PacketCondensedFileIndexer>();
-    }
-
-    // Initialize the file indexer
-    if (!m_FileIndexer->Initialize(_resource_path))
+    // Create and initialize the file manager
+    m_FileManager = std::make_unique<PacketFileManager>(_operation_mode, _resource_path);
+    if (!m_FileManager->Initialize())
     {
         return false;
     }

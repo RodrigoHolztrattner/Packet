@@ -16,130 +16,28 @@ PacketUsingDevelopmentNamespace(Packet)
 // PacketResourceData //
 ////////////////////////
 
-PacketResourceData::PacketResourceData() : m_Data(nullptr), m_Size(0)
+PacketResourceData::PacketResourceData()
 {
 }
 
-PacketResourceData::PacketResourceData(uint8_t* _data, uint64_t _size) : m_Data(_data), m_Size(_size) 
+PacketResourceData::PacketResourceData(std::vector<uint8_t> _data)
 {
+    m_Data = std::move(_data);
 }
 
-PacketResourceData::PacketResourceData(uint64_t _size) : m_Data(nullptr)
+const std::vector<uint8_t>& PacketResourceData::GetData() const
 {
-	// Allocate the initial memory if the size isn't 0
-    if (_size != 0)
-    {
-        bool result = AllocateMemory(_size);
-        assert(result);
-    }
-}
-
-PacketResourceData::PacketResourceData(std::vector<uint8_t> _runtimeData) : m_Data(nullptr), m_Size(0)
-{
-    m_RuntimeData = std::move(_runtimeData);
-}
-
-PacketResourceData::PacketResourceData(PacketResourceData& _other)
-{
-    // Deallocate the current memory
-    DeallocateMemory();
-
-    // Allocate the necessary memory if the size isn't 0
-    if (_other.m_Size)
-    {
-        AllocateMemory(_other.m_Size);
-    } 
-
-	m_Data = _other.m_Data;
-	m_Size = _other.m_Size;
-    m_RuntimeData = _other.m_RuntimeData;
-}
-
-PacketResourceData::~PacketResourceData()
-{
-	assert(m_Data == nullptr);
-	assert(m_Size == 0);
-}
-
-PacketResourceData& PacketResourceData::operator=(PacketResourceData&& _other)
-{
-	// We can't assign to the same object
-	if (this != &_other)
-	{
-        // Deallocate the current memory
-        DeallocateMemory();
-
-        // Allocate the necessary memory if the size isn't 0
-        if (_other.m_Size)
-        {
-            AllocateMemory(_other.m_Size);
-        }
-        
-		// Acquire the other resource instance ptr
-        memcpy(m_Data, _other.m_Data, _other.m_Size);
-		m_Size = _other.m_Size;
-        m_RuntimeData = _other.m_RuntimeData;
-	}
-
-	return *this;
-}
-
-PacketResourceData::PacketResourceData(PacketResourceData&& _other)
-{
-	// Acquire the other resource instance ptr
-    m_Data = _other.m_Data;
-    m_Size = _other.m_Size;
-    m_RuntimeData = std::move(_other.m_RuntimeData);
-    _other.m_Data = nullptr;
-    _other.m_Size = 0;
-}
-
-const uint8_t* PacketResourceData::GetData() const
-{
-    if (m_RuntimeData.size() > 0)
-    {
-        return static_cast<const uint8_t*>(m_RuntimeData.data());
-    }
-
 	return m_Data;
-}
-
-uint8_t* PacketResourceData::GetwritableData() const
-{
-    return m_Data;
 }
 
 uint64_t PacketResourceData::GetSize() const
 {
-    if (m_RuntimeData.size() > 0)
-    {
-        return m_RuntimeData.size();
-    }
-
-	return m_Size;
+	return m_Data.size();
 }
 
-bool PacketResourceData::AllocateMemory(uint64_t _total)
+void PacketResourceData::SetData(std::vector<uint8_t>&& _data)
 {
-	m_Data = new uint8_t[unsigned int(_total)];
-	if (m_Data == nullptr)
-	{
-		return false;
-	}
-
-	m_Size = _total;
-
-	return true;
-}
-
-void PacketResourceData::DeallocateMemory()
-{
-    if (m_Data != nullptr)
-    {
-        delete[] m_Data;
-        m_Data = nullptr;
-        m_Size = 0;
-    }
+    m_Data = std::move(_data);
 }
 
 ////////////////////
@@ -149,7 +47,6 @@ void PacketResourceData::DeallocateMemory()
 PacketResource::PacketResource()
 {
 	// Set the initial data
-	m_IgnorePhysicalDataChanges = false;
 	m_IsPermanentResource       = false;
 	m_IsPendingDeletion         = false;
     m_TotalReferences           = 0;
@@ -329,11 +226,6 @@ void PacketResource::SetPendingModifications()
     m_ResourceManagerPtr->RegisterResourceForModifications(this);
 }
 
-bool PacketResource::IgnorePhysicalDataChanges() const
-{
-	return m_IgnorePhysicalDataChanges;
-}
-
 bool PacketResource::ConstructionFailed() const
 {
     return m_ConstructFailed;
@@ -388,55 +280,6 @@ OperationMode PacketResource::GetOperationMode() const
 PacketResourceData& PacketResource::GetDataRef()
 {
 	return m_Data;
-}
-
-void PacketResource::IgnoreResourcePhysicalDataChanges()
-{
-	m_IgnorePhysicalDataChanges = true;
-}
-
-bool PacketResource::UpdateResourcePhysicalData(const uint8_t* _data, uint64_t _dataSize)
-{
-	// Check the current operation mode
-	if (m_CurrentOperationMode != OperationMode::Plain)
-	{
-		m_LoggerPtr->LogWarning("Trying to call the method UpdateResourcePhysicalData() but the operation mode is different from the Edit mode!");
-		return false;
-	}
-
-	// Check the size to proceed
-	if (_dataSize == 0)
-	{
-		return false;
-	}
-
-	// It's a little ugly to write directly to a file here but I think there is no reason to create another 
-	// class just to write to a file, so I'm going with the directly write option
-	{
-		// Open the file
-		std::ofstream file(m_Hash.GetPath().String(), std::ios::out);
-		if (!file)
-		{
-			return false;
-		}
-
-		// Write the data into the file
-		file.write((char*)_data, _dataSize);
-		if (!file)
-		{
-			return false;
-		}
-
-		// Close the file
-		file.close();
-	}
-
-	return true;
-}
-
-bool PacketResource::UpdateResourcePhysicalData(PacketResourceData& _data)
-{
-	return UpdateResourcePhysicalData(_data.GetData(), _data.GetSize());
 }
 
 void PacketResource::RegisterReplacingResource(PacketResource* _replacingObject)

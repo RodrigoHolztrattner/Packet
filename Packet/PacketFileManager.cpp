@@ -6,6 +6,8 @@
 #include "PacketPlainFileIndexer.h"
 // #include "PacketCondensedFileIndexer.h"
 #include "PacketFileLoader.h"
+#include "PacketPlainFileLoader.h"
+#include "PacketCondensedFileLoader.h"
 #include "PacketFileSaver.h"
 #include "PacketFileConverter.h"
 #include "PacketFileImporter.h"
@@ -19,7 +21,8 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketFileManager::PacketFileManager(std::wstring _resource_path) :
+PacketFileManager::PacketFileManager(OperationMode _operation_mode, std::wstring _resource_path) :
+    m_OperationMode(_operation_mode), 
     m_PacketPath(_resource_path)
 {
 	// Set the initial data
@@ -32,13 +35,29 @@ PacketFileManager::~PacketFileManager()
 
 bool PacketFileManager::Initialize()
 {
+    using namespace std::placeholders;
+
     // Create our file management objects
-    m_FileIndexer          = std::make_unique<PacketFileIndexer>();
-    m_FileLoader           = std::make_unique<PacketFileLoader>();
-    m_FileSaver            = std::make_unique<PacketFileSaver>();
-    m_FileConverter        = std::make_unique<PacketFileConverter>();
-    m_FileImporter         = std::make_unique<PacketFileImporter>();
+    m_FileIndexer          = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileIndexer>() : std::make_unique<PacketPlainFileIndexer>();
+    m_FileLoader           = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileLoader>(*m_FileIndexer) : std::make_unique<PacketPlainFileLoader>(*m_FileIndexer); // PacketCondensedFileLoader
     m_FileReferenceManager = std::make_unique<PacketReferenceManager>();
+    m_FileSaver            = std::make_unique<PacketFileSaver>(*m_FileIndexer, *m_FileReferenceManager, *m_FileLoader, m_PacketPath);
+    m_FileImporter         = std::make_unique<PacketFileImporter>(
+        *m_FileIndexer,
+        *m_FileLoader,
+        *m_FileReferenceManager,
+        std::bind(&PacketFileManager::WriteFile, this, _1, _2, _3, _4, _5, _6, _7, _8, _9),
+        [&](std::string _file_extension) {return m_Converters.find(_file_extension) != m_Converters.end() ? m_Converters.find(_file_extension)->second.get() : m_DefaultConverter.get(); },
+        m_PacketPath);
+
+    // Set the auxiliary object ptrs for the reference manager
+    m_FileReferenceManager->SetAuxiliarObjects(m_FileLoader.get(), m_FileSaver.get());
+
+    // Initialize the file indexer
+    if (!m_FileIndexer->Initialize(m_PacketPath))
+    {
+        return false;
+    }
 
     return true;
 }

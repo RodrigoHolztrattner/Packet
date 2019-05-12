@@ -488,12 +488,6 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource * _resource)
         return;
     }
 
-    // Check if this resource ignore physical data changes
-    if (_resource->IgnorePhysicalDataChanges())
-    {
-        return;
-    }
-
     // Check if this resource is pending deletion
     if (_resource->IsPendingDeletion() || !_resource->IsReferenced())
     {

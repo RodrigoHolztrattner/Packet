@@ -48,7 +48,7 @@ class PacketFileManager
 public: //////////
 
 	// Constructor / destructor
-	PacketFileManager(std::wstring _resource_path);
+	PacketFileManager(OperationMode _operation_mode, std::wstring _resource_path);
 	~PacketFileManager();
 
 //////////////////
@@ -91,16 +91,18 @@ protected:
 // VARIABLES //
 private: //////
 
+    // Our operation mode
+    OperationMode m_OperationMode;
+
+    // Our packet path
+    std::wstring m_PacketPath;
+
     // Our file management objects
     std::unique_ptr<PacketFileIndexer>      m_FileIndexer;
     std::unique_ptr<PacketFileLoader>       m_FileLoader;
     std::unique_ptr<PacketFileSaver>        m_FileSaver;
-    std::unique_ptr<PacketFileConverter>    m_FileConverter;
     std::unique_ptr<PacketFileImporter>     m_FileImporter;
     std::unique_ptr<PacketReferenceManager> m_FileReferenceManager;
-
-    // Our packet path
-    std::wstring m_PacketPath;
 
     // The default converter
     std::unique_ptr<PacketFileConverter> m_DefaultConverter;

@@ -90,7 +90,7 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_
     std::vector<uint8_t> references_data = std::vector<uint8_t>(final_data_begin, final_data_end);
 
     // Initialize the result file
-    result_file = std::make_unique<PacketFile>(file_header, true);
+    result_file = std::make_unique<PacketFile>(file_header.value(), true);
 
     // Set the data
     result_file->SetData(std::move(icon_data),
@@ -191,6 +191,11 @@ std::unique_ptr<PacketFile> PacketFile::GenerateFileFromData(
     new_file->UpdateFilePart(FilePart::ReferencesData, std::move(file_references_data));
 
     return std::move(new_file);
+}
+
+std::vector<uint8_t> PacketFile::RetrieveFileFinalData(std::unique_ptr<PacketFile> _file)
+{
+    return std::move(_file->m_FinalData);
 }
 
 const std::vector<uint8_t>& PacketFile::GetPropertiesData() const
