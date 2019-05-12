@@ -15,15 +15,13 @@ PacketResourceManager::PacketResourceManager(
     PacketResourceStorage&  _storage,
     PacketFileLoader&       _fileLoader,
     PacketFileIndexer&      _fileIndexer,
-    PacketReferenceManager& _referenceManager,
     PacketResourceWatcher&  _resourceWatcher,
     PacketLogger*           _loggerPtr) :
     m_OperationMode(_operationMode),
     m_ResourceStorage(_storage),
     m_FileLoader(_fileLoader),
     m_FileIndexer(_fileIndexer), 
-    m_ReferenceManager(_referenceManager),
-    m_ResourceLoader(_fileLoader, _referenceManager, *this, _loggerPtr, _operationMode),
+    m_ResourceLoader(_fileLoader, *this, _loggerPtr, _operationMode),
     m_ResourceWatcher(_resourceWatcher),
     m_LoggerPtr(_loggerPtr)
 {

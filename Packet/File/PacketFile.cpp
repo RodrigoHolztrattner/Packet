@@ -146,16 +146,16 @@ std::vector<uint8_t> PacketFile::CreateRawDataFromFile(std::unique_ptr<PacketFil
     std::vector<uint8_t> references_data   = PacketFileReferences::TransformIntoData(_file->GetFileReferences());
 
     // Compose the final data
-    std::vector<uint8_t> final_data;
-    std::copy(header_data.begin(), header_data.end(), std::back_inserter(final_data));
-    std::copy(icon_data.begin(), icon_data.end(), std::back_inserter(final_data));
-    std::copy(properties_data.begin(), properties_data.end(), std::back_inserter(final_data));
-    std::copy(original_data.begin(), original_data.end(), std::back_inserter(final_data));
-    std::copy(intermediate_data.begin(), intermediate_data.end(), std::back_inserter(final_data));
-    std::copy(final_data.begin(), final_data.end(), std::back_inserter(final_data));
-    std::copy(references_data.begin(), references_data.end(), std::back_inserter(final_data));
+    std::vector<uint8_t> file_data;
+    std::copy(header_data.begin(), header_data.end(), std::back_inserter(file_data));
+    std::copy(icon_data.begin(), icon_data.end(), std::back_inserter(file_data));
+    std::copy(properties_data.begin(), properties_data.end(), std::back_inserter(file_data));
+    std::copy(original_data.begin(), original_data.end(), std::back_inserter(file_data));
+    std::copy(intermediate_data.begin(), intermediate_data.end(), std::back_inserter(file_data));
+    std::copy(final_data.begin(), final_data.end(), std::back_inserter(file_data));
+    std::copy(references_data.begin(), references_data.end(), std::back_inserter(file_data));
 
-    return final_data;
+    return file_data;
 }
 
 std::unique_ptr<PacketFile> PacketFile::GenerateFileFromData(

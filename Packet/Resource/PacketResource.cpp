@@ -290,15 +290,14 @@ void PacketResource::SetHash(Hash _hash)
 	m_Hash = _hash;
 }
 
-void PacketResource::SetHelperObjects(PacketResourceFactory* _factoryReference,
-                                      PacketReferenceManager* _referenceManager, 
-                                      PacketResourceManager* _resourceManager,
-                                      PacketFileLoader* _fileLoader, 
-                                      PacketLogger* _logger,
-                                      OperationMode _operationMode)
+void PacketResource::SetHelperObjects(
+    PacketResourceFactory*  _factoryReference,
+    PacketResourceManager*  _resourceManager,
+    PacketFileLoader*       _fileLoader,
+    PacketLogger*           _logger,
+    OperationMode           _operationMode)
 {
 	m_FactoryPtr = _factoryReference;
-	m_ReferenceManagerPtr = _referenceManager;
     m_ResourceManagerPtr = _resourceManager;
 	m_FileLoaderPtr = _fileLoader;
 	m_LoggerPtr = _logger;
@@ -440,55 +439,10 @@ bool PacketResource::UpdateResourcePhysicalData(PacketResourceData& _data)
 	return UpdateResourcePhysicalData(_data.GetData(), _data.GetSize());
 }
 
-bool PacketResource::RegisterPhysicalResourceReference(Hash _targetResourceHash, uint64_t _hashDataLocation)
-{
-	// Check the current operation mode
-	if (m_CurrentOperationMode != OperationMode::Plain)
-	{
-		m_LoggerPtr->LogWarning("Trying to call the method RegisterPhysicalResourceReference() but the operation mode is different from the Edit mode!");
-
-		return false;
-	}
-
-	// Call the validate file references method for the reference manager
-	return m_ReferenceManagerPtr->RegisterFileReference(m_Hash.GetPath().String(), _targetResourceHash.GetPath().String(), _hashDataLocation);
-}
-
-bool PacketResource::ClearAllPhysicalResourceReferences()
-{
-	// Check the current operation mode
-	if (m_CurrentOperationMode != OperationMode::Plain)
-	{
-		m_LoggerPtr->LogWarning("Trying to call the method ClearAllPhysicalResourceReferences() but the operation mode is different from the Edit mode!");
-
-		return false;
-	}
-
-	// Clear all file references
-	m_ReferenceManagerPtr->ClearFileReferences(m_Hash.GetPath().String());
-
-	return true;
-}
-
-bool PacketResource::VerifyPhysicalResourceReferences(ReferenceFixer _fixer, bool _allOrNothing)
-{
-	// Check the current operation mode
-	if (m_CurrentOperationMode != OperationMode::Plain)
-	{
-		m_LoggerPtr->LogWarning("Trying to call the method VerifyPhysicalResourceReferences() but the operation mode is different from the Edit mode!");
-
-		return false;
-	}
-
-	// Call the validate file references method for the reference manager
-	return m_ReferenceManagerPtr->ValidateFileReferences(m_Hash.GetPath().String(), _fixer, _allOrNothing);
-}
-
 void PacketResource::RegisterReplacingResource(PacketResource* _replacingObject)
 {
     m_ReplacingResource = _replacingObject;
 }
-
 
 std::optional<PacketResource*> PacketResource::GetReplacingResource() const
 {

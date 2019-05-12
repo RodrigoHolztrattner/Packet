@@ -43,6 +43,7 @@ PacketDevelopmentNamespaceBegin(Packet)
 ////////////////
 
 // Classes we know
+class PacketFileLoader;
 class PacketResourceInstance;
 class PacketResourceManager;
 class PacketResourceLoader;
@@ -201,28 +202,6 @@ public: // PHYSICAL DATA UPDATE //
 	bool UpdateResourcePhysicalData(const uint8_t* _data, uint64_t _dataSize);
 	bool UpdateResourcePhysicalData(PacketResourceData& _data);
 
-////////////////////////////////////////
-public: // PHYSICAL RESOURCE REFERECE //
-////////////////////////////////////////
-
-	// Register a physical reference from this resource to another one path, doing this will allows the reference system to 
-	// detect filename changes and modifications, allowing it to update this resource to point to the new resources, this 
-	// method will return false if the current operation mode is different from the edit one or if this isn't a debug build.
-	// The user must provide the location where the target resource hash data is located INSIDE this resource data, the 
-	// location must indicates where this hash can be found when reading the resource file (doing a seek + this position).
-	bool RegisterPhysicalResourceReference(Hash _targetResourceHash, uint64_t _hashDataLocation);
-
-	// This method will clear all physical resource references for this current resource, the same rules above also apply to
-	// this method (return false if the operation mode isn't the edit one or this isn't a debug build)
-	bool ClearAllPhysicalResourceReferences();
-
-	// This method will verify all resource physical references this resource have, checking if they exist, it's possible to 
-	// pass a ReferenceFixer as argument that determine a behaviour to find any missing reference and fix it. For more info 
-	// take a look at the documentation, use this method with caution.
-	// The same rules above also apply to this method (return false if the operation mode isn't the edit one or this isn't 
-	// a debug build)
-	bool VerifyPhysicalResourceReferences(ReferenceFixer _fixer = ReferenceFixer::None, bool _allOrNothing = true);
-
 ////////////////////////////
 protected: // REPLACEMENT //
 ////////////////////////////
@@ -263,12 +242,12 @@ protected: // INTERNAL //
 	void SetHash(Hash _hash);
 
 	// Set the helper object pointers and the operation mode
-	void SetHelperObjects(PacketResourceFactory* _factoryReference,
-                          PacketReferenceManager* _referenceManager, 
-                          PacketResourceManager* _resourceManager,
-                          PacketFileLoader* _fileLoader, 
-                          PacketLogger* _logger, 
-                          OperationMode _operationMode);
+    void SetHelperObjects(
+        PacketResourceFactory*  _factoryReference,
+        PacketResourceManager*  _resourceManager,
+        PacketFileLoader*       _fileLoader,
+        PacketLogger*           _logger,
+        OperationMode           _operationMode);
 
 	// Set the build info
 	void SetBuildInfo(PacketResourceBuildInfo _buildInfo, 
@@ -324,7 +303,6 @@ private: //////
 
 	// A pointer to the resource factory, the reference manager, the file loader and the logger object
 	PacketResourceFactory*  m_FactoryPtr;
-    PacketReferenceManager* m_ReferenceManagerPtr;
     PacketResourceManager*  m_ResourceManagerPtr;
     PacketFileLoader*       m_FileLoaderPtr;
 	PacketLogger*           m_LoggerPtr;

@@ -83,7 +83,7 @@ public: //////////
     FileLoadInformation RetrieveFileLoadInformation(HashPrimitive _file_hash) const final;
 
     // Return a const reference to a file header
-    const FileHeader& GetFileHeader(HashPrimitive _file_hash) const final;
+    const PacketFileHeader& GetFileHeader(HashPrimitive _file_hash) const final;
 
     // Return a cost reference to a file icon data
     const std::vector<uint8_t>& GetFileIconData(HashPrimitive _file_hash) const final;

@@ -94,44 +94,32 @@ project(${PROJECT_NAME} VERSION 1.0.0 DESCRIPTION "blob")
 SET(CMAKE_CXX_FLAGS "/Zi /sdl /MP /Oi /Gy /permissive- /GR- /TP /EHsc")
 SET(CMAKE_CXX_FLAGS_DEBUG "/ZI /sdl /MP /JMC /permissive- /GR- /TP /EHsc /MDd /Od")
 
+set(PACKET_FILES "Packet")
+include_directories(PACKET_FILES)
+
+# Gather all files
+file (GLOB_RECURSE PACKET_SOURCE_FILES ${PACKET_FILES}/*.cpp ${PACKET_FILES}/*.cc) 
+file (GLOB_RECURSE PACKET_HEADER_FILES ${PACKET_FILES}/*.hpp ${PACKET_FILES}/*.h) 
+set (ALL_PACKET_FILES ${PACKET_SOURCE_FILES} ${PACKET_HEADER_FILES})
+
+# Setup the source groups
+foreach(FILE ${ALL_PACKET_FILES}) 
+
+    # Get the directory of the source file
+    get_filename_component(PARENT_DIR "${FILE}" DIRECTORY)
+
+    # Remove common directory prefix to make the group
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/Packet" "" GROUP "${PARENT_DIR}")
+
+    # Make sure we are using windows slashes
+    string(REPLACE "/" "\\" GROUP "${GROUP}")
+
+    source_group("${GROUP}" FILES "${FILE}")
+	
+endforeach()
+
 add_library(${PROJECT_NAME} STATIC
-  Packet/Packet.h
-  Packet/PacketCondensedModeFileLoader.cpp
-  Packet/PacketCondensedModeFileLoader.h
-  Packet/PacketCOndenser.cpp
-  Packet/PacketCOndenser.h
-  Packet/PacketEditModeFileLoader.cpp
-  Packet/PacketEditModeFileLoader.h
-  Packet/PacketReferenceManager.cpp
-  Packet/PacketReferenceManager.h
-  Packet/PacketScanner.cpp
-  Packet/PacketScanner.h
-  Packet/PacketSystem.cpp
-  Packet/PacketSystem.h
-  Packet/Resource/PacketResource.cpp
-  Packet/Resource/PacketResource.h
-  Packet/Resource/PacketResourceDeleter.cpp
-  Packet/Resource/PacketResourceDeleter.h
-  Packet/Resource/PacketResourceFactory.cpp
-  Packet/Resource/PacketResourceFactory.h
-  Packet/Resource/PacketResourceHolder.cpp
-  Packet/Resource/PacketResourceHolder.h
-  Packet/Resource/PacketResourceLoader.cpp
-  Packet/Resource/PacketResourceLoader.h
-  Packet/Resource/PacketResourceManager.cpp
-  Packet/Resource/PacketResourceManager.h
-  Packet/Resource/PacketResourceStorage.cpp
-  Packet/Resource/PacketResourceStorage.h
-  Packet/Resource/PacketResourceWatcher.cpp
-  Packet/Resource/PacketResourceWatcher.h
-  Packet/ThirdParty/FileWatcher/FileWatcher.cpp
-  Packet/ThirdParty/FileWatcher/FileWatcher.h
-  Packet/ThirdParty/FileWatcher/FileWatcherLinux.cpp
-  Packet/ThirdParty/FileWatcher/FileWatcherLinux.h
-  Packet/ThirdParty/FileWatcher/FileWatcherOSX.cpp
-  Packet/ThirdParty/FileWatcher/FileWatcherOSX.h
-  Packet/ThirdParty/FileWatcher/FileWatcherWin32.cpp
-  Packet/ThirdParty/FileWatcher/FileWatcherWin32.h)
+  ${ALL_PACKET_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER Packet/Packet.h)
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/Packet/ThirdParty/FileWatcher")

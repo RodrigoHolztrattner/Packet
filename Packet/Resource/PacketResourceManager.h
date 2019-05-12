@@ -55,7 +55,6 @@ PacketDevelopmentNamespaceBegin(Packet)
 class PacketResourceInstance;
 class PacketResource;
 class PacketResourceExternalConstructor;
-class PacketReferenceManager;
 class PacketResourceFactory;
 class PacketResourceWatcher;
 class PacketSystem;
@@ -83,7 +82,6 @@ public: //////////
 		PacketResourceStorage&  _storagePtr,
 		PacketFileLoader&       _fileLoaderPtr, 
         PacketFileIndexer&      _fileIndexer, 
-		PacketReferenceManager& _referenceManager, 
 		PacketResourceWatcher&  _resourceWatcherPtr, 
 		PacketLogger*           _loggerPtr);
 	~PacketResourceManager();
@@ -261,7 +259,6 @@ private: //////
 	PacketResourceWatcher&  m_ResourceWatcher;
 	PacketFileLoader&       m_FileLoader;
     PacketFileIndexer&      m_FileIndexer;
-	PacketReferenceManager& m_ReferenceManager;
 	PacketLogger*           m_LoggerPtr;
 };
 

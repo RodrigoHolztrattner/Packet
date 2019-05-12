@@ -5,7 +5,7 @@
 #include "PacketResourceFactory.h"
 #include "PacketResourceManager.h"
 #include "PacketResource.h"
-#include "..\PacketReferenceManager.h"
+#include "../File/PacketFile.h"
 
 #include <cassert>
 #include <chrono>
@@ -15,12 +15,10 @@ PacketUsingDevelopmentNamespace(Packet)
 
 PacketResourceLoader::PacketResourceLoader(
     PacketFileLoader&       _fileLoader,
-    PacketReferenceManager& _referenceManager,
     PacketResourceManager&  _resourceManager,
     PacketLogger*           _loggerPtr,
     OperationMode           _operationMode) :
     m_FileLoader(_fileLoader), 
-    m_ReferenceManager(_referenceManager), 
     m_ResourceManager(_resourceManager), 
     m_LoggerPtr(_loggerPtr),
     m_OperationMode(_operationMode)
@@ -47,7 +45,6 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     // Set the helper pointers and the current operation mode
     resource->SetHelperObjects(
         _resourceFactory,
-        &m_ReferenceManager,
         &m_ResourceManager,
         &m_FileLoader,
         m_LoggerPtr,
@@ -55,21 +52,6 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
 
     // Set the build info
     resource->SetBuildInfo(_buildInfo, _isRuntimeResource);
-
-    // Check the operation mode to know if we should validate this resource references
-    if (!_isRuntimeResource && m_OperationMode == OperationMode::Plain)
-    {
-        // Validate this resource file references (if they exist), also try to fix them if they are invalid
-        bool validationResult = m_ReferenceManager.ValidateFileReferences(_hash.GetPath().String(), ReferenceFixer::AtLeastNameAndExtension);
-        if (!validationResult)
-        {
-            // Error validating this resource references, we will continue but keep in mind that this resource needs to update it references hashes
-            m_LoggerPtr->LogWarning(std::string("Found an error when validating a resource references (\"")
-                                    .append(_hash.GetPath().String())
-                                    .append("\", we will continue but keep in mind that this resource needs to update its references hashes")
-                                    .c_str());
-        }
-    }
 
     // Check if this is a runtime resource and the data shouldn't come from a file
     if (_isRuntimeResource)

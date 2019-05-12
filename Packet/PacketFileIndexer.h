@@ -7,6 +7,9 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
+#include "File/PacketFileHeader.h"
+#include "File/PacketFileReferences.h"
+#include "File/PacketFile.h"
 
 ///////////////
 // NAMESPACE //
@@ -43,7 +46,6 @@ class PacketResourceStorage;
 
 // Structures we know
 struct PacketFile;
-struct FileHeader;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketFileIndexer
@@ -54,12 +56,12 @@ protected:
 
     struct FileLoadInformation
     {
-        Path file_path;
+        Path             file_path;
         FileDataPosition file_data_position = 0;
-        FileDataSize file_data_size = 0;
+        FileDataSize     file_data_size = 0;
 
-        const FileHeader& file_header;
-        const std::vector<uint8_t>& _file_icon_data;
+        const PacketFileHeader&     file_header;
+        const std::vector<uint8_t>& file_icon_data;
     };
 
 //////////////////
@@ -84,7 +86,7 @@ public: //////////
     virtual FileLoadInformation RetrieveFileLoadInformation(HashPrimitive _file_hash) const = 0;
 
     // Return a const reference to a file header
-    virtual const FileHeader& GetFileHeader(HashPrimitive _file_hash) const = 0;
+    virtual const PacketFileHeader& GetFileHeader(HashPrimitive _file_hash) const = 0;
 
     // Return a cost reference to a file icon data
     virtual const std::vector<uint8_t>& GetFileIconData(HashPrimitive _file_hash) const = 0;

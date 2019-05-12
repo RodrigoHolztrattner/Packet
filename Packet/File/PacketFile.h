@@ -9,24 +9,11 @@
 #include "../PacketConfig.h"
 #include "PacketFileHeader.h"
 #include "PacketFileReferences.h"
-#include "../Resource/PacketResourceManager.h"
 
 #include <string>
 #include <unordered_map>
 #include <assert.h>
 #include <set>
-
-///////////////
-// NAMESPACE //
-///////////////
-
-/////////////
-// DEFINES //
-/////////////
-
-////////////
-// GLOBAL //
-////////////
 
 ///////////////
 // NAMESPACE //
@@ -42,10 +29,6 @@ class PacketFileSaver;
 class PacketCompressedFileLoader;
 class PacketReferenceManager;
 class PacketFileManager;
-
-////////////////
-// STRUCTURES //
-////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketFile

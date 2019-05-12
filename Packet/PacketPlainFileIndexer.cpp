@@ -38,7 +38,7 @@ PacketFileIndexer::FileLoadInformation PacketPlainFileIndexer::RetrieveFileLoadI
     // TODO:
 }
 
-const FileHeader& PacketPlainFileIndexer::GetFileHeader(HashPrimitive _file_hash) const
+const PacketFileHeader& PacketPlainFileIndexer::GetFileHeader(HashPrimitive _file_hash) const
 {
     if (m_IndexDatas.find(_file_hash) == m_IndexDatas.end())
     {

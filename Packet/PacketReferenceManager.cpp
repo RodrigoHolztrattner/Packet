@@ -109,8 +109,15 @@ bool PacketReferenceManager::RedirectLinks(std::set<Path> _referenced_files_path
         // Substitute all path references for this file data
         SubstituteAllPathReferences(referenced_file_data, _old_path, _new_path);
 
+        // Create the file from the updated data
+        auto updated_file = PacketFile::CreateFileFromRawData(std::move(referenced_file_data), referenced_file_path);
+        if (!updated_file)
+        {
+            return false;
+        }
+
         // Write the file data into a system file
-        if (!m_FileImporter.WriteFileDataIntoInternalFile(referenced_file_path, std::move(referenced_file_data)))
+        if (!m_FileSaver.SaveFile(std::move(updated_file)))
         {
             // This should never happen if we follow all procedures correctly
             operation_result = false;
