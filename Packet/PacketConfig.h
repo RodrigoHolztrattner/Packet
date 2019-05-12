@@ -371,12 +371,12 @@ typedef uint64_t FileDataPosition;
 typedef uint64_t FileDataSize;
 
 namespace ns {
-    void to_json(nlohmann::json& j, const Path& s) {
+    static void to_json(nlohmann::json& j, const Path& s) {
 
         j = nlohmann::json{ {"Path", s.GetRaw()} };
     }
 
-    void from_json(const nlohmann::json& j, Path& s) {
+    static void from_json(const nlohmann::json& j, Path& s) {
         j.at("Path").get_to(s.GetRaw());
     }
 } // namespace ns
@@ -477,13 +477,13 @@ struct CondensedFileInfo
 };
 
 // Merge a resource path with a file path, returning a filesystem path to it
-std::filesystem::path MergeSystemPathWithFilePath(std::filesystem::path _system_path, Path _file_path)
+static std::filesystem::path MergeSystemPathWithFilePath(std::filesystem::path _system_path, Path _file_path)
 {
     return _system_path.string() + std::string("/") + _file_path.String();
 }
 
 // Convert a filesystem path to an internal path using the system resource path
-Path ConvertSystemPathIntoInternalPath(std::filesystem::path _system_path, std::filesystem::path _file_path)
+static Path ConvertSystemPathIntoInternalPath(std::filesystem::path _system_path, std::filesystem::path _file_path)
 {
     std::filesystem::path diffpath;
     std::filesystem::path tmppath = _file_path;
@@ -497,7 +497,7 @@ Path ConvertSystemPathIntoInternalPath(std::filesystem::path _system_path, std::
 }
 
 // Compare 2 path filenames
-bool CompareFilenames(Path _first, Path _second)
+static bool CompareFilenames(Path _first, Path _second)
 {
     // TODO:
     assert(false);

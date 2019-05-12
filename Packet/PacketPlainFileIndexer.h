@@ -78,7 +78,7 @@ public: //////////
     bool IsFileIndexed(HashPrimitive _file_hash) const final;
 
     // Return a file load information (its path, the location inside the file and its total size)
-    FileLoadInformation RetrieveFileLoadInformation(HashPrimitive _file_hash) const final;
+    std::optional<FileLoadInformation> RetrieveFileLoadInformation(HashPrimitive _file_hash) const final;
 
     // Return a const reference to a file header
     const PacketFileHeader& GetFileHeader(HashPrimitive _file_hash) const final;

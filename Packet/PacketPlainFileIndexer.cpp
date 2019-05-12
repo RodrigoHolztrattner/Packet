@@ -20,8 +20,6 @@ PacketPlainFileIndexer::~PacketPlainFileIndexer()
 
 bool PacketPlainFileIndexer::Initialize(std::filesystem::path _resource_path)
 {
-
-
     // Scan the resource path
     ScanSystemForFiles(_resource_path);
 
@@ -33,9 +31,10 @@ bool PacketPlainFileIndexer::IsFileIndexed(HashPrimitive _file_hash) const
     return m_IndexDatas.find(_file_hash) != m_IndexDatas.end();
 }
 
-PacketFileIndexer::FileLoadInformation PacketPlainFileIndexer::RetrieveFileLoadInformation(HashPrimitive _file_hash) const
+std::optional<PacketFileIndexer::FileLoadInformation> PacketPlainFileIndexer::RetrieveFileLoadInformation(HashPrimitive _file_hash) const
 {
     // TODO:
+    return std::nullopt;
 }
 
 const PacketFileHeader& PacketPlainFileIndexer::GetFileHeader(HashPrimitive _file_hash) const
