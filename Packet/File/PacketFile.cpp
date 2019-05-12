@@ -24,7 +24,7 @@ PacketFile::~PacketFile()
 {
 }
 
-std::unique_ptr<PacketFile> PacketFile::CreateFileFromExternal(std::vector<uint8_t>&& _file_data)
+std::unique_ptr<PacketFile> PacketFile::CreateFileFromExternal(std::vector<uint8_t>&& _file_data, Path _file_path)
 {
     // The file data must be valid
     if (_file_data.size() == 0)
@@ -35,7 +35,7 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromExternal(std::vector<uint8
     // Create an empty file header data object and set its initial values
     PacketFileHeader file_header;
     file_header.SetFileType("external");
-    file_header.SetPath("external");
+    file_header.SetPath(_file_path);
 
     // Create a new empty file marked as external one
     std::unique_ptr<PacketFile> new_file = std::make_unique<PacketFile>(file_header, false);
@@ -46,7 +46,7 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromExternal(std::vector<uint8
     return new_file;
 }
 
-std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_t>&& _file_data)
+std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_t>&& _file_data, Path _file_path)
 {
     std::unique_ptr<PacketFile> result_file;
 
@@ -57,7 +57,7 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_
     if (!file_header)
     {
         // Invalid file header! Try to create as an external file data
-        return CreateFileFromExternal(std::move(_file_data));
+        return CreateFileFromExternal(std::move(_file_data), _file_path);
     }
 
     // Check the version

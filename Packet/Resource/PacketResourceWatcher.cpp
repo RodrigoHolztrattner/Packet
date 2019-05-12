@@ -12,7 +12,7 @@ PacketUsingDevelopmentNamespace(Packet)
 PacketResourceWatcher::PacketResourceWatcher(OperationMode _operationMode) : m_ResourceWatcherListener(this)
 {
 	// Check the operation mode
-	if (_operationMode == OperationMode::Edit)
+	if (_operationMode == OperationMode::Plain)
 	{
 		// On edit mode we are enabled
 		m_IsEnabled = true;

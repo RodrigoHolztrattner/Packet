@@ -122,6 +122,9 @@ bool PacketFileManager::CopyFile(Path _source_file_path, Path _target_file_path)
     auto source_file_hash = Hash(_source_file_path);
     auto target_file_hash = Hash(_target_file_path);
 
+    // Check if the file is an external one, if true just do a normal system copy
+    // TODO: ...
+
     // Load the source file
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
@@ -175,6 +178,9 @@ bool PacketFileManager::MoveFile(Path _source_file_path, Path _target_file_path)
     auto source_file_hash = Hash(_source_file_path);
     auto target_file_hash = Hash(_target_file_path);
 
+    // Check if the file is an external one, if true just do a normal system move
+    // TODO: ...
+
     // Load the source file
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
@@ -212,12 +218,20 @@ bool PacketFileManager::MoveFile(Path _source_file_path, Path _target_file_path)
 
 bool PacketFileManager::DeleteFile(Path _target_file_path) const
 {
+    // Confirm that the source file is valid
+    if (!m_FileIndexer->IsFileIndexed(Hash(_target_file_path)))
+    {
+        return false;
+    }
+
     // Determine the system path this file is located
     auto file_sysytem_path = MergeSystemPathWithFilePath(m_PacketPath, _target_file_path);
     if (!std::filesystem::exists(file_sysytem_path))
     {
         return false;
     }
+
+    // Delete the file
     if (!std::filesystem::remove(file_sysytem_path))
     {
         return false;

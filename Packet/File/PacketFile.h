@@ -77,7 +77,7 @@ private:
 public: //////////
 
     // Create a file from the given raw data
-    static std::unique_ptr<PacketFile> CreateFileFromRawData(std::vector<uint8_t>&& _file_data);
+    static std::unique_ptr<PacketFile> CreateFileFromRawData(std::vector<uint8_t>&& _file_data, Path _file_path);
 
     // Transform a file into raw data
     static std::vector<uint8_t> CreateRawDataFromFile(std::unique_ptr<PacketFile> _file);
@@ -85,7 +85,7 @@ public: //////////
     // Convert an external file into a packet file, the resulting file will only have its final data set
     // and cannot be saved, to proper create a packet file the external one must be imported using
     // the PacketFileImporter class
-    static std::unique_ptr<PacketFile> CreateFileFromExternal(std::vector<uint8_t>&& _file_data);
+    static std::unique_ptr<PacketFile> CreateFileFromExternal(std::vector<uint8_t>&& _file_data, Path _file_path);
 
     // Duplicate the given file, caution with this, change the path before saving it and if applicable, 
     // remove all links before doing it

@@ -485,10 +485,15 @@ std::filesystem::path MergeSystemPathWithFilePath(std::filesystem::path _system_
 // Convert a filesystem path to an internal path using the system resource path
 Path ConvertSystemPathIntoInternalPath(std::filesystem::path _system_path, std::filesystem::path _file_path)
 {
-    auto nit = _system_path.begin();
-    for (auto bit = _file_path.begin(); bit != _file_path.end(); ++bit, ++nit);
-    auto resulting_path = std::filesystem::path(nit, _system_path.end());
-    return resulting_path.string();
+    std::filesystem::path diffpath;
+    std::filesystem::path tmppath = _file_path;
+    while (tmppath != _system_path) 
+    {
+        diffpath = tmppath.stem() / diffpath;
+        tmppath = tmppath.parent_path();
+    }
+
+    return diffpath.string();
 }
 
 // Compare 2 path filenames

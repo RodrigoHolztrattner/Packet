@@ -399,7 +399,7 @@ void PacketResource::IgnoreResourcePhysicalDataChanges()
 bool PacketResource::UpdateResourcePhysicalData(const uint8_t* _data, uint64_t _dataSize)
 {
 	// Check the current operation mode
-	if (m_CurrentOperationMode != OperationMode::Edit)
+	if (m_CurrentOperationMode != OperationMode::Plain)
 	{
 		m_LoggerPtr->LogWarning("Trying to call the method UpdateResourcePhysicalData() but the operation mode is different from the Edit mode!");
 		return false;
@@ -443,7 +443,7 @@ bool PacketResource::UpdateResourcePhysicalData(PacketResourceData& _data)
 bool PacketResource::RegisterPhysicalResourceReference(Hash _targetResourceHash, uint64_t _hashDataLocation)
 {
 	// Check the current operation mode
-	if (m_CurrentOperationMode != OperationMode::Edit)
+	if (m_CurrentOperationMode != OperationMode::Plain)
 	{
 		m_LoggerPtr->LogWarning("Trying to call the method RegisterPhysicalResourceReference() but the operation mode is different from the Edit mode!");
 
@@ -457,7 +457,7 @@ bool PacketResource::RegisterPhysicalResourceReference(Hash _targetResourceHash,
 bool PacketResource::ClearAllPhysicalResourceReferences()
 {
 	// Check the current operation mode
-	if (m_CurrentOperationMode != OperationMode::Edit)
+	if (m_CurrentOperationMode != OperationMode::Plain)
 	{
 		m_LoggerPtr->LogWarning("Trying to call the method ClearAllPhysicalResourceReferences() but the operation mode is different from the Edit mode!");
 
@@ -473,7 +473,7 @@ bool PacketResource::ClearAllPhysicalResourceReferences()
 bool PacketResource::VerifyPhysicalResourceReferences(ReferenceFixer _fixer, bool _allOrNothing)
 {
 	// Check the current operation mode
-	if (m_CurrentOperationMode != OperationMode::Edit)
+	if (m_CurrentOperationMode != OperationMode::Plain)
 	{
 		m_LoggerPtr->LogWarning("Trying to call the method VerifyPhysicalResourceReferences() but the operation mode is different from the Edit mode!");
 

@@ -20,7 +20,7 @@ PacketPlainFileLoader::~PacketPlainFileLoader()
 
 std::unique_ptr<PacketFile> PacketPlainFileLoader::LoadFile(Hash _file_hash) const
 {
-    return PacketFile::CreateFileFromRawData(LoadFileRawData(_file_hash));
+    return PacketFile::CreateFileFromRawData(LoadFileRawData(_file_hash), _file_hash.GetPath());
 }
 
 std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) const

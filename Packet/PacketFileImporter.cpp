@@ -111,8 +111,8 @@ bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original
         std::move(entire_file_data_copy),
         std::move(intermediate_data),
         std::move(final_data),
-        {}),
-        static_cast<FileWriteFlags>(FileWriteFlagBits::CreateIfInexistent))
+        {},
+        static_cast<FileWriteFlags>(FileWriteFlagBits::CreateIfInexistent)))
     {
         return false;
     }

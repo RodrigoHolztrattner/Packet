@@ -8,7 +8,9 @@
 //////////////
 #include "PacketConfig.h"
 #include "PacketFileIndexer.h"
-#include "PacketFile.h"
+#include "File/PacketFileHeader.h"
+#include "File/PacketFileReferences.h"
+#include "File/PacketFile.h"
 
 #include <string>
 #include <unordered_map>
@@ -50,7 +52,7 @@ class PacketPlainFileIndexer : public PacketFileIndexer
     struct IndexData
     {
         // The file header
-        FileHeader file_header;
+        PacketFileHeader file_header;
 
         // The icon data
         std::vector<uint8_t> icon_data;

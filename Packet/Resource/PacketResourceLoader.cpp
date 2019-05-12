@@ -13,18 +13,18 @@
 // Using namespace Peasant
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketResourceLoader::PacketResourceLoader(PacketFileLoader* _fileLoaderPtr,
-                                           PacketReferenceManager* _referenceManager,
-                                           PacketResourceManager* _resourceManager,
-                                           PacketLogger* _loggerPtr,
-                                           OperationMode _operationMode)
+PacketResourceLoader::PacketResourceLoader(
+    PacketFileLoader&       _fileLoader,
+    PacketReferenceManager& _referenceManager,
+    PacketResourceManager&  _resourceManager,
+    PacketLogger*           _loggerPtr,
+    OperationMode           _operationMode) :
+    m_FileLoader(_fileLoader), 
+    m_ReferenceManager(_referenceManager), 
+    m_ResourceManager(_resourceManager), 
+    m_LoggerPtr(_loggerPtr),
+    m_OperationMode(_operationMode)
 {
-	// Save the pointers and the operation mode
-	m_FileLoaderPtr = _fileLoaderPtr;
-	m_ReferenceManagerPtr = _referenceManager;
-    m_ResourceManagerPtr = _resourceManager;
-	m_LoggerPtr = _loggerPtr;
-	m_OperationMode = _operationMode;
 }
 
 PacketResourceLoader::~PacketResourceLoader()
@@ -45,21 +45,22 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     resource->SetHash(_hash);
 
     // Set the helper pointers and the current operation mode
-    resource->SetHelperObjects(_resourceFactory,
-                               m_ReferenceManagerPtr, 
-                               m_ResourceManagerPtr,
-                               m_FileLoaderPtr, 
-                               m_LoggerPtr, 
-                               m_OperationMode);
+    resource->SetHelperObjects(
+        _resourceFactory,
+        &m_ReferenceManager,
+        &m_ResourceManager,
+        &m_FileLoader,
+        m_LoggerPtr,
+        m_OperationMode);
 
     // Set the build info
     resource->SetBuildInfo(_buildInfo, _isRuntimeResource);
 
     // Check the operation mode to know if we should validate this resource references
-    if (!_isRuntimeResource && m_OperationMode == OperationMode::Edit)
+    if (!_isRuntimeResource && m_OperationMode == OperationMode::Plain)
     {
         // Validate this resource file references (if they exist), also try to fix them if they are invalid
-        bool validationResult = m_ReferenceManagerPtr->ValidateFileReferences(_hash.GetPath().String(), ReferenceFixer::AtLeastNameAndExtension);
+        bool validationResult = m_ReferenceManager.ValidateFileReferences(_hash.GetPath().String(), ReferenceFixer::AtLeastNameAndExtension);
         if (!validationResult)
         {
             // Error validating this resource references, we will continue but keep in mind that this resource needs to update it references hashes
@@ -84,7 +85,7 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     else
     {
         // Get the resource size
-        auto resourceSize = m_FileLoaderPtr->GetFileSize(_hash);
+        auto resourceSize = m_FileLoader.GetFileSize(_hash);
 
         // Get a reference to the object data vector directly
         auto& dataVector = resource->GetDataRef();
@@ -94,7 +95,7 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
         assert(result);
 
         // Read the file data
-        result = m_FileLoaderPtr->GetFileData(dataVector.GetwritableData(), resourceSize, _hash);
+        result = m_FileLoader.GetFileData(dataVector.GetwritableData(), resourceSize, _hash);
         assert(result);
 
         // Call the BeginLoad() method for this object

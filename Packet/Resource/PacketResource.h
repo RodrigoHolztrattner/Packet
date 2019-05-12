@@ -483,7 +483,7 @@ public:
     ResourceClass* Get() const
     {
         // If we are on edit mode, check if this resource should be replaced
-        if (m_ResourceObject!= nullptr && m_ResourceObject->GetOperationMode() == OperationMode::Edit)
+        if (m_ResourceObject!= nullptr && m_ResourceObject->GetOperationMode() == OperationMode::Plain)
         {
             auto replacingResource = m_ResourceObject->GetReplacingResource();
             if (replacingResource)

@@ -19,7 +19,7 @@ SCENARIO("Packet system can be initialized", "[system]")
 
         WHEN("It's initialized in edit mode") 
         {
-            bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Edit, ResourceDirectory);
+            bool initializationResult = packetSystem.Initialize(Packet::OperationMode::Plain, ResourceDirectory);
 
             THEN("It must have been initialized successfully") 
             {

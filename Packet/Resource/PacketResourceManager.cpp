@@ -10,24 +10,27 @@
 // Using namespace Peasant
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketResourceManager::PacketResourceManager(OperationMode _operationMode,
-                                             PacketResourceStorage* _storagePtr,
-                                             PacketFileLoader* _fileLoaderPtr,
-                                             PacketReferenceManager* _referenceManagerPtr,
-                                             PacketResourceWatcher* _resourceWatcherPtr,
-                                             PacketLogger* _loggerPtr) :
+PacketResourceManager::PacketResourceManager(
+    OperationMode           _operationMode,
+    PacketResourceStorage&  _storage,
+    PacketFileLoader&       _fileLoader,
+    PacketFileIndexer&      _fileIndexer,
+    PacketReferenceManager& _referenceManager,
+    PacketResourceWatcher&  _resourceWatcher,
+    PacketLogger*           _loggerPtr) :
     m_OperationMode(_operationMode),
-    m_ResourceStoragePtr(_storagePtr),
-    m_FileLoaderPtr(_fileLoaderPtr),
-    m_ReferenceManagerPtr(_referenceManagerPtr),
-    m_ResourceLoader(_fileLoaderPtr, _referenceManagerPtr, this, _loggerPtr, _operationMode),
-    m_ResourceWatcherPtr(_resourceWatcherPtr),
-    m_Logger(_loggerPtr)
+    m_ResourceStorage(_storage),
+    m_FileLoader(_fileLoader),
+    m_FileIndexer(_fileIndexer), 
+    m_ReferenceManager(_referenceManager),
+    m_ResourceLoader(_fileLoader, _referenceManager, *this, _loggerPtr, _operationMode),
+    m_ResourceWatcher(_resourceWatcher),
+    m_LoggerPtr(_loggerPtr)
 {
-    if (m_OperationMode == OperationMode::Edit)
+    if (m_OperationMode == OperationMode::Plain)
     {
         // Register the on resource data changed method for the resource watcher
-        m_ResourceWatcherPtr->RegisterOnResourceDataChangedMethod(std::bind(&PacketResourceManager::OnResourceDataChanged, this, std::placeholders::_1));
+        m_ResourceWatcher.RegisterOnResourceDataChangedMethod(std::bind(&PacketResourceManager::OnResourceDataChanged, this, std::placeholders::_1));
     }
 
     // Create the asynchronous thread that will process instances and resource objects
@@ -60,7 +63,7 @@ PacketResourceManager::~PacketResourceManager()
     // Permanent resources
     {
         // Get all permanent resources and move them to the delete vector
-        std::vector<std::unique_ptr<PacketResource>> permanentResources = m_ResourceStoragePtr->GetPermanentResourcesOwnership();
+        std::vector<std::unique_ptr<PacketResource>> permanentResources = m_ResourceStorage.GetPermanentResourcesOwnership();
         m_ResourcesPendingDeletion.insert(m_ResourcesPendingDeletion.end(),
                                           std::make_move_iterator(permanentResources.begin()),
                                           std::make_move_iterator(permanentResources.end()));
@@ -73,7 +76,7 @@ PacketResourceManager::~PacketResourceManager()
             auto& [newResourceUniquePtr, originalResource] = replacementInfo;
 
             // Get the original resource ownership
-            auto originalResourceUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(originalResource);
+            auto originalResourceUniquePtr = m_ResourceStorage.GetObjectOwnership(originalResource);
 
             // Decrement the number of references for the original resource, now it
             // must have zero references
@@ -147,7 +150,7 @@ PacketResourceManager::~PacketResourceManager()
             }
 
             // Remove this object from the storage, taking its ownership back
-            std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resourcePtr);
+            std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStorage.GetObjectOwnership(resourcePtr);
             if (objectUniquePtr == nullptr)
             {
                 // This resource was already set to be deleted, this happened because it was a permanent resource that
@@ -181,7 +184,7 @@ PacketResourceManager::~PacketResourceManager()
                 }
 
                 // Remove this resource watch (not enabled on release and non-edit builds)
-                m_ResourceWatcherPtr->RemoveWatch(resource.get());
+                m_ResourceWatcher.RemoveWatch(resource.get());
 
                 // Set pending deletion for this resource
                 resource->SetPendingDeletion();
@@ -251,9 +254,9 @@ uint32_t PacketResourceManager::GetApproximatedNumberResourcesPendingDeletion()
 void PacketResourceManager::AsynchronousResourceProcessment()
 {
     // Call the update method for the resource watcher (disabled on non-edit builds)
-    if (m_OperationMode == OperationMode::Edit)
+    if (m_OperationMode == OperationMode::Plain)
     {
-        m_ResourceWatcherPtr->Update();
+        m_ResourceWatcher.Update();
     }
 
     /////////////////////////////
@@ -272,7 +275,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         auto& [creationProxy, factory, buildInfo, hash, isPermanent, isRuntime, resourceData] = resourceCreationData;
 
         // Check if we need to create and load this resource
-        PacketResource* resource = m_ResourceStoragePtr->FindObject(hash, buildInfo.buildFlags, isRuntime);
+        PacketResource* resource = m_ResourceStorage.FindObject(hash, buildInfo.buildFlags, isRuntime);
         if (resource == nullptr)
         {
             // Load this resource
@@ -287,10 +290,10 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             assert(resource != nullptr);
 
             // Watch this resource file object (not enabled on release and non-edit builds)
-            m_ResourceWatcherPtr->WatchResource(resource);
+            m_ResourceWatcher.WatchResource(resource);
 
             // Register this resource inside the storage
-            m_ResourceStoragePtr->InsertObject(std::move(resourceUniquePtr), hash, buildInfo.buildFlags);
+            m_ResourceStorage.InsertObject(std::move(resourceUniquePtr), hash, buildInfo.buildFlags);
 
             // If this resource requires external construct, enqueue it on the correspondent queue
             if (resource->RequiresExternalConstructPhase() && !resource->ConstructionFailed())
@@ -318,13 +321,13 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         if (originalResource->IsValid() && newResource->IsValid())
         {
             // Update the resource watched
-            m_ResourceWatcherPtr->UpdateWatchedResource(newResource.get());
+            m_ResourceWatcher.UpdateWatchedResource(newResource.get());
 
             // Register the replacing resource
             originalResource->RegisterReplacingResource(newResource.get());
 
             // Replace the new resource inside the storage (takes ownership)
-            std::unique_ptr<PacketResource> oldResource = m_ResourceStoragePtr->ReplaceObject(
+            std::unique_ptr<PacketResource> oldResource = m_ResourceStorage.ReplaceObject(
                 newResource,
                 newResource->GetHash(),
                 newResource->GetBuildInfo().buildFlags);
@@ -411,7 +414,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         }
 
         // Remove this object from the storage, taking its ownership back
-        std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStoragePtr->GetObjectOwnership(resourcePtr);
+        std::unique_ptr<PacketResource> objectUniquePtr = m_ResourceStorage.GetObjectOwnership(resourcePtr);
         if (objectUniquePtr == nullptr)
         {
             // This resource was already set to be deleted, there are expected occasions (like the one mentioned
@@ -420,7 +423,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         }
 
         // Remove this resource watch (not enabled on release and non-edit builds)
-        m_ResourceWatcherPtr->RemoveWatch(objectUniquePtr.get());
+        m_ResourceWatcher.RemoveWatch(objectUniquePtr.get());
 
         // Move this resource to our deletion vector
         m_ResourcesPendingDeletion.push_back(std::move(objectUniquePtr));
@@ -482,7 +485,7 @@ void PacketResourceManager::RegisterResourceForExternalConstruction(PacketResour
 void PacketResourceManager::OnResourceDataChanged(PacketResource * _resource)
 {
     // Disabled on non edit builds
-    if (m_OperationMode != OperationMode::Edit)
+    if (m_OperationMode != OperationMode::Plain)
     {
         return;
     }
@@ -497,7 +500,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource * _resource)
     if (_resource->IsPendingDeletion() || !_resource->IsReferenced())
     {
         // We can't proceed with this resource on its current status
-        m_Logger->LogWarning(std::string("Found file modification event on file: \"")
+        m_LoggerPtr->LogWarning(std::string("Found file modification event on file: \"")
                              .append(_resource->GetHash().GetPath().String())
                              .append("\", but the resource is pending deletion, ignoring this!")
                              .c_str());
@@ -513,7 +516,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource * _resource)
         if (replaceInfo.second->GetHash() == _resource->GetHash())
         {
             // There is no need to set it again, duplicated call
-            m_Logger->LogWarning(std::string("Found duplicated file modification event on file: \"")
+            m_LoggerPtr->LogWarning(std::string("Found duplicated file modification event on file: \"")
                                  .append(_resource->GetHash().GetPath().String())
                                  .append("\", ignoring it!")
                                  .c_str());
@@ -529,7 +532,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource * _resource)
         if (deletionRequest->GetHash() == _resource->GetHash())
         {
             // There is no need to set it again, duplicated call
-            m_Logger->LogWarning(std::string("Found file modification event on file: \"")
+            m_LoggerPtr->LogWarning(std::string("Found file modification event on file: \"")
                                  .append(_resource->GetHash().GetPath().String())
                                  .append("\" but resource is being deleted, ignoring it!")
                                  .c_str());
@@ -542,7 +545,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource * _resource)
     if (_resource->GetReplacingResource())
     {
         // There is no need to set it again, duplicated call
-        m_Logger->LogWarning(std::string("Found file modification event on file: \"")
+        m_LoggerPtr->LogWarning(std::string("Found file modification event on file: \"")
                              .append(_resource->GetHash().GetPath().String())
                              .append("\" but resource is already replaced, ignoring it!")
                              .c_str());

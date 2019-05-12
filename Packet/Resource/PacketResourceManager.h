@@ -6,7 +6,9 @@
 //////////////
 // INCLUDES //
 //////////////
-#include "..\PacketConfig.h"
+#include "../PacketConfig.h"
+#include "../PacketFileLoader.h"
+#include "../PacketFileIndexer.h"
 #include "PacketResource.h"
 #include "PacketMultipleQueue.h"
 #include "PacketResourceLoader.h"
@@ -76,12 +78,14 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketResourceManager(OperationMode _operationMode,
-		PacketResourceStorage* _storagePtr,
-		PacketFileLoader* _fileLoaderPtr, 
-		PacketReferenceManager* _referenceManager, 
-		PacketResourceWatcher* _resourceWatcherPtr, 
-		PacketLogger* _loggerPtr);
+	PacketResourceManager(
+        OperationMode           _operationMode,
+		PacketResourceStorage&  _storagePtr,
+		PacketFileLoader&       _fileLoaderPtr, 
+        PacketFileIndexer&      _fileIndexer, 
+		PacketReferenceManager& _referenceManager, 
+		PacketResourceWatcher&  _resourceWatcherPtr, 
+		PacketLogger*           _loggerPtr);
 	~PacketResourceManager();
 	
 //////////////////
@@ -89,22 +93,24 @@ public: //////////
 protected: ///////
 
     template <typename ResourceClass>
-    bool RequestResource(PacketResourceReference<ResourceClass>& _resourceReference,
-                         PacketResourceFactory* _factoryPtr, 
-                         Hash _hash, 
-                         bool _isPersistent,
-                         PacketResourceBuildInfo _resourceBuildInfo)
+    bool RequestResource(
+        PacketResourceReference<ResourceClass>& _resourceReference,
+        PacketResourceFactory*                  _factoryPtr,
+        Hash                                    _hash,
+        bool                                    _isPersistent,
+        PacketResourceBuildInfo                 _resourceBuildInfo)
     {
         // Check if a resource with the given hash exist
-        if (!m_FileLoaderPtr->FileExist(_hash))
+        if (!m_FileIndexer.IsFileIndexed(_hash))
         {
             // The file doesn't exist
-            m_Logger->LogError(std::string("Trying to load file at path: \"")
-                               .append(_hash.GetPath())
-                               .append("\" and hash: ")
-                               .append(std::to_string(_hash.GetHashValue()))
-                               .append(" but it doesn't exist on our database!")
-                               .c_str());
+            m_LoggerPtr->LogError(
+                std::string("Trying to load file at path: \"")
+                .append(_hash.GetPath())
+                .append("\" and hash: ")
+                .append(std::to_string(_hash.GetHashValue()))
+                .append(" but it doesn't exist on our database!")
+                .c_str());
 
             return false;
         }
@@ -128,10 +134,11 @@ protected: ///////
     }
 
     template <typename ResourceClass>
-    void RequestRuntimeResource(PacketResourceReference<ResourceClass>& _resourceReference,
-                                PacketResourceFactory* _factoryPtr,
-                                PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo(),
-                                std::vector<uint8_t> _resourceData = {})
+    void RequestRuntimeResource(
+        PacketResourceReference<ResourceClass>& _resourceReference,
+        PacketResourceFactory*                  _factoryPtr,
+        PacketResourceBuildInfo                 _resourceBuildInfo = PacketResourceBuildInfo(),
+        std::vector<uint8_t>                    _resourceData = {})
     {
         // Get a proxy for this resource reference
         auto resourceCreationProxy = GetResourceCreationProxy();
@@ -152,8 +159,9 @@ protected: ///////
     // This method will wait until the given resource is ready to be used
     // Optionally you can pass a timeout parameter in milliseconds
     template <typename ResourceClass>
-    bool WaitForResource(const PacketResourceReference<ResourceClass>& _resourceReference,
-                         long long _timeout = -1) const
+    bool WaitForResource(
+        const PacketResourceReference<ResourceClass>& _resourceReference,
+        long long                                     _timeout = -1) const
     {
         clock_t initialTime = clock();
         clock_t currentTime = initialTime;
@@ -249,11 +257,12 @@ private: //////
 	OperationMode m_OperationMode;
 
 	// The object storage, the file loader, the resource watcher, the reference manager and the logger ptrs
-	PacketResourceStorage*  m_ResourceStoragePtr;
-	PacketResourceWatcher*  m_ResourceWatcherPtr;
-	PacketFileLoader*       m_FileLoaderPtr;
-	PacketReferenceManager* m_ReferenceManagerPtr;
-	PacketLogger*           m_Logger;
+	PacketResourceStorage&  m_ResourceStorage;
+	PacketResourceWatcher&  m_ResourceWatcher;
+	PacketFileLoader&       m_FileLoader;
+    PacketFileIndexer&      m_FileIndexer;
+	PacketReferenceManager& m_ReferenceManager;
+	PacketLogger*           m_LoggerPtr;
 };
 
 // Packet
