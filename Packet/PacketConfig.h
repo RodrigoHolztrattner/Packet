@@ -496,6 +496,17 @@ static Path ConvertSystemPathIntoInternalPath(std::filesystem::path _system_path
     return diffpath.string();
 }
 
+static std::vector<std::string> DecomposePath(std::filesystem::path _path)
+{
+    std::vector<std::string> folders;
+    while (_path != "/" && _path != "")
+    {
+        folders.push_back(_path.filename().string());
+        _path = _path.parent_path();
+    }
+    return folders;
+}
+
 // Compare 2 path filenames
 static bool CompareFilenames(Path _first, Path _second)
 {

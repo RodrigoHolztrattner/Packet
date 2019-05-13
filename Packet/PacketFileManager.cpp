@@ -38,7 +38,7 @@ bool PacketFileManager::Initialize()
     using namespace std::placeholders;
 
     // Create our file management objects
-    m_FileIndexer          = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileIndexer>() : std::make_unique<PacketPlainFileIndexer>();
+    m_FileIndexer          = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileIndexer>(m_PacketPath) : std::make_unique<PacketPlainFileIndexer>(m_PacketPath);
     m_FileLoader           = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileLoader>(*m_FileIndexer) : std::make_unique<PacketPlainFileLoader>(*m_FileIndexer); // PacketCondensedFileLoader
     m_FileReferenceManager = std::make_unique<PacketReferenceManager>();
     m_FileSaver            = std::make_unique<PacketFileSaver>(*m_FileIndexer, *m_FileReferenceManager, *m_FileLoader, m_PacketPath);
@@ -50,11 +50,12 @@ bool PacketFileManager::Initialize()
         [&](std::string _file_extension) {return m_Converters.find(_file_extension) != m_Converters.end() ? m_Converters.find(_file_extension)->second.get() : m_DefaultConverter.get(); },
         m_PacketPath);
 
-    // Set the auxiliary object ptrs for the reference manager
+    // Set the auxiliary object ptrs
+    m_FileIndexer->SetAuxiliarObjects(m_FileLoader.get());
     m_FileReferenceManager->SetAuxiliarObjects(m_FileLoader.get(), m_FileSaver.get());
 
     // Initialize the file indexer
-    if (!m_FileIndexer->Initialize(m_PacketPath))
+    if (!m_FileIndexer->Initialize())
     {
         return false;
     }
@@ -230,7 +231,7 @@ bool PacketFileManager::MoveFile(Path _source_file_path, Path _target_file_path)
     static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(_target_file_path);
 
     // Delete the old entry from the file plain indexer
-    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(_source_file_path);
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RemoveFileIndexData(_source_file_path);
 
     return true;
 }
@@ -257,7 +258,7 @@ bool PacketFileManager::DeleteFile(Path _target_file_path) const
     }
 
     // Delete the old entry from the file plain indexer
-    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(_target_file_path);
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RemoveFileIndexData(_target_file_path);
 
     return true;
 }

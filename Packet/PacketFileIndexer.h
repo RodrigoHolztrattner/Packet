@@ -47,6 +47,9 @@ class PacketResourceStorage;
 // Structures we know
 struct PacketFile;
 
+// Classes we know
+class PacketFileLoader;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketFileIndexer
 ////////////////////////////////////////////////////////////////////////////////
@@ -57,11 +60,9 @@ protected:
     struct FileLoadInformation
     {
         Path             file_path;
+        HashPrimitive    file_hash;
         FileDataPosition file_data_position = 0;
         FileDataSize     file_data_size = 0;
-
-        const PacketFileHeader&     file_header;
-        const std::vector<uint8_t>& file_icon_data;
     };
 
 //////////////////
@@ -69,7 +70,7 @@ protected:
 public: //////////
 
 	// Constructor / destructor
-	PacketFileIndexer();
+	PacketFileIndexer(std::filesystem::path _packet_path);
 	~PacketFileIndexer();
 
 //////////////////
@@ -77,7 +78,7 @@ public: //////////
 public: //////////
 
     // Initialize this indexer, populating its file map
-    virtual bool Initialize(std::filesystem::path _resource_path) = 0;
+    virtual bool Initialize() = 0;
 
     // Return if a given file is indexed by its path hash by this indexer
     virtual bool IsFileIndexed(HashPrimitive _file_hash) const = 0;
@@ -85,19 +86,32 @@ public: //////////
     // Return a file load information (its path, the location inside the file and its total size)
     virtual std::optional<FileLoadInformation> RetrieveFileLoadInformation(HashPrimitive _file_hash) const = 0;
 
-    // Return a const reference to a file header
-    virtual const PacketFileHeader& GetFileHeader(HashPrimitive _file_hash) const = 0;
+    // Return a file extension, if applicable
+    virtual std::optional<std::string> GetFileExtension(HashPrimitive _file_hash) const = 0;
 
-    // Return a cost reference to a file icon data
-    virtual const std::vector<uint8_t>& GetFileIconData(HashPrimitive _file_hash) const = 0;
+    // Return a file header, if applicable
+    virtual std::optional<PacketFileHeader> GetFileHeader(HashPrimitive _file_hash) const = 0;
+
+    // Return a file icon data
+    virtual std::vector<uint8_t> GetFileIconData(HashPrimitive _file_hash) const = 0;
+
+    // Return a file properties
+    virtual nlohmann::json GetFileProperties(HashPrimitive _file_hash) const = 0;
+
+    // Set auxiliary object pointers
+    void SetAuxiliarObjects(const PacketFileLoader* _file_loader);
 
 protected:
 
 ///////////////
 // VARIABLES //
-private: //////
+protected: ////
 
+    // The packet path
+    std::filesystem::path m_PacketPath;
 
+    // The file loader references
+    const PacketFileLoader* m_FileLoaderPtr = nullptr;
 };
 
 // Packet data explorer
