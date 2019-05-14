@@ -7,21 +7,10 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
+#include "PacketReferenceManager.h"
 #include <string>
 #include <map>
 #include <set>
-
-///////////////
-// NAMESPACE //
-///////////////
-
-/////////////
-// DEFINES //
-/////////////
-
-////////////
-// GLOBAL //
-////////////
 
 ///////////////
 // NAMESPACE //
@@ -36,7 +25,6 @@ class PacketFileLoader;
 class PacketFileSaver;
 class PacketFileConverter;
 class PacketFileImporter;
-class PacketReferenceManager;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketFileManager
@@ -82,6 +70,11 @@ public: //////////
     // Delete a file
     bool DeleteFile(Path _target_file_path) const;
 
+    // Return a reference to our objects
+    const PacketFileIndexer& GetFileIndexer()   const;
+    const PacketFileLoader& GetFileLoader()     const;
+    const PacketFileImporter& GetFileImporter() const;
+
 protected:
 
     // Write a file data into an internal file, this doesn't check if the file should be overwritten
@@ -109,7 +102,6 @@ private: //////
 
     // Our map with all registered converters with their extensions
     std::map<std::string, std::unique_ptr<PacketFileConverter>> m_Converters;
-
 };
 
 // Packet data explorer

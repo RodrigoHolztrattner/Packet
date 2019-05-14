@@ -78,26 +78,35 @@ public: //////////
 
 	// Constructor / destructor
 	PacketResourceManager(
-        OperationMode           _operationMode,
-		PacketResourceStorage&  _storagePtr,
-		PacketFileLoader&       _fileLoaderPtr, 
-        PacketFileIndexer&      _fileIndexer, 
-		PacketResourceWatcher&  _resourceWatcherPtr, 
-		PacketLogger*           _loggerPtr);
+        OperationMode            _operationMode,
+		PacketResourceStorage&   _storagePtr,
+		const PacketFileLoader&  _fileLoaderPtr, 
+        const PacketFileIndexer& _fileIndexer,
+		PacketResourceWatcher&   _resourceWatcherPtr, 
+		PacketLogger*            _loggerPtr);
 	~PacketResourceManager();
 	
 //////////////////
 // MAIN METHODS //
 protected: ///////
 
-    template <typename ResourceClass>
-    bool RequestResource(
-        PacketResourceReference<ResourceClass>& _resourceReference,
-        PacketResourceFactory*                  _factoryPtr,
-        Hash                                    _hash,
-        bool                                    _isPersistent,
-        PacketResourceBuildInfo                 _resourceBuildInfo)
+    // Register a resource factory
+    template <typename ResourceFactoryClass, typename ResourceClass, typename ... Args>
+    void RegisterResourceFactory(Args&& ... args)
     {
+        assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) == m_RegisteredFactories.end());
+        m_RegisteredFactories.insert({ ctti::type_id<ResourceClass>().hash(),
+                                     std::make_unique<ResourceFactoryClass>(std::forward<Args>(args) ...) });
+    }
+
+    // Request an object for the given resource reference and hash
+    template <typename ResourceClass>
+    bool RequestResource(PacketResourceReference<ResourceClass>& _resourceReference,
+                         Hash _hash,
+                         PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
+    {
+        assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
+
         // Check if a resource with the given hash exist
         if (!m_FileIndexer.IsFileIndexed(_hash))
         {
@@ -121,23 +130,23 @@ protected: ///////
 
         // Add this new creation data into our processing queue
         m_ResourceCreateProxyQueue.enqueue({ std::move(resourceCreationProxy),
-                                             _factoryPtr, 
+                                             m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(),
                                              _resourceBuildInfo,
                                              _hash,
-                                             _isPersistent,
-                                             false, 
+                                             false,
+                                             false,
                                              std::vector<uint8_t>() });
 
-        return true;
     }
 
+    // Request an object for the given resource reference and hash
     template <typename ResourceClass>
-    void RequestRuntimeResource(
-        PacketResourceReference<ResourceClass>& _resourceReference,
-        PacketResourceFactory*                  _factoryPtr,
-        PacketResourceBuildInfo                 _resourceBuildInfo = PacketResourceBuildInfo(),
-        std::vector<uint8_t>                    _resourceData = {})
+    void RequestRuntimeResource(PacketResourceReference<ResourceClass> & _resourceReference,
+                                PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo(),
+                                std::vector<uint8_t> _resourceData = {})
     {
+        assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
+
         // Get a proxy for this resource reference
         auto resourceCreationProxy = GetResourceCreationProxy();
 
@@ -146,14 +155,54 @@ protected: ///////
 
         // Add this new creation data into our processing queue
         m_ResourceCreateProxyQueue.enqueue({ std::move(resourceCreationProxy),
-                                             _factoryPtr, 
+                                             m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(),
                                              _resourceBuildInfo,
-                                             Hash(), 
-                                             false, 
-                                             true, 
-                                             std::move(_resourceData)});
+                                             Hash(),
+                                             false,
+                                             true,
+                                             std::move(_resourceData) });
     }
-  
+
+    // Request a permanent object for the given reference and resource hash, the object will not be deleted when it reaches 0
+    // references, the deletion phase will only occur in conjunction with the storage deletion
+    template <typename ResourceClass, typename ResourceInstance>
+    bool RequestPermanentResource(PacketResourceReference<ResourceClass> & _resourceReference,
+                                  Hash _hash,
+                                  PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
+    {
+        assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
+
+        // Check if a resource with the given hash exist
+        if (!m_FileIndexer.IsFileIndexed(_hash))
+        {
+            // The file doesn't exist
+            m_LoggerPtr->LogError(
+                std::string("Trying to load file at path: \"")
+                .append(_hash.GetPath())
+                .append("\" and hash: ")
+                .append(std::to_string(_hash.GetHashValue()))
+                .append(" but it doesn't exist on our database!")
+                .c_str());
+
+            return false;
+        }
+
+        // Get a proxy for this resource reference
+        auto resourceCreationProxy = GetResourceCreationProxy();
+
+        // Register the creation proxy
+        _resourceReference.RegisterCreationProxy(resourceCreationProxy.get());
+
+        // Add this new creation data into our processing queue
+        m_ResourceCreateProxyQueue.enqueue({ std::move(resourceCreationProxy),
+                                             m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(),
+                                             _resourceBuildInfo,
+                                             _hash,
+                                             true,
+                                             false,
+                                             std::vector<uint8_t>() });
+    }
+
     // This method will wait until the given resource is ready to be used
     // Optionally you can pass a timeout parameter in milliseconds
     template <typename ResourceClass>
@@ -188,13 +237,17 @@ protected: ///////
     // by the user externally (since the resource requires it)
     std::vector<PacketResourceExternalConstructor> GetResourceExternalConstructors();
 
+    // Return an approximation of the current number of resources since some of them could be enqueued 
+    // to be created or released
+    uint32_t GetAproximatedResourceAmount() const;
+
 protected:
 
     // Return a valid usable resource creation proxy object
     std::unique_ptr<PacketResourceCreationProxy> GetResourceCreationProxy();
 
     // This method return the approximated number of resources that are pending deletion
-    uint32_t GetApproximatedNumberResourcesPendingDeletion();
+    uint32_t GetApproximatedNumberResourcesPendingDeletion() const;
 
     // The asynchronous resource process method
     void AsynchronousResourceProcessment();
@@ -220,6 +273,9 @@ protected:
 ///////////////
 // VARIABLES //
 private: //////
+
+    // All registered resource factories
+    std::unordered_map<uint64_t, std::unique_ptr<PacketResourceFactory>> m_RegisteredFactories;
 
     typedef std::tuple<
         std::unique_ptr<PacketResourceCreationProxy>,
@@ -255,11 +311,11 @@ private: //////
 	OperationMode m_OperationMode;
 
 	// The object storage, the file loader, the resource watcher, the reference manager and the logger ptrs
-	PacketResourceStorage&  m_ResourceStorage;
-	PacketResourceWatcher&  m_ResourceWatcher;
-	PacketFileLoader&       m_FileLoader;
-    PacketFileIndexer&      m_FileIndexer;
-	PacketLogger*           m_LoggerPtr;
+	PacketResourceStorage&   m_ResourceStorage;
+	PacketResourceWatcher&   m_ResourceWatcher;
+    const PacketFileLoader&  m_FileLoader;
+    const PacketFileIndexer& m_FileIndexer;
+	PacketLogger*            m_LoggerPtr;
 };
 
 // Packet

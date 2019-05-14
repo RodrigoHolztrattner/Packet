@@ -11,12 +11,12 @@
 PacketUsingDevelopmentNamespace(Packet)
 
 PacketResourceManager::PacketResourceManager(
-    OperationMode           _operationMode,
-    PacketResourceStorage&  _storage,
-    PacketFileLoader&       _fileLoader,
-    PacketFileIndexer&      _fileIndexer,
-    PacketResourceWatcher&  _resourceWatcher,
-    PacketLogger*           _loggerPtr) :
+    OperationMode            _operationMode,
+    PacketResourceStorage&   _storage,
+    const PacketFileLoader&  _fileLoader,
+    const PacketFileIndexer& _fileIndexer,
+    PacketResourceWatcher&   _resourceWatcher,
+    PacketLogger*            _loggerPtr) :
     m_OperationMode(_operationMode),
     m_ResourceStorage(_storage),
     m_FileLoader(_fileLoader),
@@ -208,6 +208,8 @@ PacketResourceManager::~PacketResourceManager()
     assert(m_ResourcesPendingReplacement.size() == 0);
     assert(m_ResourcesPendingModificationEvaluation.size_approx() == 0);
     assert(m_ResourcesPendingModification.size() == 0);
+
+    m_RegisteredFactories.clear();
 }
 
 
@@ -223,6 +225,13 @@ std::vector<PacketResourceExternalConstructor> PacketResourceManager::GetResourc
 
     return std::move(outConstructors);
 }
+
+uint32_t PacketResourceManager::GetAproximatedResourceAmount() const
+{
+    return m_ResourceStorage.GetAproximatedResourceAmount() +
+        GetApproximatedNumberResourcesPendingDeletion();
+}
+
 
 void PacketResourceManager::RegisterResourceForDeletion(PacketResource * _resourcePtr)
 {
@@ -244,7 +253,7 @@ std::unique_ptr<PacketResourceCreationProxy> PacketResourceManager::GetResourceC
     return std::move(proxy);
 }
 
-uint32_t PacketResourceManager::GetApproximatedNumberResourcesPendingDeletion()
+uint32_t PacketResourceManager::GetApproximatedNumberResourcesPendingDeletion() const
 {
     return static_cast<uint32_t>(m_ResourcesPendingDeletion.size());
 }

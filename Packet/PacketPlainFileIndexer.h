@@ -65,30 +65,6 @@ class PacketPlainFileIndexer : public PacketFileIndexer
         FileLoadInformation file_load_information;
     };
 
-    struct DirectoryNode
-    {
-        friend PacketPlainFileIndexer;
-
-        DirectoryNode() = default;
-
-        bool operator== (const DirectoryNode& _other)
-        {
-            return (directory_name == _other.directory_name &&
-                    directory_internal_path == _other.directory_internal_path &&
-                    children_folders == _other.children_folders);
-        }
-
-        Path                                        directory_name;
-        Path                                        directory_path;
-        std::vector<std::unique_ptr<DirectoryNode>> children_folders;
-        std::vector<Path>                           children_files;
-
-    protected:
-
-        std::filesystem::path directory_internal_path;
-
-    };
-
 //////////////////
 // CONSTRUCTORS //
 public: //////////
@@ -132,7 +108,7 @@ protected:
 
 private:
 
-    // Scan the resource path for files and folders recursively and populate our info map
+    // Index all files inside our packet path
     void BuildFilesystemView(std::filesystem::path _resource_path);
 
 ///////////////
@@ -141,9 +117,6 @@ private: //////
 
     // Our index data
     std::map<HashPrimitive, IndexData> m_IndexDatas;
-
-    // The directory root node
-    std::unique_ptr<DirectoryNode> m_RootNode;
 };
 
 // Packet data explorer

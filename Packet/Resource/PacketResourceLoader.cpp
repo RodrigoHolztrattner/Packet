@@ -14,7 +14,7 @@
 PacketUsingDevelopmentNamespace(Packet)
 
 PacketResourceLoader::PacketResourceLoader(
-    PacketFileLoader&       _fileLoader,
+    const PacketFileLoader& _fileLoader,
     PacketResourceManager&  _resourceManager,
     PacketLogger*           _loggerPtr,
     OperationMode           _operationMode) :
@@ -46,7 +46,6 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
     resource->SetHelperObjects(
         _resourceFactory,
         &m_ResourceManager,
-        &m_FileLoader,
         m_LoggerPtr,
         m_OperationMode);
 

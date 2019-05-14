@@ -7,6 +7,7 @@
 // INCLUDES //
 //////////////
 #include "PacketConfig.h"
+#include "Resource/PacketResourceManager.h"
 
 ///////////////
 // NAMESPACE //
@@ -17,6 +18,9 @@ PacketDevelopmentNamespaceBegin(Packet)
 
 // Classes we know
 class PacketFileManager;
+class PacketResourceFactory;
+class PacketResourceWatcher;
+class PacketResourceStorage;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketSystem
@@ -39,6 +43,13 @@ public: //////////
 
 	// Initialize this object
 	bool Initialize(OperationMode _operation_mode, std::filesystem::path _resource_path, std::unique_ptr<PacketLogger>&& _logger = std::make_unique<PacketLogger>());
+    
+    // Return the resource (packet) path
+    std::filesystem::path GetResourcePath() const;
+
+    // Return a const reference to our objects
+    const PacketFileManager& GetFileManager()         const;
+    const PacketResourceManager& GetResourcemanager() const;
 
 ///////////////
 // VARIABLES //
@@ -46,10 +57,15 @@ private: //////
 
     // The resource path and operation mode
     std::filesystem::path m_ResourcePath;
-    OperationMode m_OperationMode = OperationMode::Undefined;
+    OperationMode m_OperationMode = OperationMode::Plain;
 
 	// Our internal objects
-    std::unique_ptr<PacketFileManager> m_FileManager;
+    std::unique_ptr<PacketFileManager>      m_FileManager;
+    std::unique_ptr<PacketReferenceManager> m_ReferenceManager;
+    std::unique_ptr<PacketResourceStorage>  m_ResourceStorage;
+    std::unique_ptr<PacketResourceManager>  m_ResourceManager;
+    std::unique_ptr<PacketResourceWatcher>  m_ResourceWatcher;
+    std::unique_ptr<PacketLogger>           m_Logger;
 };
 
 // Packet data explorer

@@ -91,40 +91,32 @@ nlohmann::json PacketPlainFileIndexer::GetFileProperties(HashPrimitive _file_has
 
 void PacketPlainFileIndexer::BuildFilesystemView(std::filesystem::path _resource_path)
 {
-    // Create a new root node
-    m_RootNode = std::make_unique<DirectoryNode>();
-    m_RootNode->directory_name = _resource_path.filename().string();
-    m_RootNode->directory_path = ConvertSystemPathIntoInternalPath(_resource_path, _resource_path);
-    m_RootNode->directory_internal_path = _resource_path;
-
     // This method will recursively construct the packet tree
-    std::function<void(DirectoryNode&)> CreateDirectoryTreeRecursive = [&](DirectoryNode& _current_node)
+    std::function<void(const std::filesystem::path&)> ScanResourcePathRecursive = [&](const std::filesystem::path & _current_path)
     {
-        for (auto& p : std::filesystem::directory_iterator(_current_node.directory_internal_path))
+        // For each folder/file recursively
+        for (auto& p : std::filesystem::directory_iterator(_current_path))
         {
-            if (p.is_directory())
+            // Get the path
+            auto path = std::filesystem::path(p);
+
+            // Check if this is a file
+            if (std::filesystem::is_regular_file(p))
             {
-                _current_node.children_folders.push_back(std::make_unique<DirectoryNode>());
-                DirectoryNode& child_node = *_current_node.children_folders.back();
-
-                child_node.directory_name = p.path().filename().string();
-                child_node.directory_path = ConvertSystemPathIntoInternalPath(_resource_path, p);
-                child_node.directory_internal_path = p.path();
-
-                CreateDirectoryTreeRecursive(child_node);
+                // Gather this resource data and insert it into our index
+                InsertFileIndexData(ConvertSystemPathIntoInternalPath(_resource_path, path));
             }
-            else
+            // Folder (ignore the internal folder)
+            else if (path.filename() != InternalFolderName)
             {
-                auto file_path = ConvertSystemPathIntoInternalPath(_resource_path, p);
-                _current_node.children_files.push_back(file_path);
-
-                InsertFileIndexData(file_path);
+                // Enter this folder and continue searching
+                ScanResourcePathRecursive(path);
             }
         }
     };
 
     // Call the scan method for the base resource path
-    CreateDirectoryTreeRecursive(*m_RootNode);
+    ScanResourcePathRecursive(_resource_path);
 }
 
 void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
@@ -164,9 +156,6 @@ void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
 
     // Add the entry
     m_IndexDatas.insert({ Hash(_file_path), std::move(new_index_entry) });
-
-    // Rebuild the filesystem view
-    BuildFilesystemView(m_PacketPath);
 }
 
 void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
@@ -177,7 +166,4 @@ void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
     {
         m_IndexDatas.erase(iter);
     }
-
-    // Rebuild the filesystem view
-    BuildFilesystemView(m_PacketPath);
 }

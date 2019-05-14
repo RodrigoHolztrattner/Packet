@@ -77,7 +77,6 @@ static const uint16_t CondensedMajorVersion		= 0;
 // The operation modes
 enum class OperationMode
 {
-    Undefined,
 	Plain, 
 	Condensed
 };

@@ -34,10 +34,10 @@ public: //////////
 
 	// Constructor / destructor
     PacketResourceLoader(
-        PacketFileLoader&      _fileLoader,
-        PacketResourceManager& _resourceManager,
-        PacketLogger*          _loggerPtr,
-        OperationMode          _operationMode);
+        const PacketFileLoader& _fileLoader,
+        PacketResourceManager&  _resourceManager,
+        PacketLogger*           _loggerPtr,
+        OperationMode           _operationMode);
 	~PacketResourceLoader();
 
 //////////////////
@@ -58,7 +58,7 @@ public: //////////
 private: //////
 
 	// The packet file loader ptr, the reference manager ptr, the logger ptr and the current operation mode
-	PacketFileLoader&       m_FileLoader;
+    const PacketFileLoader& m_FileLoader;
     PacketResourceManager&  m_ResourceManager;
 	PacketLogger*           m_LoggerPtr;
 	OperationMode           m_OperationMode;

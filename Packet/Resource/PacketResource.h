@@ -202,7 +202,6 @@ protected: // INTERNAL //
     void SetHelperObjects(
         PacketResourceFactory*  _factoryReference,
         PacketResourceManager*  _resourceManager,
-        PacketFileLoader*       _fileLoader,
         PacketLogger*           _logger,
         OperationMode           _operationMode);
 
@@ -260,7 +259,6 @@ private: //////
 	// A pointer to the resource factory, the reference manager, the file loader and the logger object
 	PacketResourceFactory*  m_FactoryPtr;
     PacketResourceManager*  m_ResourceManagerPtr;
-    PacketFileLoader*       m_FileLoaderPtr;
 	PacketLogger*           m_LoggerPtr;
 
     // A resource that is replacing this one

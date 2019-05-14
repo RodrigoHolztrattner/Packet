@@ -190,13 +190,11 @@ void PacketResource::SetHash(Hash _hash)
 void PacketResource::SetHelperObjects(
     PacketResourceFactory*  _factoryReference,
     PacketResourceManager*  _resourceManager,
-    PacketFileLoader*       _fileLoader,
     PacketLogger*           _logger,
     OperationMode           _operationMode)
 {
 	m_FactoryPtr = _factoryReference;
     m_ResourceManagerPtr = _resourceManager;
-	m_FileLoaderPtr = _fileLoader;
 	m_LoggerPtr = _logger;
 	m_CurrentOperationMode = _operationMode;
 }
