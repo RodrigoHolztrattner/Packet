@@ -64,12 +64,12 @@ std::filesystem::path PacketSystem::GetResourcePath() const
     return m_ResourcePath;
 }
 
-const PacketFileManager& PacketSystem::GetFileManager() const
+PacketFileManager& PacketSystem::GetFileManager()
 {
     return *m_FileManager;
 }
 
-const PacketResourceManager& PacketSystem::GetResourcemanager() const
+PacketResourceManager& PacketSystem::GetResourceManager()
 {
     return *m_ResourceManager;
 }

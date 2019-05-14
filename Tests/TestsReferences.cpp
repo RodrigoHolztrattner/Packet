@@ -18,27 +18,31 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
 {
     GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
     {
+        std::string resourcePath = "dummy.txt";
+        CreateResourceFile(resourcePath);
+
         Packet::System packetSystem;
         packetSystem.Initialize(Packet::OperationMode::Plain, ResourceDirectory);
 
-        packetSystem.RegisterResourceFactory<MyFactory, MyResource>();
+        // Request the resource manager and register our factory
+        auto& resource_manager = packetSystem.GetResourceManager();
+        resource_manager.RegisterResourceFactory<MyFactory, MyResource>();
 
         AND_GIVEN("A previously created resource file")
         {
-            std::string resourcePath = ResourceDirectory + "/dummy.txt";
-            CreateResourceFile(resourcePath);
+
 
             WHEN("An resource is requested")
             {
                 Packet::ResourceReference<MyResource> resourceReference;
 
-                packetSystem.RequestResource<MyResource>(
+                resource_manager.RequestResource<MyResource>(
                     resourceReference,
                     Packet::Hash(resourcePath));
 
                 AND_WHEN("We wait until the resource reference is valid")
                 {
-                    packetSystem.WaitForResource(resourceReference);
+                    resource_manager.WaitForResource(resourceReference);
 
                     AND_WHEN("A new resource reference is created from the old one")
                     {
@@ -57,7 +61,7 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
                             {
                                 REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
                                                                          {
-                                                                             return packetSystem.GetAproximatedResourceAmount() == 1;
+                                                                             return resource_manager.GetAproximatedResourceAmount() == 1;
                                                                          }, 1000));
                             }
                         }
@@ -70,7 +74,7 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
 
                     AND_WHEN("We wait this new reference variable to be valid")
                     {
-                        packetSystem.WaitForResource(otherResourceReference);
+                        resource_manager.WaitForResource(otherResourceReference);
 
                         THEN("The old reference must not be valid")
                         {
@@ -86,7 +90,7 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
                         {
                             REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
                                                                      {
-                                                                         return packetSystem.GetAproximatedResourceAmount() == 1;
+                                                                         return resource_manager.GetAproximatedResourceAmount() == 1;
                                                                      }, 1000));
                         }
                     }   
@@ -96,7 +100,7 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
                 {
                     Packet::ResourceReference<MyResource> returnedResourceReference = DummyMethod(std::move(resourceReference));
 
-                    packetSystem.WaitForResource(returnedResourceReference);
+                    resource_manager.WaitForResource(returnedResourceReference);
 
                     THEN("The old reference must not be valid")
                     {
@@ -112,7 +116,7 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
                     {
                         REQUIRE(MustNotChangeToFalseUntilTimeout([&]()
                         {
-                            return packetSystem.GetAproximatedResourceAmount() == 1;
+                            return resource_manager.GetAproximatedResourceAmount() == 1;
                         }, 1000));
                     }
                 }
@@ -125,7 +129,7 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
                     {
                         REQUIRE(MustChangeToTrueAfterTimeout([&]()
                         {
-                            return packetSystem.GetAproximatedResourceAmount() == 0;
+                            return resource_manager.GetAproximatedResourceAmount() == 0;
                         }, 5000));
                     }
                 }

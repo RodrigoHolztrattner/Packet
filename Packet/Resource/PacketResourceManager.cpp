@@ -297,7 +297,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             assert(resource != nullptr);
 
             // Watch this resource file object (not enabled on release and non-edit builds)
-            m_ResourceWatcher.WatchResource(resource);
+            // m_ResourceWatcher.WatchResource(resource);
 
             // Register this resource inside the storage
             m_ResourceStorage.InsertObject(std::move(resourceUniquePtr), hash, buildInfo.buildFlags);

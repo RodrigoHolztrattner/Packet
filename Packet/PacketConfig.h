@@ -293,14 +293,19 @@ struct PacketResourceBuildInfo
 template <uint32_t TotalSize>
 struct FixedSizeString
 {
-    FixedSizeString() {}
+    FixedSizeString() 
+    {
+        m_PathString.fill(0);
+    }
     FixedSizeString(const char* _str)
 	{
+        m_PathString.fill(0);
         std::string temp(_str);
         std::copy(temp.begin(), temp.end(), m_PathString.data());
     }
     FixedSizeString(const std::string& _str)
 	{
+        m_PathString.fill(0);
         std::copy(_str.begin(), _str.end(), m_PathString.data());
     }
 	
@@ -484,15 +489,7 @@ static std::filesystem::path MergeSystemPathWithFilePath(std::filesystem::path _
 // Convert a filesystem path to an internal path using the system resource path
 static Path ConvertSystemPathIntoInternalPath(std::filesystem::path _system_path, std::filesystem::path _file_path)
 {
-    std::filesystem::path diffpath;
-    std::filesystem::path tmppath = _file_path;
-    while (tmppath != _system_path) 
-    {
-        diffpath = tmppath.stem() / diffpath;
-        tmppath = tmppath.parent_path();
-    }
-
-    return diffpath.string();
+    return std::filesystem::relative(_file_path, _system_path).string();
 }
 
 static std::vector<std::string> DecomposePath(std::filesystem::path _path)

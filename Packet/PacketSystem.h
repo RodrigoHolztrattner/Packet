@@ -47,9 +47,9 @@ public: //////////
     // Return the resource (packet) path
     std::filesystem::path GetResourcePath() const;
 
-    // Return a const reference to our objects
-    const PacketFileManager& GetFileManager()         const;
-    const PacketResourceManager& GetResourcemanager() const;
+    // Return a reference to our objects
+    PacketFileManager& GetFileManager();
+    PacketResourceManager& GetResourceManager();
 
 ///////////////
 // VARIABLES //

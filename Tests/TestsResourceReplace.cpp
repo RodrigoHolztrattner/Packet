@@ -13,25 +13,29 @@ SCENARIO("Resources can be replaced if their file content changes", "[replace]")
 {
     GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
     {
+        std::string resourcePath = "dummy.txt";
+        CreateResourceFile(resourcePath);
+
         Packet::System packetSystem;
         packetSystem.Initialize(Packet::OperationMode::Plain, ResourceDirectory);
 
-        packetSystem.RegisterResourceFactory<MyFactory, MyResource>();
+        // Request the resource manager and register our factory
+        auto& resource_manager = packetSystem.GetResourceManager();
+        resource_manager.RegisterResourceFactory<MyFactory, MyResource>();
 
         AND_GIVEN("A previously created resource file")
         {
-            std::string resourcePath = ResourceDirectory + "/dummy.txt";
-            CreateResourceFile(resourcePath);
+
 
             WHEN("An resource is requested")
             {
                 Packet::ResourceReference<MyResource> resourceReference;
 
-                packetSystem.RequestResource<MyResource>(
+                resource_manager.RequestResource<MyResource>(
                     resourceReference,
                     Packet::Hash(resourcePath));
 
-                packetSystem.WaitForResource(resourceReference, MaximumTimeoutWaitMS);
+                resource_manager.WaitForResource(resourceReference, MaximumTimeoutWaitMS);
 
                 MyResource* internalResourcePtr = resourceReference.Get();
 

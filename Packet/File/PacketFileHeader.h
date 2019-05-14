@@ -39,8 +39,8 @@ public:
 
         // Basic information
         uint32_t      version    = PacketVersion;
-        FileType      file_type  = 0;
-        Path          file_path  = 0;
+        FileType      file_type;
+        Path          file_path;
         HashPrimitive file_hash  = 0;
         FileDataSize  total_size = sizeof(FileHeaderData);
         // Last updated time

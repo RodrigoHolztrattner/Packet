@@ -88,7 +88,7 @@ public: //////////
 	
 //////////////////
 // MAIN METHODS //
-protected: ///////
+public: //////////
 
     // Register a resource factory
     template <typename ResourceFactoryClass, typename ResourceClass, typename ... Args>
@@ -137,6 +137,7 @@ protected: ///////
                                              false,
                                              std::vector<uint8_t>() });
 
+        return true;
     }
 
     // Request an object for the given resource reference and hash
@@ -201,6 +202,8 @@ protected: ///////
                                              true,
                                              false,
                                              std::vector<uint8_t>() });
+
+        return true;
     }
 
     // This method will wait until the given resource is ready to be used
