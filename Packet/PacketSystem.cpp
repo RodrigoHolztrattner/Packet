@@ -2,8 +2,9 @@
 // Filename: FluxMyWrapper.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketSystem.h"
-#include "PacketFileManager.h"
-#include "Resource/PacketResourceWatcher.h"
+#include "File/PacketFileManager.h"
+#include "Resource/PacketResourceManager.h"
+#include "Resource/Storage/PacketResourceStorage.h"
 
 ///////////////
 // NAMESPACE //
@@ -20,9 +21,7 @@ PacketSystem::~PacketSystem()
 {
     // We need to respect an order of destruction here to prevent accessing deleted objects
     m_ResourceManager.reset();
-    m_ResourceWatcher.reset();
     m_ResourceStorage.reset();
-    m_ReferenceManager.reset();
     m_FileManager.reset();
     m_Logger.reset();
 }
@@ -44,16 +43,12 @@ bool PacketSystem::Initialize(OperationMode _operation_mode, std::filesystem::pa
     // Create the resource storage
     m_ResourceStorage = std::make_unique<PacketResourceStorage>();
 
-    // Create the resource watcher
-    m_ResourceWatcher = std::make_unique<PacketResourceWatcher>(m_OperationMode);
-
     // Create the resource manager
     m_ResourceManager = std::make_unique<PacketResourceManager>(
         m_OperationMode,
         *m_ResourceStorage,
         m_FileManager->GetFileLoader(),
         m_FileManager->GetFileIndexer(),
-        *m_ResourceWatcher,
         m_Logger.get());
 
 	return true;

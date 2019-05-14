@@ -2,8 +2,6 @@
 // Filename: PacketResourceManager.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketResourceManager.h"
-#include "PacketResourceFactory.h"
-#include "PacketResourceWatcher.h"
 
 #include <cassert>
 
@@ -15,22 +13,14 @@ PacketResourceManager::PacketResourceManager(
     PacketResourceStorage&   _storage,
     const PacketFileLoader&  _fileLoader,
     const PacketFileIndexer& _fileIndexer,
-    PacketResourceWatcher&   _resourceWatcher,
     PacketLogger*            _loggerPtr) :
     m_OperationMode(_operationMode),
     m_ResourceStorage(_storage),
     m_FileLoader(_fileLoader),
     m_FileIndexer(_fileIndexer), 
     m_ResourceLoader(_fileLoader, *this, _loggerPtr, _operationMode),
-    m_ResourceWatcher(_resourceWatcher),
     m_LoggerPtr(_loggerPtr)
 {
-    if (m_OperationMode == OperationMode::Plain)
-    {
-        // Register the on resource data changed method for the resource watcher
-        m_ResourceWatcher.RegisterOnResourceDataChangedMethod(std::bind(&PacketResourceManager::OnResourceDataChanged, this, std::placeholders::_1));
-    }
-
     // Create the asynchronous thread that will process instances and resource objects
     m_AsynchronousManagementThread = std::thread([&]()
     {
@@ -181,9 +171,6 @@ PacketResourceManager::~PacketResourceManager()
                     continue;
                 }
 
-                // Remove this resource watch (not enabled on release and non-edit builds)
-                m_ResourceWatcher.RemoveWatch(resource.get());
-
                 // Set pending deletion for this resource
                 resource->SetPendingDeletion();
 
@@ -260,12 +247,6 @@ uint32_t PacketResourceManager::GetApproximatedNumberResourcesPendingDeletion() 
 
 void PacketResourceManager::AsynchronousResourceProcessment()
 {
-    // Call the update method for the resource watcher (disabled on non-edit builds)
-    if (m_OperationMode == OperationMode::Plain)
-    {
-        m_ResourceWatcher.Update();
-    }
-
     /////////////////////////////
     // EVALUATE CREATION DATAS //
     /////////////////////////////
@@ -327,9 +308,6 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         // Check if both the original and the new resources are ready
         if (originalResource->IsValid() && newResource->IsValid())
         {
-            // Update the resource watched
-            m_ResourceWatcher.UpdateWatchedResource(newResource.get());
-
             // Register the replacing resource
             originalResource->RegisterReplacingResource(newResource.get());
 
@@ -429,9 +407,6 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             continue;
         }
 
-        // Remove this resource watch (not enabled on release and non-edit builds)
-        m_ResourceWatcher.RemoveWatch(objectUniquePtr.get());
-
         // Move this resource to our deletion vector
         m_ResourcesPendingDeletion.push_back(std::move(objectUniquePtr));
     }
@@ -489,7 +464,7 @@ void PacketResourceManager::RegisterResourceForExternalConstruction(PacketResour
     m_ResourcesPendingExternalConstruction.enqueue(_resource);
 }
 
-void PacketResourceManager::OnResourceDataChanged(PacketResource * _resource)
+void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
 {
     // Disabled on non edit builds
     if (m_OperationMode != OperationMode::Plain)

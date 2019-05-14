@@ -3,8 +3,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketResource.h"
 #include "PacketResourceManager.h"
-#include "PacketResourceFactory.h"
-#include "..\PacketReferenceManager.h"
 
 #include <cassert>
 #include <fstream>

@@ -9,7 +9,7 @@
 #include "PacketConfig.h"
 
 #include "Resource/PacketResource.h"
-#include "Resource/PacketResourceFactory.h"
+#include "Resource/Factory/PacketResourceFactory.h"
 #include "Resource/PacketResourceManager.h"
 #include "PacketSystem.h"
 

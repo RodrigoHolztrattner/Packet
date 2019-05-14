@@ -8,7 +8,7 @@
 //////////////
 #include "../PacketConfig.h"
 #include "PacketFileHeader.h"
-#include "PacketFileReferences.h"
+#include "Reference/PacketFileReferences.h"
 
 #include <string>
 #include <unordered_map>

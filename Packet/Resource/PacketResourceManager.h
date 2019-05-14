@@ -7,14 +7,14 @@
 // INCLUDES //
 //////////////
 #include "../PacketConfig.h"
-#include "../PacketFileLoader.h"
-#include "../PacketFileIndexer.h"
+#include "../File/Loader/PacketFileLoader.h"
+#include "../File/Indexer/PacketFileIndexer.h"
 #include "PacketResource.h"
-#include "PacketMultipleQueue.h"
-#include "PacketResourceLoader.h"
-#include "PacketResourceDeleter.h"
-#include "PacketResourceStorage.h"
-#include "PacketResourceFactory.h"
+#include "../PacketMultipleQueue.h"
+#include "Loader/PacketResourceLoader.h"
+#include "Deleter/PacketResourceDeleter.h"
+#include "Storage/PacketResourceStorage.h"
+#include "Factory/PacketResourceFactory.h"
 
 #include "concurrentqueue.h"
 
@@ -56,7 +56,6 @@ class PacketResourceInstance;
 class PacketResource;
 class PacketResourceExternalConstructor;
 class PacketResourceFactory;
-class PacketResourceWatcher;
 class PacketSystem;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +81,6 @@ public: //////////
 		PacketResourceStorage&   _storagePtr,
 		const PacketFileLoader&  _fileLoaderPtr, 
         const PacketFileIndexer& _fileIndexer,
-		PacketResourceWatcher&   _resourceWatcherPtr, 
 		PacketLogger*            _loggerPtr);
 	~PacketResourceManager();
 	
@@ -315,7 +313,6 @@ private: //////
 
 	// The object storage, the file loader, the resource watcher, the reference manager and the logger ptrs
 	PacketResourceStorage&   m_ResourceStorage;
-	PacketResourceWatcher&   m_ResourceWatcher;
     const PacketFileLoader&  m_FileLoader;
     const PacketFileIndexer& m_FileIndexer;
 	PacketLogger*            m_LoggerPtr;

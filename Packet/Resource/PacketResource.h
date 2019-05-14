@@ -6,7 +6,7 @@
 //////////////
 // INCLUDES //
 //////////////
-#include "..\PacketConfig.h"
+#include "../PacketConfig.h"
 
 #include <memory>
 #include <cstdint>
@@ -49,7 +49,6 @@ class PacketResourceManager;
 class PacketResourceLoader;
 class PacketResourceDeleter;
 class PacketResourceFactory;
-class PacketResourceWatcher;
 class PacketResourceStorage;
 class PacketReferenceManager;
 class PacketResourceExternalConstructor;
@@ -97,7 +96,6 @@ public:
 	friend PacketResourceManager;
 	friend PacketResourceLoader;
 	friend PacketResourceDeleter;
-	friend PacketResourceWatcher;
 	friend PacketResourceStorage;
 	friend PacketResourceInstance;
     friend PacketResourceExternalConstructor;
