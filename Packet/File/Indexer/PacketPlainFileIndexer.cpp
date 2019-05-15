@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PacketPlainFileIndexer.h"
 #include "../Loader/PacketFileLoader.h"
+#include "../Watcher/FileWatcherManager.h"
 
 ///////////////
 // NAMESPACE //
@@ -13,7 +14,18 @@ PacketPlainFileIndexer::PacketPlainFileIndexer(std::filesystem::path _packet_pat
     PacketFileIndexer(_packet_path)
 {
 	// Set the initial data
-	// ...
+    m_FileWatcherManager = std::make_unique<FileWatcherManager>(true);
+
+    // Register the file watcher callback
+    m_FileWatcherManager->RegisterOnFileDataChangedMethod(
+        [&](Path _file_path) {
+
+            // Call all registered callbacks since this file was modified/added
+            for (auto& callback : m_FileModificationCallbacks)
+            {
+                callback(_file_path);
+            }
+        });
 }
 
 PacketPlainFileIndexer::~PacketPlainFileIndexer()
@@ -147,8 +159,8 @@ void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
     // the file modification callback if for any reason it is modified
     if (file->IsExternalFile())
     {
-        // TODO: Register a watcher for this file
-        // Use the same implementation used on the old resource watcher?
+        // Register a watcher for this file
+        m_FileWatcherManager->WatchFilePath(system_filepath, _file_path);
     }
 
     // Set the file extension and load data
@@ -176,4 +188,8 @@ void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
     {
         m_IndexDatas.erase(iter);
     }
+
+    // Remove the path watcher that potentially was added to watch this file if
+    // it was an external one
+    m_FileWatcherManager->RemoveWatch(MergeSystemPathWithFilePath(m_PacketPath, _file_path));
 }

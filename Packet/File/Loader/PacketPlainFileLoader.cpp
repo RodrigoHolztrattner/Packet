@@ -9,8 +9,9 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketPlainFileLoader::PacketPlainFileLoader(const PacketFileIndexer& _file_indexer) :
-    m_FileIndexer(_file_indexer)
+PacketPlainFileLoader::PacketPlainFileLoader(const PacketFileIndexer& _file_indexer, std::filesystem::path _packet_path) :
+    m_FileIndexer(_file_indexer), 
+    PacketFileLoader(_packet_path)
 {
 }
 
@@ -26,7 +27,7 @@ std::unique_ptr<PacketFile> PacketPlainFileLoader::LoadFile(Hash _file_hash) con
 std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) const
 {
     // Transform the file hash into a valid path
-    std::filesystem::path file_path = _file_hash.GetPath().String();
+    std::filesystem::path file_path = MergeSystemPathWithFilePath(m_PacketPath, _file_hash.GetPath());
 
     // Check if the file exist and is valid
     if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
@@ -36,7 +37,7 @@ std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) con
     }
 
     // Open the file and check if we are ok to proceed
-    std::ifstream file(_file_hash.GetPath().String(), std::ios::binary);
+    std::ifstream file(file_path, std::ios::binary);
     if (!file.is_open())
     {
         // Error opening the file!

@@ -32,7 +32,7 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketPlainFileLoader(const PacketFileIndexer& _file_indexer);
+	PacketPlainFileLoader(const PacketFileIndexer& _file_indexer, std::filesystem::path _packet_path);
 	~PacketPlainFileLoader();
 
 //////////////////

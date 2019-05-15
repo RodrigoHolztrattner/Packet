@@ -64,7 +64,7 @@ public: //////////
 
 	// Constructor / destructor
 	PacketFileIndexer(std::filesystem::path _packet_path);
-	~PacketFileIndexer();
+	virtual ~PacketFileIndexer();
 
 //////////////////
 // MAIN METHODS //

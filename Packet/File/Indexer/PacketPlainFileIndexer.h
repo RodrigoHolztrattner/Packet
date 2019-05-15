@@ -38,6 +38,7 @@ PacketDevelopmentNamespaceBegin(Packet)
 
 // Classes we know
 class PacketFileManager;
+class FileWatcherManager;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketPlainFileIndexer
@@ -117,6 +118,10 @@ private: //////
 
     // Our index data
     std::map<HashPrimitive, IndexData> m_IndexDatas;
+
+    // The file watcher manager, used to detect changes when an external
+    // resource is modified
+    std::unique_ptr<FileWatcherManager> m_FileWatcherManager;
 };
 
 // Packet data explorer

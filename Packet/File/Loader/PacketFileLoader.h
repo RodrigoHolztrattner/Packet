@@ -48,8 +48,8 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketFileLoader();
-	~PacketFileLoader();
+	PacketFileLoader(std::filesystem::path _packet_path);
+    virtual ~PacketFileLoader();
 
 //////////////////
 // MAIN METHODS //
@@ -66,8 +66,10 @@ public: //////////
 
 ///////////////
 // VARIABLES //
-private: //////
+protected: ////
 
+    // Our packet path
+    std::filesystem::path m_PacketPath;
 };
 
 // Packet data explorer

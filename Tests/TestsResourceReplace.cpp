@@ -14,7 +14,7 @@ SCENARIO("Resources can be replaced if their file content changes", "[replace]")
     GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
     {
         std::string resourcePath = "dummy.txt";
-        CreateResourceFile(resourcePath);
+        CreateResourceFile(ResourceDirectory + "/" + resourcePath);
 
         Packet::System packetSystem;
         packetSystem.Initialize(Packet::OperationMode::Plain, ResourceDirectory);
@@ -41,7 +41,7 @@ SCENARIO("Resources can be replaced if their file content changes", "[replace]")
 
                 AND_WHEN("The resource file changes")
                 {
-                    UpdateResourceFile(resourcePath);
+                    UpdateResourceFile(ResourceDirectory + "/" + resourcePath);
 
                     THEN("The reference resource must be updated to reference the new resource some time after")
                     {

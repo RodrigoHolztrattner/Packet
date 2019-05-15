@@ -55,7 +55,7 @@ private:
 public: //////////
 
 	// Constructor / destructor
-	PacketCondensedFileLoader(const PacketFileIndexer& _file_indexer);
+	PacketCondensedFileLoader(const PacketFileIndexer& _file_indexer, std::filesystem::path _packet_path);
 	~PacketCondensedFileLoader();
 
 //////////////////

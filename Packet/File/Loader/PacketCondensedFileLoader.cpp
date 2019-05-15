@@ -8,7 +8,8 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketCondensedFileLoader::PacketCondensedFileLoader(const PacketFileIndexer& _file_indexer)
+PacketCondensedFileLoader::PacketCondensedFileLoader(const PacketFileIndexer& _file_indexer, std::filesystem::path _packet_path) : 
+    PacketFileLoader(_packet_path)
 {
 	// Set the initial data
 	// ...

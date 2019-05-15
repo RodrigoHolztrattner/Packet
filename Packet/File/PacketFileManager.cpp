@@ -37,8 +37,9 @@ bool PacketFileManager::Initialize()
     using namespace std::placeholders;
 
     // Create our file management objects
+    // TODO: This need some urgently organization!
     m_FileIndexer          = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileIndexer>(m_PacketPath) : std::make_unique<PacketPlainFileIndexer>(m_PacketPath);
-    m_FileLoader           = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileLoader>(*m_FileIndexer) : std::make_unique<PacketPlainFileLoader>(*m_FileIndexer); // PacketCondensedFileLoader
+    m_FileLoader           = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileLoader>(*m_FileIndexer, m_PacketPath) : std::make_unique<PacketPlainFileLoader>(*m_FileIndexer, m_PacketPath); // PacketCondensedFileLoader
     m_FileReferenceManager = std::make_unique<PacketReferenceManager>();
     m_FileSaver            = std::make_unique<PacketFileSaver>(*m_FileIndexer, *m_FileReferenceManager, *m_FileLoader, m_PacketPath);
     m_FileImporter         = std::make_unique<PacketFileImporter>(

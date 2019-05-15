@@ -19,7 +19,7 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
     GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
     {
         std::string resourcePath = "dummy.txt";
-        CreateResourceFile(resourcePath);
+        CreateResourceFile(ResourceDirectory + "/" + resourcePath);
 
         Packet::System packetSystem;
         packetSystem.Initialize(Packet::OperationMode::Plain, ResourceDirectory);
