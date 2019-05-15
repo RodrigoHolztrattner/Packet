@@ -55,7 +55,7 @@ public:
 public: //////////
 
 	// Constructor / destructor
-	PacketResourceStorage();
+	PacketResourceStorage(OperationMode _operation_mode);
 	~PacketResourceStorage();
 
 //////////////////
@@ -63,7 +63,14 @@ public: //////////
 public: //////////
 
 	// Try to find an object with the input hash, if successful, return it
-	PacketResource* FindObject(Hash _hash, uint32_t _buildFlags, bool _isRuntimeResource) const;
+	PacketResource* FindObject(Hash _hash, uint32_t _buildFlags) const;
+
+    // Retrieve all resource objects associated with the given hash, this method is only available on
+    // Plain mode and it will return an empty set if called on Condensed mode
+    // I could return a const reference or a pointer but since this will rarely be called I will prioritize
+    // readability instead performance, actually the compiler will probably optimize and use a reference since
+    // the returned set won't be modified
+    std::set<PacketResource*> GetAllObjectsWithHash(Hash _hash) const;
 
 	// Insert a new object
 	bool InsertObject(std::unique_ptr<PacketResource> _object, Hash _hash, uint32_t _buildFlags);
@@ -85,11 +92,16 @@ public: //////////
 // VARIABLES //
 private: //////
 
+    // Our current operation mode
+    OperationMode m_OperationMode;
+
 	// The object map
 	std::map<std::pair<HashPrimitive, uint32_t>, std::unique_ptr<PacketResource>> m_ObjectMap;
 
-    // The runtime object map
-    std::map<PacketResource*, std::unique_ptr<PacketResource>> m_RuntimeObjectMap;
+    // This map will only be filled if the current mode isn't the Condensed one, it will be
+    // used as a helper object when querying directly by a HashPrimitive is necessary and
+    // we must return all loaded resources that are tied to that hash
+    std::map<HashPrimitive, std::set<PacketResource*>> m_HashLinkedResourcesMap;
 };
 
 // Packet

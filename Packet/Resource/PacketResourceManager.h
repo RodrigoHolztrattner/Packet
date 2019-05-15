@@ -132,34 +132,9 @@ public: //////////
                                              _resourceBuildInfo,
                                              _hash,
                                              false,
-                                             false,
                                              std::vector<uint8_t>() });
 
         return true;
-    }
-
-    // Request an object for the given resource reference and hash
-    template <typename ResourceClass>
-    void RequestRuntimeResource(PacketResourceReference<ResourceClass> & _resourceReference,
-                                PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo(),
-                                std::vector<uint8_t> _resourceData = {})
-    {
-        assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
-
-        // Get a proxy for this resource reference
-        auto resourceCreationProxy = GetResourceCreationProxy();
-
-        // Register the creation proxy
-        _resourceReference.RegisterCreationProxy(resourceCreationProxy.get());
-
-        // Add this new creation data into our processing queue
-        m_ResourceCreateProxyQueue.enqueue({ std::move(resourceCreationProxy),
-                                             m_RegisteredFactories[ctti::type_id<ResourceClass>().hash()].get(),
-                                             _resourceBuildInfo,
-                                             Hash(),
-                                             false,
-                                             true,
-                                             std::move(_resourceData) });
     }
 
     // Request a permanent object for the given reference and resource hash, the object will not be deleted when it reaches 0
@@ -198,7 +173,6 @@ public: //////////
                                              _resourceBuildInfo,
                                              _hash,
                                              true,
-                                             false,
                                              std::vector<uint8_t>() });
 
         return true;
@@ -283,7 +257,6 @@ private: //////
         PacketResourceFactory*,
         PacketResourceBuildInfo,
         Hash,
-        bool,
         bool,
         std::vector<uint8_t>>
         ResourceCreationData;

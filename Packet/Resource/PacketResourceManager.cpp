@@ -260,10 +260,10 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         }
 
         // Get the info
-        auto& [creationProxy, factory, buildInfo, hash, isPermanent, isRuntime, resourceData] = resourceCreationData;
+        auto& [creationProxy, factory, buildInfo, hash, isPermanent, resourceData] = resourceCreationData;
 
         // Check if we need to create and load this resource
-        PacketResource* resource = m_ResourceStorage.FindObject(hash, buildInfo.buildFlags, isRuntime);
+        PacketResource* resource = m_ResourceStorage.FindObject(hash, buildInfo.buildFlags);
         if (resource == nullptr)
         {
             // Load this resource
@@ -272,7 +272,6 @@ void PacketResourceManager::AsynchronousResourceProcessment()
                 hash,
                 buildInfo,
                 isPermanent,
-                isRuntime,
                 std::move(resourceData));
             resource = resourceUniquePtr.get();
             assert(resource != nullptr);
@@ -551,7 +550,6 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
                                                          _resource->GetHash(),
                                                          _resource->GetBuildInfo(),
                                                          _resource->IsPermanent(),
-                                                         false,
                                                          {});
 
     // Increment the number of references of this resource, since it will be replacing the old resource

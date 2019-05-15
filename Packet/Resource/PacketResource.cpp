@@ -84,9 +84,9 @@ bool PacketResource::BeginDelete()
 
 void PacketResource::BeginConstruct()
 {
-    // If the data size is zero and this is not a runtime resource we should set that the construction
+    // If the data size is zero we should set that the construction
     // failed directly instead trying to construct it
-    if (m_Data.GetSize() == 0 && !m_IsRuntimeResource)
+    if (m_Data.GetSize() == 0)
     {
         m_ConstructFailed = true;
     }
@@ -145,11 +145,6 @@ bool PacketResource::IsPermanent() const
 	return m_IsPermanentResource;
 }
 
-bool PacketResource::IsRuntime() const
-{
-    return m_IsRuntimeResource;
-}
-
 bool PacketResource::IsPendingModifications() const
 {
     return m_IsPendingModifications;
@@ -197,11 +192,9 @@ void PacketResource::SetHelperObjects(
 	m_CurrentOperationMode = _operationMode;
 }
 
-void PacketResource::SetBuildInfo(PacketResourceBuildInfo _buildInfo,
-                                  bool _isRuntimeResource)
+void PacketResource::SetBuildInfo(PacketResourceBuildInfo _buildInfo)
 {
 	m_BuildInfo = _buildInfo;
-    m_IsRuntimeResource = _isRuntimeResource;
 }
 
 const PacketResourceBuildInfo& PacketResource::GetBuildInfo() const

@@ -178,7 +178,6 @@ public: // STATUS //
 	bool IsPendingDeletion()         const;
 	bool IsReferenced()              const;
 	bool IsPermanent()               const;
-    bool IsRuntime()                 const;
     bool IsPendingModifications()    const;
     bool ConstructionFailed()        const;
 
@@ -204,8 +203,7 @@ protected: // INTERNAL //
         OperationMode           _operationMode);
 
 	// Set the build info
-	void SetBuildInfo(PacketResourceBuildInfo _buildInfo, 
-                      bool _isRuntimeResource);
+	void SetBuildInfo(PacketResourceBuildInfo _buildInfo);
 
 	// Set that this resource is pending deletion
 	void SetPendingDeletion();
@@ -239,7 +237,6 @@ private: //////
     bool m_WasLoaded                 = false;
     bool m_WasConstructed            = false;
     bool m_WasExternallyConstructed  = false;
-    bool m_IsRuntimeResource         = false;
     bool m_IsPendingModifications    = false;
     bool m_ConstructFailed           = false;
 

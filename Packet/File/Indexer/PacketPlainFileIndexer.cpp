@@ -156,6 +156,12 @@ void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
 
     // Add the entry
     m_IndexDatas.insert({ Hash(_file_path), std::move(new_index_entry) });
+
+    // Call all registered callbacks since this file was modified/added
+    for (auto& callback : m_FileModificationCallbacks)
+    {
+        callback(_file_path);
+    }
 }
 
 void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)

@@ -50,7 +50,6 @@ public: //////////
         Hash                    _hash,
         PacketResourceBuildInfo _buildInfo,
         bool                    _isPermanent,
-        bool                    _isRuntimeResource,
         std::vector<uint8_t>    _resourceData) const;
 
 ///////////////

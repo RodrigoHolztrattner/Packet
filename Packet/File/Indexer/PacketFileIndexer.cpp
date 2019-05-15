@@ -23,3 +23,8 @@ void PacketFileIndexer::SetAuxiliarObjects(const PacketFileLoader* _file_loader)
 {
     m_FileLoaderPtr = _file_loader;
 }
+
+void PacketFileIndexer::RegisterFileModificationCallback(FileModificationCallback _callback)
+{
+    m_FileModificationCallbacks.push_back(_callback);
+}

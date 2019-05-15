@@ -41,7 +41,7 @@ bool PacketSystem::Initialize(OperationMode _operation_mode, std::filesystem::pa
     }
 
     // Create the resource storage
-    m_ResourceStorage = std::make_unique<PacketResourceStorage>();
+    m_ResourceStorage = std::make_unique<PacketResourceStorage>(_operation_mode);
 
     // Create the resource manager
     m_ResourceManager = std::make_unique<PacketResourceManager>(

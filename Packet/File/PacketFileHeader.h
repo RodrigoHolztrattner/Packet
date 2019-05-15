@@ -43,8 +43,9 @@ public:
         Path          file_path;
         HashPrimitive file_hash  = 0;
         FileDataSize  total_size = sizeof(FileHeaderData);
-        // Last updated time
-        // Other data
+        // Creation Time
+        // Update Time
+        // Checksum
 
         // Data positions inside the file
         FileDataPosition icon_position              = 0;

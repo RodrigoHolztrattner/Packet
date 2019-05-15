@@ -40,6 +40,9 @@ struct PacketFile;
 // Classes we know
 class PacketFileLoader;
 
+//
+typedef std::function<void(const Path&)> FileModificationCallback;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketFileIndexer
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,6 +70,16 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
+    // Set auxiliary object pointers
+    void SetAuxiliarObjects(const PacketFileLoader* _file_loader);
+
+    // Register a file modification callback
+    void RegisterFileModificationCallback(FileModificationCallback _callback);
+
+/////////////////////////////
+public: // VIRTUAL METHODS //
+/////////////////////////////
+
     // Initialize this indexer, populating its file map
     virtual bool Initialize() = 0;
 
@@ -88,11 +101,6 @@ public: //////////
     // Return a file properties
     virtual nlohmann::json GetFileProperties(HashPrimitive _file_hash) const = 0;
 
-    // Set auxiliary object pointers
-    void SetAuxiliarObjects(const PacketFileLoader* _file_loader);
-
-protected:
-
 ///////////////
 // VARIABLES //
 protected: ////
@@ -102,6 +110,9 @@ protected: ////
 
     // The file loader references
     const PacketFileLoader* m_FileLoaderPtr = nullptr;
+
+    // All callbacks that must be run when some file is modified/added
+    std::vector<FileModificationCallback> m_FileModificationCallbacks;
 };
 
 // Packet data explorer

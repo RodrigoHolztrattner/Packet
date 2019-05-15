@@ -34,7 +34,6 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
                                                                  Hash _hash, 
                                                                  PacketResourceBuildInfo _buildInfo,
                                                                  bool _isPermanent, 
-                                                                 bool _isRuntimeResource,
                                                                  std::vector<uint8_t> _resourceData) const
 {
     // Allocate the object using the factory
@@ -51,38 +50,24 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
         m_OperationMode);
 
     // Set the build info
-    resource->SetBuildInfo(_buildInfo, _isRuntimeResource);
+    resource->SetBuildInfo(_buildInfo);
 
-    // Check if this is a runtime resource and the data shouldn't come from a file
-    if (_isRuntimeResource)
-    {
-        // Get a reference to the object data vector directly
-        auto& dataVector = resource->GetDataRef();
-        dataVector = PacketResourceData(std::move(_resourceData));
+    // Load the file
+    auto resource_file = m_FileLoader.LoadFile(_hash);
+    assert(resource_file);
 
-        // Call the BeginLoad() method for this object
-        bool result = resource->BeginLoad(_isPermanent);
-        assert(result);
-    }
-    else
-    {
-        // Load the file
-        auto resource_file = m_FileLoader.LoadFile(_hash);
-        assert(resource_file);
+    // Retrieve the file final data
+    std::vector<uint8_t> file_final_data = PacketFile::RetrieveFileFinalData(std::move(resource_file));
 
-        // Retrieve the file final data
-        std::vector<uint8_t> file_final_data = PacketFile::RetrieveFileFinalData(std::move(resource_file));
+    // Get a reference to the object data vector directly
+    auto& data_vector = resource->GetDataRef();
 
-        // Get a reference to the object data vector directly
-        auto& data_vector = resource->GetDataRef();
+    // Set the data
+    data_vector.SetData(std::move(file_final_data));
 
-        // Set the data
-        data_vector.SetData(std::move(file_final_data));
-
-        // Call the BeginLoad() method for this object
-        bool result = resource->BeginLoad(_isPermanent);
-        assert(result);
-    }
+    // Call the BeginLoad() method for this object
+    bool result = resource->BeginLoad(_isPermanent);
+    assert(result);
 
     // Begin the construction for this resource
     resource->BeginConstruct();
