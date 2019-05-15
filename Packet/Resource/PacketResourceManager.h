@@ -80,7 +80,7 @@ public: //////////
         OperationMode            _operationMode,
 		PacketResourceStorage&   _storagePtr,
 		const PacketFileLoader&  _fileLoaderPtr, 
-        const PacketFileIndexer& _fileIndexer,
+        PacketFileIndexer&       _fileIndexer,
 		PacketLogger*            _loggerPtr);
 	~PacketResourceManager();
 	
@@ -273,6 +273,9 @@ private: //////
     moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingModificationEvaluation;
     std::vector<PacketResource*>                                             m_ResourcesPendingModification;
 
+    // File modification queue
+    moodycamel::ConcurrentQueue<HashPrimitive>                               m_ModifiedFiles;
+
     // The asynchronous management thread and the conditional to exit
     std::thread m_AsynchronousManagementThread;
     bool        m_AsynchronousManagementThreadShouldExit = false;
@@ -285,10 +288,10 @@ private: //////
 	OperationMode m_OperationMode;
 
 	// The object storage, the file loader, the resource watcher, the reference manager and the logger ptrs
-	PacketResourceStorage&   m_ResourceStorage;
-    const PacketFileLoader&  m_FileLoader;
-    const PacketFileIndexer& m_FileIndexer;
-	PacketLogger*            m_LoggerPtr;
+	PacketResourceStorage&  m_ResourceStorage;
+    const PacketFileLoader& m_FileLoader;
+    PacketFileIndexer&      m_FileIndexer;
+	PacketLogger*           m_LoggerPtr;
 };
 
 // Packet

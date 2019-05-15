@@ -283,7 +283,7 @@ bool PacketFileManager::WriteFileDataIntoInternalFile(Path _file_path, std::vect
     return true;
 }
 
-const PacketFileIndexer& PacketFileManager::GetFileIndexer() const
+PacketFileIndexer& PacketFileManager::GetFileIndexer() const
 {
     return *m_FileIndexer;
 }

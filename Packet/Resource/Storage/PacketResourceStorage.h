@@ -70,7 +70,7 @@ public: //////////
     // I could return a const reference or a pointer but since this will rarely be called I will prioritize
     // readability instead performance, actually the compiler will probably optimize and use a reference since
     // the returned set won't be modified
-    std::set<PacketResource*> GetAllObjectsWithHash(Hash _hash) const;
+    std::set<PacketResource*> GetAllObjectsWithHash(HashPrimitive _hash_primitive) const;
 
 	// Insert a new object
 	bool InsertObject(std::unique_ptr<PacketResource> _object, Hash _hash, uint32_t _buildFlags);

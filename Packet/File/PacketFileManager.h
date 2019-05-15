@@ -71,7 +71,7 @@ public: //////////
     bool DeleteFile(Path _target_file_path) const;
 
     // Return a reference to our objects
-    const PacketFileIndexer& GetFileIndexer()   const;
+    PacketFileIndexer& GetFileIndexer()         const;
     const PacketFileLoader& GetFileLoader()     const;
     const PacketFileImporter& GetFileImporter() const;
 

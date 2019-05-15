@@ -32,14 +32,14 @@ PacketResource* PacketResourceStorage::FindObject(Hash _hash, uint32_t _buildFla
 	return iterator->second.get();
 }
 
-std::set<PacketResource*> PacketResourceStorage::GetAllObjectsWithHash(Hash _hash) const
+std::set<PacketResource*> PacketResourceStorage::GetAllObjectsWithHash(HashPrimitive _hash_primitive) const
 {
-    if (m_HashLinkedResourcesMap.find(_hash) == m_HashLinkedResourcesMap.end())
+    if (m_HashLinkedResourcesMap.find(_hash_primitive) == m_HashLinkedResourcesMap.end())
     {
         return {};
     }
 
-    return m_HashLinkedResourcesMap.find(_hash)->second;
+    return m_HashLinkedResourcesMap.find(_hash_primitive)->second;
 }
 
 bool PacketResourceStorage::InsertObject(std::unique_ptr<PacketResource> _object, Hash _hash, uint32_t _buildFlags)

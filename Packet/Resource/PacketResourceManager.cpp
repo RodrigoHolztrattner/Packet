@@ -12,7 +12,7 @@ PacketResourceManager::PacketResourceManager(
     OperationMode            _operationMode,
     PacketResourceStorage&   _storage,
     const PacketFileLoader&  _fileLoader,
-    const PacketFileIndexer& _fileIndexer,
+    PacketFileIndexer& _fileIndexer,
     PacketLogger*            _loggerPtr) :
     m_OperationMode(_operationMode),
     m_ResourceStorage(_storage),
@@ -31,6 +31,18 @@ PacketResourceManager::PacketResourceManager(
             std::this_thread::sleep_for(std::chrono::milliseconds(ThreadSleepTimeMS));
         }
     });
+
+    // If we are on plain mode, register the callback for when a file is modified, this
+    // will make sure we update any necessary resource, if applicable
+    if (m_OperationMode == OperationMode::Plain)
+    {
+        m_FileIndexer.RegisterFileModificationCallback(
+            [&](const Path& _path)
+            {
+                // Register this path hash
+                m_ModifiedFiles.enqueue(Hash(_path));
+            });
+    }
 }
 
 PacketResourceManager::~PacketResourceManager()
@@ -38,6 +50,15 @@ PacketResourceManager::~PacketResourceManager()
     // Exit from the asynchronous thread
     m_AsynchronousManagementThreadShouldExit = true;
     m_AsynchronousManagementThread.join();
+
+    // Empty the file modification queue
+    {
+        HashPrimitive resource_hash;
+        while (m_ModifiedFiles.try_dequeue(resource_hash))
+        {
+
+        }
+    }
 
     // Resource create proxies that are pending evaluation
     {
@@ -188,6 +209,7 @@ PacketResourceManager::~PacketResourceManager()
         // Keep looping until there are no more deletions available
     } while (!resourceDeletionIsStable);
 
+    assert(m_ModifiedFiles.size_approx() == 0);
     assert(m_ResourceCreateProxyQueue.size_approx() == 0);
     assert(m_ResourcesPendingExternalConstruction.size_approx() == 0);
     assert(m_ResourcesPendingDeletionEvaluation.size_approx() == 0);
@@ -247,6 +269,21 @@ uint32_t PacketResourceManager::GetApproximatedNumberResourcesPendingDeletion() 
 
 void PacketResourceManager::AsynchronousResourceProcessment()
 {
+    // For each file that was modified, call the OnResourceDataChanged method for its resource, 
+    // if any
+    {
+        HashPrimitive resource_hash;
+        while (m_ModifiedFiles.try_dequeue(resource_hash))
+        {
+            // Retrieve all resource associated with this hash
+            auto associated_resources = m_ResourceStorage.GetAllObjectsWithHash(resource_hash);
+            for (auto* resource : associated_resources)
+            {
+                OnResourceDataChanged(resource);
+            }
+        }  
+    }
+
     /////////////////////////////
     // EVALUATE CREATION DATAS //
     /////////////////////////////
@@ -475,10 +512,11 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     if (_resource->IsPendingDeletion() || !_resource->IsReferenced())
     {
         // We can't proceed with this resource on its current status
-        m_LoggerPtr->LogWarning(std::string("Found file modification event on file: \"")
-                             .append(_resource->GetHash().GetPath().String())
-                             .append("\", but the resource is pending deletion, ignoring this!")
-                             .c_str());
+        m_LoggerPtr->LogWarning(
+            std::string("Found file modification event on file: \"")
+            .append(_resource->GetHash().GetPath().String())
+            .append("\", but the resource is pending deletion, ignoring this!")
+            .c_str());
 
         return;
     }
@@ -491,10 +529,11 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
         if (replaceInfo.second->GetHash() == _resource->GetHash())
         {
             // There is no need to set it again, duplicated call
-            m_LoggerPtr->LogWarning(std::string("Found duplicated file modification event on file: \"")
-                                 .append(_resource->GetHash().GetPath().String())
-                                 .append("\", ignoring it!")
-                                 .c_str());
+            m_LoggerPtr->LogWarning(
+                std::string("Found duplicated file modification event on file: \"")
+                .append(_resource->GetHash().GetPath().String())
+                .append("\", ignoring it!")
+                .c_str());
 
             return;
         }
@@ -507,10 +546,11 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
         if (deletionRequest->GetHash() == _resource->GetHash())
         {
             // There is no need to set it again, duplicated call
-            m_LoggerPtr->LogWarning(std::string("Found file modification event on file: \"")
-                                 .append(_resource->GetHash().GetPath().String())
-                                 .append("\" but resource is being deleted, ignoring it!")
-                                 .c_str());
+            m_LoggerPtr->LogWarning(
+                std::string("Found file modification event on file: \"")
+                .append(_resource->GetHash().GetPath().String())
+                .append("\" but resource is being deleted, ignoring it!")
+                .c_str());
 
             return;
         }
@@ -520,10 +560,11 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     if (_resource->GetReplacingResource())
     {
         // There is no need to set it again, duplicated call
-        m_LoggerPtr->LogWarning(std::string("Found file modification event on file: \"")
-                             .append(_resource->GetHash().GetPath().String())
-                             .append("\" but resource is already replaced, ignoring it!")
-                             .c_str());
+        m_LoggerPtr->LogWarning(
+            std::string("Found file modification event on file: \"")
+            .append(_resource->GetHash().GetPath().String())
+            .append("\" but resource is already replaced, ignoring it!")
+            .c_str());
         return;
     }
 
@@ -546,11 +587,12 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     }
 
     // Load this resource
-    auto resourceUniquePtr = m_ResourceLoader.LoadObject(_resource->GetFactoryPtr(),
-                                                         _resource->GetHash(),
-                                                         _resource->GetBuildInfo(),
-                                                         _resource->IsPermanent(),
-                                                         {});
+    auto resourceUniquePtr = m_ResourceLoader.LoadObject(
+        _resource->GetFactoryPtr(),
+        _resource->GetHash(),
+        _resource->GetBuildInfo(),
+        _resource->IsPermanent(),
+        {});
 
     // Increment the number of references of this resource, since it will be replacing the old resource
     // when this very resource is deleted it will remove this added reference
