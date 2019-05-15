@@ -40,7 +40,7 @@ struct PacketFile;
 // Classes we know
 class PacketFileLoader;
 
-//
+// The file modification callback type
 typedef std::function<void(const Path&)> FileModificationCallback;
 
 ////////////////////////////////////////////////////////////////////////////////

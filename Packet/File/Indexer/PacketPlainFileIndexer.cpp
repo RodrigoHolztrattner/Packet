@@ -133,20 +133,24 @@ void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
     // Our new index entry
     IndexData new_index_entry = {};
 
-    // Load this file header, icon data and properties
-    // TODO: This can be optimized (we are doing 2 file reads here)
-    auto file_index_data = m_FileLoaderPtr->LoadFileDataPart(Hash(_file_path), FilePart::IconData);
-    auto file_property_data = m_FileLoaderPtr->LoadFileDataPart(Hash(_file_path), FilePart::PropertiesData);
-    if (file_index_data && file_property_data)
+    // Load this file to retrieve its header, icon data and properties
+    auto file = m_FileLoaderPtr->LoadFile(Hash(_file_path));
+    if (file && !file->IsExternalFile())
     {
         // Set the header, icon data and properties
-        auto& [header, icon_data] = file_index_data.value();
-        auto& [_, property_data] = file_property_data.value();
-        new_index_entry.file_header = header;
-        new_index_entry.icon_data = std::move(icon_data);
-        new_index_entry.file_properties = property_data;
+        new_index_entry.file_header = file->GetFileHeader();
+        new_index_entry.icon_data = file->GetIconData();
+        new_index_entry.file_properties = file->GetFileProperties();
     }
- 
+
+    // If this file is an external type, register a watcher for it to enable us calling
+    // the file modification callback if for any reason it is modified
+    if (file->IsExternalFile())
+    {
+        // TODO: Register a watcher for this file
+        // Use the same implementation used on the old resource watcher?
+    }
+
     // Set the file extension and load data
     new_index_entry.file_extension = system_filepath.extension().string();
     new_index_entry.file_load_information.file_path = _file_path;
