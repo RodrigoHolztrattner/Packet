@@ -75,6 +75,26 @@ static bool UpdateResourceFile(std::string _filename, uint32_t _amountToWrite)
     return false;
 }
 
+static std::vector<uint8_t> LoadFileIntoRawData(std::filesystem::path _file_path)
+{
+    std::ifstream file(_file_path, std::ios::binary);
+    if (!file.is_open())
+    {
+        return {};
+    }
+
+    std::vector<uint8_t> entire_file_data;
+    entire_file_data.reserve(std::filesystem::file_size(_file_path));
+
+    file.unsetf(std::ios::skipws);
+    std::copy(std::istream_iterator<uint8_t>(file),
+              std::istream_iterator<uint8_t>(),
+              std::back_inserter(entire_file_data));
+
+    file.close();
+
+    return entire_file_data;
+}
 static bool MustChangeToTrueUntilTimeout(std::function<bool()> _condition, long long _timeout)
 {
     clock_t initialTime = clock();

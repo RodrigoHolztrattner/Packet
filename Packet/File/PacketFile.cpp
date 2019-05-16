@@ -69,17 +69,17 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_
 
     // Determine the data locations
     auto icon_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::IconData);
-    auto icon_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::IconData);
+    auto icon_data_end = icon_data_begin + file_header->GetDataSize(FilePart::IconData);
     auto properties_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::PropertiesData);
-    auto properties_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::PropertiesData);
+    auto properties_data_end = properties_data_begin + file_header->GetDataSize(FilePart::PropertiesData);
     auto original_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::OriginalData);
-    auto original_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::OriginalData);
+    auto original_data_end = original_data_begin + file_header->GetDataSize(FilePart::OriginalData);
     auto intermediate_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::IntermediateData);
-    auto intermediate_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::IntermediateData);
+    auto intermediate_data_end = intermediate_data_begin + file_header->GetDataSize(FilePart::IntermediateData);
     auto final_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::FinalData);
-    auto final_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::FinalData);
+    auto final_data_end = final_data_begin + file_header->GetDataSize(FilePart::FinalData);
     auto references_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::ReferencesData);
-    auto references_data_end = _file_data.end();
+    auto references_data_end = references_data_begin + file_header->GetDataSize(FilePart::ReferencesData);
 
     // Setup the data vectors
     std::vector<uint8_t> icon_data = std::vector<uint8_t>(icon_data_begin, icon_data_end);
@@ -87,7 +87,7 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_
     std::vector<uint8_t> original_data = std::vector<uint8_t>(original_data_begin, original_data_end);
     std::vector<uint8_t> intermediate_data = std::vector<uint8_t>(intermediate_data_begin, intermediate_data_end);
     std::vector<uint8_t> final_data = std::vector<uint8_t>(final_data_begin, final_data_end);
-    std::vector<uint8_t> references_data = std::vector<uint8_t>(final_data_begin, final_data_end);
+    std::vector<uint8_t> references_data = std::vector<uint8_t>(references_data_begin, references_data_end);
 
     // Initialize the result file
     result_file = std::make_unique<PacketFile>(file_header.value(), true);

@@ -87,23 +87,13 @@ public: //////////
     // data as a vector, really useful when loading the file on condensed mode
     static std::vector<uint8_t> RetrieveFileFinalData(std::unique_ptr<PacketFile> _file);
 
-    // Get this file icon data
-    const std::vector<uint8_t>& GetIconData() const;
-
-    // Return a const reference to the properties data
-    const std::vector<uint8_t>& GetPropertiesData() const;
-
-    // Return a const reference to the original data
-    const std::vector<uint8_t>& GetOriginalData() const;
-
-    // Return a const reference to the intermediate data
+    // Return this file data
+    const std::vector<uint8_t>& GetIconData()         const;
+    const std::vector<uint8_t>& GetPropertiesData()   const;
+    const std::vector<uint8_t>& GetOriginalData()     const;
     const std::vector<uint8_t>& GetIntermediateData() const;
-
-    // Return a const reference to the final data
-    const std::vector<uint8_t>& GetFinalData() const;
-
-    // Return a const reference to the references data
-    const std::vector<uint8_t>& GetReferencesData() const;
+    const std::vector<uint8_t>& GetFinalData()        const;
+    const std::vector<uint8_t>& GetReferencesData()   const;
 
     // Get this file header
     const PacketFileHeader& GetFileHeader() const;

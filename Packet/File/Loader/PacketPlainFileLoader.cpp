@@ -48,8 +48,8 @@ std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) con
     std::vector<uint8_t> entire_file_data;
     entire_file_data.reserve(std::filesystem::file_size(file_path));
 
-    file.unsetf(std::ios::skipws);
     // Read the entire file data
+    file.unsetf(std::ios::skipws);
     std::copy(std::istream_iterator<uint8_t>(file),
               std::istream_iterator<uint8_t>(),
               std::back_inserter(entire_file_data));

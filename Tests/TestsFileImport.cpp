@@ -25,7 +25,10 @@ SCENARIO("External files can be imported into the packet system", "[import]")
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Get the external file size
-        size_t external_file_size = std::filesystem::file_size(ExternalFilePath);
+        size_t external_file_size = std::filesystem::file_size(ExternalFilePath); 
+
+        // Load the file data
+        auto file_raw_data = LoadFileIntoRawData(ExternalFilePath);
 
         WHEN("An external file is imported")
         {
@@ -57,6 +60,22 @@ SCENARIO("External files can be imported into the packet system", "[import]")
                     REQUIRE(new_file->GetFileHeader().GetFileType().string() == "default");
                     REQUIRE(new_file->GetFileHeader().GetPath().string() == "Sounds/imported_file.olo");
                     REQUIRE(new_file->GetFileHeader().GetDataSize(Packet::FilePart::FinalData) == external_file_size);
+                }
+
+                AND_THEN("Its original and final datas must be equal to the original raw data collected")
+                {
+                    REQUIRE(new_file->GetOriginalData() == file_raw_data);
+                    REQUIRE(new_file->GetFinalData() == file_raw_data);
+                }
+
+                AND_THEN("Its remaining data must be empty, or at least represent empty data")
+                {
+                    REQUIRE(new_file->GetIconData().size() == 0);
+                    REQUIRE(new_file->GetPropertiesData().size() == 0);
+                    REQUIRE(new_file->GetIntermediateData().size() == 0);
+                    REQUIRE(new_file->GetReferencesData().size() > 0);
+                    REQUIRE(new_file->GetFileReferences().GetFileLinks().size() == 0);
+                    REQUIRE(new_file->GetFileReferences().GetFileDependencies().size() == 0);
                 }
             }
         }
