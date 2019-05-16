@@ -116,7 +116,6 @@ void PacketResource::BeginModifications()
         // Revert changes?! (Is it possible to revert the changes successfully?)
     }
 
-    m_IsPendingModifications = false;
     m_ResourceMutex.unlock();
 }
 
@@ -125,7 +124,6 @@ bool PacketResource::IsValid() const
 	return m_WasLoaded
         && m_WasConstructed
         && m_WasExternallyConstructed
-        && !m_IsPendingModifications
         && !m_IsPendingDeletion
         && !m_ConstructFailed;
 }
@@ -143,11 +141,6 @@ bool PacketResource::IsReferenced() const
 bool PacketResource::IsPermanent() const
 {
 	return m_IsPermanentResource;
-}
-
-bool PacketResource::IsPendingModifications() const
-{
-    return m_IsPendingModifications;
 }
 
 bool PacketResource::RequiresExternalConstructPhase() const
@@ -205,14 +198,6 @@ const PacketResourceBuildInfo& PacketResource::GetBuildInfo() const
 void PacketResource::SetPendingDeletion()
 {
 	m_IsPendingDeletion = true;
-}
-
-void PacketResource::SetPendingModifications()
-{
-    m_ResourceMutex.lock();
-    m_IsPendingModifications = true;
-
-    m_ResourceManagerPtr->RegisterResourceForModifications(this);
 }
 
 bool PacketResource::ConstructionFailed() const

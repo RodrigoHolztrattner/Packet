@@ -116,15 +116,6 @@ PacketResourceManager::~PacketResourceManager()
         }
     }
 
-    // Resources pending modifications
-    {
-        // We don't need to do anything about this pointer
-        PacketResource* resource;
-        while (m_ResourcesPendingModificationEvaluation.try_dequeue(resource))
-        {
-        }
-    }
-
     // Remove reference count for replacing resources
     for (auto& resource : m_ResourcesPendingDeletion)
     {
@@ -215,8 +206,6 @@ PacketResourceManager::~PacketResourceManager()
     assert(m_ResourcesPendingDeletionEvaluation.size_approx() == 0);
     assert(m_ResourcesPendingDeletion.size() == 0);
     assert(m_ResourcesPendingReplacement.size() == 0);
-    assert(m_ResourcesPendingModificationEvaluation.size_approx() == 0);
-    assert(m_ResourcesPendingModification.size() == 0);
 
     m_RegisteredFactories.clear();
 }
@@ -379,38 +368,6 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         }
     }
 
-    /////////////////////////////////////
-    // RESOURCES PENDING MODIFICATIONS // 
-    /////////////////////////////////////
-    while (true)
-    {
-        // If we have resourced pending modifications
-        PacketResource* resource;
-        if (!m_ResourcesPendingModificationEvaluation.try_dequeue(resource))
-        {
-            break;
-        }
-
-        m_ResourcesPendingModification.push_back(resource);
-    }
-
-    // For each resource pending modification
-    for (int i = static_cast<int>(m_ResourcesPendingModification.size() - 1); i >= 0; i--)
-    {
-        PacketResource* resource = m_ResourcesPendingModification[i];
-
-        // Verify is this resource doesn't have references
-        if (resource->IsReferenced())
-        {
-            continue;
-        }
-
-        // Begin the modifications
-        resource->BeginModifications();
-
-        m_ResourcesPendingModification.erase(m_ResourcesPendingModification.begin() + i);
-    }
-
     ////////////////////////////////
     // RESOURCES PENDING DELETION //
     ////////////////////////////////
@@ -488,11 +445,6 @@ void PacketResourceManager::AsynchronousResourceProcessment()
 
     // Take a little nap
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-}
-
-void PacketResourceManager::RegisterResourceForModifications(PacketResource * _resource)
-{
-    m_ResourcesPendingModificationEvaluation.enqueue(_resource);
 }
 
 void PacketResourceManager::RegisterResourceForExternalConstruction(PacketResource * _resource)

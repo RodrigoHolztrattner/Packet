@@ -178,7 +178,6 @@ public: // STATUS //
 	bool IsPendingDeletion()         const;
 	bool IsReferenced()              const;
 	bool IsPermanent()               const;
-    bool IsPendingModifications()    const;
     bool ConstructionFailed()        const;
 
 /////////////////////////
@@ -208,15 +207,6 @@ protected: // INTERNAL //
 	// Set that this resource is pending deletion
 	void SetPendingDeletion();
 
-    // Set that this resource has pending modification, this will lock the modification mutex and prevent
-    // any new resource from being created, after this call when the resource has 0 indirect references
-    // it should be able to handle modifications safely
-    // This method will also add this resource into the "pending modification queue" on the resource
-    // manager, this is ok since the manager won't perform the modifications until this resource get 0
-    // indirect references, it will have at least one because this method should be called from a reference
-    // object.
-    void SetPendingModifications();
-
 	// Return the build info
     const PacketResourceBuildInfo& GetBuildInfo() const;
 
@@ -237,7 +227,6 @@ private: //////
     bool m_WasLoaded                 = false;
     bool m_WasConstructed            = false;
     bool m_WasExternallyConstructed  = false;
-    bool m_IsPendingModifications    = false;
     bool m_ConstructFailed           = false;
 
     // This is the index of the current construct phase
@@ -508,27 +497,6 @@ protected:
 
     // The creation proxy linked
     PacketResourceCreationProxy* m_CreationProxy = nullptr;
-};
-
-// The temporary editable resource reference type
-template <typename ResourceClass>
-class PacketEditableResourceReference : public PacketResourceReference<ResourceClass>
-{
-protected:
-
-    // Constructor used by the instance class
-    PacketEditableResourceReference(PacketResourceInstance* _instance, 
-                                       ResourceClass* _resource)
-        : PacketResourceReference<ResourceClass>(_resource)
-    {
-        _resource->SetPendingModifications();
-    }
-
-public:
-
-    // Default constructor
-    PacketEditableResourceReference() 
-        : PacketResourceReference<ResourceClass>() {}
 };
 
 // A temporary object that should be used to call the resource OnExternalConstruct method, this

@@ -235,10 +235,6 @@ protected:
     // into the deletion queue
 	void RegisterResourceForDeletion(PacketResource* _resourcePtr);
 
-    // This method will register a resource to be modified after it reaches 0 indirect references
-    // Only the resource should call this method
-    void RegisterResourceForModifications(PacketResource* _resource);
-
     // This method will register a resource to be externally constructed, it should be called from a 
     // PacketResourceExternalConstructor object if it goes out of scope without constructing the 
     // underlying resource. By calling this we will make sure the resource has the change to be 
@@ -270,8 +266,6 @@ private: //////
     moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingDeletionEvaluation;
     std::vector<std::unique_ptr<PacketResource>>                             m_ResourcesPendingDeletion;
     std::vector<std::pair<std::unique_ptr<PacketResource>, PacketResource*>> m_ResourcesPendingReplacement;
-    moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingModificationEvaluation;
-    std::vector<PacketResource*>                                             m_ResourcesPendingModification;
 
     // File modification queue
     moodycamel::ConcurrentQueue<HashPrimitive>                               m_ModifiedFiles;
