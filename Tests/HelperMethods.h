@@ -3,6 +3,8 @@
 #include <string>
 #include <fstream>
 #include <functional>
+#include <filesystem>
+#include "HelperDefines.h"
 
 static bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite = 100)
 {

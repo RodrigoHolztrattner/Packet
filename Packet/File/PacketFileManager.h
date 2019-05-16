@@ -24,6 +24,7 @@ class PacketFileIndexer;
 class PacketFileLoader;
 class PacketFileSaver;
 class PacketFileConverter;
+class PacketFileDefaultConverter;
 class PacketFileImporter;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +99,7 @@ private: //////
     std::unique_ptr<PacketReferenceManager> m_FileReferenceManager;
 
     // The default converter
-    std::unique_ptr<PacketFileConverter> m_DefaultConverter;
+    std::unique_ptr<PacketFileDefaultConverter> m_DefaultConverter;
 
     // Our map with all registered converters with their extensions
     std::map<std::string, std::unique_ptr<PacketFileConverter>> m_Converters;

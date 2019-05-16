@@ -19,14 +19,15 @@ SCENARIO("Resources can be replaced if their file content changes", "[replace]")
         Packet::System packetSystem;
         packetSystem.Initialize(Packet::OperationMode::Plain, ResourceDirectory);
 
+        // Wait 200 ms to enable the watcher to start watching the resource (it works asynchronously)
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
         // Request the resource manager and register our factory
         auto& resource_manager = packetSystem.GetResourceManager();
         resource_manager.RegisterResourceFactory<MyFactory, MyResource>();
 
         AND_GIVEN("A previously created resource file")
         {
-
-
             WHEN("An resource is requested")
             {
                 Packet::ResourceReference<MyResource> resourceReference;

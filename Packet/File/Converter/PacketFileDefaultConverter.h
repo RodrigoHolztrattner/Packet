@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: PacketFileConverter.h
+// Filename: PacketFileDefaultConverter.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
@@ -7,6 +7,7 @@
 // INCLUDES //
 //////////////
 #include "../../PacketConfig.h"
+#include "PacketFileConverter.h"
 
 ///////////////
 // NAMESPACE //
@@ -16,9 +17,9 @@
 PacketDevelopmentNamespaceBegin(Packet)
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class name: PacketFileConverter
+// Class name: PacketFileDefaultConverter
 ////////////////////////////////////////////////////////////////////////////////
-class PacketFileConverter
+class PacketFileDefaultConverter : public PacketFileConverter
 {
 
 //////////////////
@@ -26,23 +27,23 @@ class PacketFileConverter
 public: //////////
 
 	// Constructor / destructor
-	PacketFileConverter();
-    virtual ~PacketFileConverter();
+	PacketFileDefaultConverter();
+    ~PacketFileDefaultConverter();
 
 //////////////////
 // MAIN METHODS //
 public: //////////
 
     // Convert an external file into an internal file, populating the output arrays with the file data
-    virtual bool ConvertExternalFile(
+    bool ConvertExternalFile(
         std::vector<uint8_t>&& _original_file_data,
         std::vector<uint8_t>& _icon_data,
         std::vector<uint8_t>& _properties_data,
         std::vector<uint8_t>& _intermediate_data,
-        std::vector<uint8_t>& _final_data) const = 0;
+        std::vector<uint8_t>& _final_data) const final;
 
     // Return the type that this converter produces
-    virtual FileType GetConversionFileType() const = 0;
+    FileType GetConversionFileType() const final;
 
 ///////////////
 // VARIABLES //

@@ -9,6 +9,7 @@
 #include "Loader/PacketCondensedFileLoader.h"
 #include "Saver/PacketFileSaver.h"
 #include "Converter/PacketFileConverter.h"
+#include "Converter/PacketFileDefaultConverter.h"
 #include "Importer/PacketFileImporter.h"
 #include "Reference/PacketReferenceManager.h"
 #include "Reference/PacketFileReferences.h"
@@ -38,6 +39,7 @@ bool PacketFileManager::Initialize()
 
     // Create our file management objects
     // TODO: This need some urgently organization!
+    m_DefaultConverter     = std::make_unique<PacketFileDefaultConverter>();
     m_FileIndexer          = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileIndexer>(m_PacketPath) : std::make_unique<PacketPlainFileIndexer>(m_PacketPath);
     m_FileLoader           = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileLoader>(*m_FileIndexer, m_PacketPath) : std::make_unique<PacketPlainFileLoader>(*m_FileIndexer, m_PacketPath); // PacketCondensedFileLoader
     m_FileReferenceManager = std::make_unique<PacketReferenceManager>();

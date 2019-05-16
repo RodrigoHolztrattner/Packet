@@ -40,7 +40,7 @@ FileWatcherManager::FileWatcherManager(bool _use_dedicated_thread) :
                     // Call the update method
                     Update();
 
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 }
             });
     }
