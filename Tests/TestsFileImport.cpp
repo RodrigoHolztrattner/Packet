@@ -32,7 +32,10 @@ SCENARIO("External files can be imported into the packet system", "[import]")
 
         WHEN("An external file is imported")
         {
-            bool import_result = file_importer.ImportExternalFile(ExternalFilePath, "Sounds/imported_file.olo");
+            // Setup the path we will import the file
+            auto new_file_path = "Sounds/imported_file.olo";
+
+            bool import_result = file_importer.ImportExternalFile(ExternalFilePath, new_file_path);
 
             THEN("The import must be successful")
             {
@@ -41,24 +44,24 @@ SCENARIO("External files can be imported into the packet system", "[import]")
 
             AND_THEN("The file must be indexed")
             {
-                REQUIRE(file_indexer.IsFileIndexed(Packet::Hash("Sounds/imported_file.olo")) == true);
+                REQUIRE(file_indexer.IsFileIndexed(Packet::Hash(new_file_path)) == true);
             }
 
             AND_WHEN("This new file is loaded as a packet file")
             {
-                auto new_file = file_loader.LoadFile(Packet::Hash("Sounds/imported_file.olo"));
+                auto new_file = file_loader.LoadFile(Packet::Hash(new_file_path));
 
                 THEN("The loaded file must be valid")
                 {
                     REQUIRE(new_file != nullptr);
                 }
 
-                AND_THEN("Its header must contain the correct informations")
+                AND_THEN("Its header must contain the correct information")
                 {
                     REQUIRE(new_file->GetFileHeader().GetVersion() == Packet::Version);
                     REQUIRE(new_file->GetFileHeader().GetFileSize() > 0);
                     REQUIRE(new_file->GetFileHeader().GetFileType().string() == "default");
-                    REQUIRE(new_file->GetFileHeader().GetPath().string() == "Sounds/imported_file.olo");
+                    REQUIRE(new_file->GetFileHeader().GetPath().string() == new_file_path);
                     REQUIRE(new_file->GetFileHeader().GetDataSize(Packet::FilePart::FinalData) == external_file_size);
                 }
 
@@ -66,6 +69,11 @@ SCENARIO("External files can be imported into the packet system", "[import]")
                 {
                     REQUIRE(new_file->GetOriginalData() == file_raw_data);
                     REQUIRE(new_file->GetFinalData() == file_raw_data);
+                }
+
+                AND_THEN("It must be considered an internal file")
+                {
+                    REQUIRE(new_file->IsExternalFile() == false);
                 }
 
                 AND_THEN("Its remaining data must be empty, or at least represent empty data")
