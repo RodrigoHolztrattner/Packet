@@ -11,11 +11,11 @@
 
 SCENARIO("Resources can be replaced if their file content changes", "[replace]")
 {
+    // Setup the playground
+    SetupResourcePlayground();
+
     GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
     {
-        std::string resourcePath = "dummy.txt";
-        CreateResourceFile(ResourceDirectory + "/" + resourcePath);
-
         Packet::System packetSystem;
         packetSystem.Initialize(Packet::OperationMode::Plain, ResourceDirectory);
 
@@ -34,7 +34,7 @@ SCENARIO("Resources can be replaced if their file content changes", "[replace]")
 
                 resource_manager.RequestResource<MyResource>(
                     resourceReference,
-                    Packet::Hash(resourcePath));
+                    Packet::Hash(DummyResourcePath));
 
                 resource_manager.WaitForResource(resourceReference, MaximumTimeoutWaitMS);
 
@@ -42,7 +42,7 @@ SCENARIO("Resources can be replaced if their file content changes", "[replace]")
 
                 AND_WHEN("The resource file changes")
                 {
-                    UpdateResourceFile(ResourceDirectory + "/" + resourcePath);
+                    UpdateResourceFile(DummyFilePath);
 
                     THEN("The reference resource must be updated to reference the new resource some time after")
                     {

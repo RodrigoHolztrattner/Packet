@@ -6,7 +6,33 @@
 #include <filesystem>
 #include "HelperDefines.h"
 
-static bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite = 100)
+// Forward
+static void SetupResourcePlayground();
+static bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite = 100);
+static bool UpdateResourceFile(std::string _filename, uint32_t _amountToWrite = 100);
+static bool MustChangeToTrueUntilTimeout(std::function<bool()> _condition, long long _timeout);
+static bool MustNotChangeToFalseUntilTimeout(std::function<bool()> _condition, long long _timeout);
+static bool MustChangeToTrueAfterTimeout(std::function<bool()> _condition, long long _timeout);
+static bool MustChangeToFalseAfterTimeout(std::function<bool()> _condition, long long _timeout);
+
+static void SetupResourcePlayground()
+{
+    // Clear old data
+    std::filesystem::remove_all(ResourceDirectory);
+
+    // Base data dir and other directories
+    std::filesystem::create_directory(ResourceDirectory);
+    std::filesystem::create_directory(ImagesDirectory);
+    std::filesystem::create_directory(SoundsDirectory);
+    std::filesystem::create_directory(ShadersDirectory);
+
+    // Initial files
+    CreateResourceFile(ImageFilePath);
+    CreateResourceFile(ShaderFilePath);
+    CreateResourceFile(DummyFilePath);
+}
+
+static bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite)
 {
     if (std::filesystem::path(_filename).has_parent_path())
     {
@@ -29,7 +55,7 @@ static bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite = 
     return false;
 }
 
-static bool UpdateResourceFile(std::string _filename, uint32_t _amountToWrite = 100)
+static bool UpdateResourceFile(std::string _filename, uint32_t _amountToWrite)
 {
     std::ofstream myfile(_filename);
     if (myfile.is_open())

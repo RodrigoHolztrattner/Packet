@@ -16,11 +16,11 @@ Packet::ResourceReference<MyResource> DummyMethod(Packet::ResourceReference<MyRe
 
 SCENARIO("Resource references can be be used to access resources", "[reference]")
 {
+    // Setup the playground
+    SetupResourcePlayground();
+
     GIVEN("A packet system initialized on edit mode and registered with a MyFactory type resource factory")
     {
-        std::string resourcePath = "dummy.txt";
-        CreateResourceFile(ResourceDirectory + "/" + resourcePath);
-
         Packet::System packetSystem;
         packetSystem.Initialize(Packet::OperationMode::Plain, ResourceDirectory);
 
@@ -34,7 +34,7 @@ SCENARIO("Resource references can be be used to access resources", "[reference]"
 
             resource_manager.RequestResource<MyResource>(
                 resourceReference,
-                Packet::Hash(resourcePath));
+                Packet::Hash(DummyResourcePath));
 
             AND_WHEN("We wait until the resource reference is valid")
             {
