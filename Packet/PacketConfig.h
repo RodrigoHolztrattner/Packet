@@ -81,16 +81,6 @@ enum class OperationMode
 	Condensed
 };
 
-// The reference fixer types
-enum class ReferenceFixer
-{
-	None,
-	MatchAll,
-	AtLeastNameAndExtension,
-	AtLeastName,
-	NameAndExtensionOrSizeAndExtension
-};
-
 // The file parts
 enum class FilePart
 {
@@ -326,15 +316,15 @@ struct FixedSizeString
 		return m_PathString.data();
 	}
 
-	const char* String() const
+	const char* c_str() const
 	{
 		return m_PathString.data();
 	}
 
-	friend std::ostream& operator<< (std::ostream& _stream, const FixedSizeString& _path)
-	{
-		return _stream << _path.m_PathString;
-	}
+    std::string string() const
+    {
+        return std::string(m_PathString.data());
+    }
 
 	bool Compare(const char* _str) const
 	{
@@ -483,7 +473,7 @@ struct CondensedFileInfo
 // Merge a resource path with a file path, returning a filesystem path to it
 static std::filesystem::path MergeSystemPathWithFilePath(std::filesystem::path _system_path, Path _file_path)
 {
-    return _system_path.string() + std::string("/") + _file_path.String();
+    return _system_path.string() + std::string("/") + _file_path.string();
 }
 
 // Convert a filesystem path to an internal path using the system resource path
@@ -506,9 +496,7 @@ static std::vector<std::string> DecomposePath(std::filesystem::path _path)
 // Compare 2 path filenames
 static bool CompareFilenames(Path _first, Path _second)
 {
-    // TODO:
-    assert(false);
-    return false;
+    return _first.string() == _second.string();
 }
 
 typedef std::function<bool(

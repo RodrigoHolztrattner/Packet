@@ -466,7 +466,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
         // We can't proceed with this resource on its current status
         m_LoggerPtr->LogWarning(
             std::string("Found file modification event on file: \"")
-            .append(_resource->GetHash().GetPath().String())
+            .append(_resource->GetHash().GetPath().string())
             .append("\", but the resource is pending deletion, ignoring this!")
             .c_str());
 
@@ -483,7 +483,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
             // There is no need to set it again, duplicated call
             m_LoggerPtr->LogWarning(
                 std::string("Found duplicated file modification event on file: \"")
-                .append(_resource->GetHash().GetPath().String())
+                .append(_resource->GetHash().GetPath().string())
                 .append("\", ignoring it!")
                 .c_str());
 
@@ -500,7 +500,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
             // There is no need to set it again, duplicated call
             m_LoggerPtr->LogWarning(
                 std::string("Found file modification event on file: \"")
-                .append(_resource->GetHash().GetPath().String())
+                .append(_resource->GetHash().GetPath().string())
                 .append("\" but resource is being deleted, ignoring it!")
                 .c_str());
 
@@ -514,7 +514,7 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
         // There is no need to set it again, duplicated call
         m_LoggerPtr->LogWarning(
             std::string("Found file modification event on file: \"")
-            .append(_resource->GetHash().GetPath().String())
+            .append(_resource->GetHash().GetPath().string())
             .append("\" but resource is already replaced, ignoring it!")
             .c_str());
         return;

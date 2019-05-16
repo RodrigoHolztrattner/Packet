@@ -69,15 +69,15 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromRawData(std::vector<uint8_
 
     // Determine the data locations
     auto icon_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::IconData);
-    auto icon_data_end = _file_data.begin() + (file_header->GetDataPosition(FilePart::PropertiesData) - file_header->GetDataPosition(FilePart::IconData));
+    auto icon_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::IconData);
     auto properties_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::PropertiesData);
-    auto properties_data_end = _file_data.begin() + (file_header->GetDataPosition(FilePart::OriginalData) - file_header->GetDataPosition(FilePart::PropertiesData));
+    auto properties_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::PropertiesData);
     auto original_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::OriginalData);
-    auto original_data_end = _file_data.begin() + (file_header->GetDataPosition(FilePart::IntermediateData) - file_header->GetDataPosition(FilePart::OriginalData));
+    auto original_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::OriginalData);
     auto intermediate_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::IntermediateData);
-    auto intermediate_data_end = _file_data.begin() + (file_header->GetDataPosition(FilePart::FinalData) - file_header->GetDataPosition(FilePart::IntermediateData));
+    auto intermediate_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::IntermediateData);
     auto final_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::FinalData);
-    auto final_data_end = _file_data.begin() + (file_header->GetDataPosition(FilePart::ReferencesData) - file_header->GetDataPosition(FilePart::FinalData));
+    auto final_data_end = _file_data.begin() + file_header->GetDataPosition(FilePart::FinalData);
     auto references_data_begin = _file_data.begin() + file_header->GetDataPosition(FilePart::ReferencesData);
     auto references_data_end = _file_data.end();
 
@@ -263,43 +263,36 @@ bool PacketFile::UpdateFilePart(FilePart _file_part, std::vector<uint8_t>&& _dat
         return false;
     }
 
-    FileDataSize old_data_size = 0;
     switch (_file_part)
     {
         case FilePart::IconData:
         {
-            old_data_size = m_FileIconData.size();
             m_FileIconData = _data;
             break;
         }
         case FilePart::PropertiesData:
         {
-            old_data_size = m_PropertiesData.size();
             m_PropertiesData = _data;
             ParseProperties();
             break;
         }
         case FilePart::OriginalData:
         {
-            old_data_size = m_OriginalData.size();
             m_OriginalData = _data;
             break;
         }
         case FilePart::IntermediateData:
         {
-            old_data_size = m_IntermediateData.size();
             m_IntermediateData = _data;
             break;
         }
         case FilePart::FinalData:
         {
-            old_data_size = m_FinalData.size();
             m_FinalData = _data;
             break;
         }
         case FilePart::ReferencesData:
         {
-            old_data_size = m_ReferencesData.size();
             m_ReferencesData = _data;
             ParseReferences();
             break;
@@ -309,13 +302,16 @@ bool PacketFile::UpdateFilePart(FilePart _file_part, std::vector<uint8_t>&& _dat
             return false;
         }
     }
+
+    // Update the header data sizes
+    m_FileHeader.UpdateDataSizes(
+        m_FileIconData.size(), 
+        m_PropertiesData.size(),
+        m_OriginalData.size(),
+        m_IntermediateData.size(),
+        m_FinalData.size(),
+        m_ReferencesData.size());
     
-    // Determine the size difference
-    FileDataSize size_difference = _data.size() - old_data_size;
-
-    // Update the header file size
-    m_FileHeader.SetFileSize(m_FileHeader.GetFileSize() + size_difference);
-
     return true;
 }
 
@@ -341,10 +337,17 @@ void PacketFile::SetData(std::vector<uint8_t>&& _iconData,
 
 void PacketFile::ParseProperties()
 {
-    m_ParsedPropertiesData = nlohmann::json::parse(m_PropertiesData.begin(), m_PropertiesData.end());
+    if (m_PropertiesData.size() == 0)
+    {
+        m_ParsedPropertiesData = nlohmann::json::object();
+    }
+    else
+    {
+        m_ParsedPropertiesData = nlohmann::json::from_bson(m_PropertiesData);
+    }
 }
 
 void PacketFile::ParseReferences()
 {
-    m_ParsedFileReferences = PacketFileReferences::CreateFromData(m_ReferencesData);
+    m_ParsedFileReferences = PacketFileReferences::CreateFromData(m_ReferencesData);  
 }

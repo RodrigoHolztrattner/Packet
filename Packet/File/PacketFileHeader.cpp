@@ -90,6 +90,23 @@ void PacketFileHeader::SetFileType(FileType _file_type)
     m_HeaderData.file_type = _file_type;
 }
 
+void PacketFileHeader::UpdateDataSizes(
+    FileDataSize _icon_size,
+    FileDataSize _properties_size,
+    FileDataSize _original_size,
+    FileDataSize _intermediate_size,
+    FileDataSize _final_size,
+    FileDataSize _references_size)
+{
+    m_HeaderData.icon_position = sizeof(FileHeaderData);
+    m_HeaderData.properties_position = m_HeaderData.icon_position + _icon_size;
+    m_HeaderData.original_data_position = m_HeaderData.properties_position + _properties_size;
+    m_HeaderData.intermediate_data_position = m_HeaderData.original_data_position + _original_size;
+    m_HeaderData.final_data_position = m_HeaderData.intermediate_data_position + _intermediate_size;
+    m_HeaderData.references_data_position = m_HeaderData.final_data_position + _final_size;
+    m_HeaderData.total_size = m_HeaderData.references_data_position + _references_size;
+}
+
 std::vector<uint8_t> PacketFileHeader::GetRawData() const
 {
     std::vector<uint8_t> header_data(sizeof(PacketFileHeader::FileHeaderData));
@@ -120,7 +137,7 @@ Path PacketFileHeader::GetPath() const
 
 Path PacketFileHeader::GetOriginalPath() const
 {
-    std::string original_path = m_OriginalPath.String();
+    std::string original_path = m_OriginalPath.string();
     if (original_path.length() == 0)
     {
         return m_HeaderData.file_path;

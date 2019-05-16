@@ -59,10 +59,10 @@ namespace FWPacket
 
 		/// Add a directory watch
 		/// @exception FileNotFoundException Thrown when the requested directory does not exist
-		virtual WatchID addWatch(const String& directory, FileWatchListener* watcher) = 0;
+		virtual WatchID addWatch(const string& directory, FileWatchListener* watcher) = 0;
 
 		/// Remove a directory watch. This is a brute force lazy search O(nlogn).
-		virtual void removeWatch(const String& directory) = 0;
+		virtual void removeWatch(const string& directory) = 0;
 
 		/// Remove a directory watch. This is a map lookup O(logn).
 		virtual void removeWatch(WatchID watchid) = 0;
@@ -71,7 +71,7 @@ namespace FWPacket
 		virtual void update() = 0;
 
 		/// Handles the action
-		virtual void handleAction(WatchStruct* watch, const String& filename, unsigned long action) = 0;
+		virtual void handleAction(WatchStruct* watch, const string& filename, unsigned long action) = 0;
 
 	};//end FileWatcherImpl
 };//namespace FWPacket

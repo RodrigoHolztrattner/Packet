@@ -73,21 +73,21 @@ namespace FWPacket
 	struct WatchStruct
 	{
 		WatchID mWatchID;
-		String mDirName;
+		string mDirName;
 		FileWatchListener* mListener;
 		
 		// index 0 is always the directory
 		KEvent mChangeList[MAX_CHANGE_EVENT_SIZE];
 		size_t mChangeListCount;
 		
-		WatchStruct(WatchID watchid, const String& dirname, FileWatchListener* listener)
+		WatchStruct(WatchID watchid, const string& dirname, FileWatchListener* listener)
 		: mWatchID(watchid), mDirName(dirname), mListener(listener)
 		{
 			mChangeListCount = 0;
 			addAll();
 		}
 		
-		void addFile(const String& name, bool imitEvents = true)
+		void addFile(const string& name, bool imitEvents = true)
 		{
 			//fprintf(stderr, "ADDED: %s\n", name.c_str());
 			
@@ -121,7 +121,7 @@ namespace FWPacket
 				handleAction(name, Action::Add);
 		}
 		
-		void removeFile(const String& name, bool imitEvents = true)
+		void removeFile(const string& name, bool imitEvents = true)
 		{
 			// bsearch
 			KEvent target;
@@ -170,7 +170,7 @@ namespace FWPacket
 			
 			while((dentry = readdir(dir)) != NULL)
 			{
-				String fname = mDirName + "/" + dentry->d_name;
+				string fname = mDirName + "/" + dentry->d_name;
 				stat(fname.c_str(), &attrib);
 				if(!S_ISREG(attrib.st_mode))
 					continue;
@@ -216,7 +216,7 @@ namespace FWPacket
 			closedir(dir);
 		};
 		
-		void handleAction(const String& filename, FileWatcher::Action action)
+		void handleAction(const string& filename, FileWatcher::Action action)
 		{
 			mListener->handleFileAction(mWatchID, mDirName, filename, action);
 		}
@@ -241,7 +241,7 @@ namespace FWPacket
 			struct stat attrib;
 			while((entry = readdir(dir)) != NULL)
 			{
-				String fname = (mDirName + "/" + String(entry->d_name));
+				string fname = (mDirName + "/" + string(entry->d_name));
 				stat(fname.c_str(), &attrib);
 				if(S_ISREG(attrib.st_mode))
 					addFile(fname, false);
@@ -346,7 +346,7 @@ namespace FWPacket
 	}
 
 	//--------
-	WatchID FileWatcherOSX::addWatch(const String& directory, FileWatchListener* watcher)
+	WatchID FileWatcherOSX::addWatch(const string& directory, FileWatchListener* watcher)
 	{
 /*		int fd = open(directory.c_str(), O_RDONLY);
 		if(fd == -1)
@@ -364,7 +364,7 @@ namespace FWPacket
 	}
 
 	//--------
-	void FileWatcherOSX::removeWatch(const String& directory)
+	void FileWatcherOSX::removeWatch(const string& directory)
 	{
 		WatchMap::iterator iter = mWatches.begin();
 		WatchMap::iterator end = mWatches.end();
@@ -396,7 +396,7 @@ namespace FWPacket
 	}
 	
 	//--------
-	void FileWatcherOSX::handleAction(WatchStruct* watch, const String& filename, unsigned long action)
+	void FileWatcherOSX::handleAction(WatchStruct* watch, const string& filename, unsigned long action)
 	{
 	}
 

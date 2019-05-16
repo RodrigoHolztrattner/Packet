@@ -66,7 +66,7 @@ void FileWatcherManager::ReleaseWatcher(std::filesystem::path _system_path)
     m_RemoveWatcherRequests.enqueue({ _system_path });
 }
 
-void FileWatcherManager::HandleFileAction(FWPacket::WatchID, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action)
+void FileWatcherManager::HandleFileAction(FWPacket::WatchID, const FWPacket::string& _dir, const FWPacket::string& _filename, FWPacket::Action _action)
 {
 	// Check if we have a watch on this directory
 	auto iter = m_WatchedDirectories.find(Hash(_dir).GetHashValue());

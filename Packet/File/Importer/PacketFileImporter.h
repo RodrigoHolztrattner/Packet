@@ -50,12 +50,13 @@ class PacketFileImporter
 public: //////////
 
 	// Constructor / destructor
-	PacketFileImporter(PacketFileIndexer&                                _file_indexer, 
-                       const PacketFileLoader&                           _file_loader,
-                       const PacketReferenceManager&                     _reference_manager, 
-                       FileWriteCallback                                 _file_write_callback,
-                       std::function<PacketFileConverter* (std::string)> _retrieve_converter_for_type_callback, 
-                       std::wstring                                      _resource_path);
+    PacketFileImporter(
+        PacketFileIndexer&                                _file_indexer,
+        const PacketFileLoader&                           _file_loader,
+        const PacketReferenceManager&                     _reference_manager,
+        FileWriteCallback                                 _file_write_callback,
+        std::function<PacketFileConverter* (std::string)> _retrieve_converter_for_type_callback,
+        std::wstring                                      _resource_path);
 	~PacketFileImporter();
 
 //////////////////

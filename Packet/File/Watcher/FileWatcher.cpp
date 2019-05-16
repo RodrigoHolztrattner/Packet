@@ -51,13 +51,13 @@ namespace FWPacket
 	}
 
 	//--------
-	WatchID FileWatcher::addWatch(const String& directory, FileWatchListener* watcher)
+	WatchID FileWatcher::addWatch(const string& directory, FileWatchListener* watcher)
 	{
 		return mImpl->addWatch(directory, watcher);
 	}
 
 	//--------
-	void FileWatcher::removeWatch(const String& directory)
+	void FileWatcher::removeWatch(const string& directory)
 	{
 		mImpl->removeWatch(directory);
 	}

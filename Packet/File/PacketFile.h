@@ -147,11 +147,11 @@ private:
 // VARIABLES //
 protected: ////
 
-    // A reference to this file header and its icon that must be hold by the system
-    PacketFileHeader     m_FileHeader;
-    std::vector<uint8_t> m_FileIconData;
+    // Our header
+    PacketFileHeader m_FileHeader;
 
     // Remaining file data
+    std::vector<uint8_t> m_FileIconData;
     std::vector<uint8_t> m_PropertiesData;
     std::vector<uint8_t> m_OriginalData;
     std::vector<uint8_t> m_IntermediateData;

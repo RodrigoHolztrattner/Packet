@@ -45,12 +45,14 @@ std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) con
     }
 
     // Reserve space for the entire file
-    std::vector<uint8_t> entire_file_data(std::filesystem::file_size(file_path));
+    std::vector<uint8_t> entire_file_data;
+    entire_file_data.reserve(std::filesystem::file_size(file_path));
 
+    file.unsetf(std::ios::skipws);
     // Read the entire file data
-    entire_file_data.insert(entire_file_data.begin(),
-                            std::istream_iterator<uint8_t>(file),
-                            std::istream_iterator<uint8_t>());
+    std::copy(std::istream_iterator<uint8_t>(file),
+              std::istream_iterator<uint8_t>(),
+              std::back_inserter(entire_file_data));
 
     // Close the file
     file.close();
@@ -61,7 +63,7 @@ std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) con
 std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> PacketPlainFileLoader::LoadFileDataPart(Hash _file_hash, FilePart _file_part) const
 {
     // Transform the file hash into a valid path
-    std::filesystem::path file_path = _file_hash.GetPath().String();
+    std::filesystem::path file_path = _file_hash.GetPath().string();
 
     // Check if the file exist and is valid
     if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
@@ -71,7 +73,7 @@ std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> PacketPlainFil
     }
 
     // Open the file and check if we are ok to proceed
-    std::ifstream file(_file_hash.GetPath().String(), std::ios::binary);
+    std::ifstream file(_file_hash.GetPath().string(), std::ios::binary);
     if (!file.is_open())
     {
         // Error opening the file!

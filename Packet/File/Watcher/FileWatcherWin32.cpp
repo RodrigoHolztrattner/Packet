@@ -195,7 +195,7 @@ namespace FWPacket
 	}
 
 	//--------
-	WatchID FileWatcherWin32::addWatch(const String& directory, FileWatchListener* watcher)
+	WatchID FileWatcherWin32::addWatch(const string& directory, FileWatchListener* watcher)
 	{
 		WatchID watchid = ++mLastWatchID;
 
@@ -217,7 +217,7 @@ namespace FWPacket
 	}
 
 	//--------
-	void FileWatcherWin32::removeWatch(const String& directory)
+	void FileWatcherWin32::removeWatch(const string& directory)
 	{
 		WatchMap::iterator iter = mWatches.begin();
 		WatchMap::iterator end = mWatches.end();
@@ -252,7 +252,7 @@ namespace FWPacket
 	}
 
 	//--------
-	void FileWatcherWin32::handleAction(WatchStruct* watch, const String& filename, unsigned long action)
+	void FileWatcherWin32::handleAction(WatchStruct* watch, const string& filename, unsigned long action)
 	{
 		Action fwAction;
 

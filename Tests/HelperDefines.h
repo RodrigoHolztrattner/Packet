@@ -16,5 +16,6 @@
 #define ImageFilePath        std::string(ImagesDirectory + "/" + "image.png")
 #define ShaderFilePath       std::string(ShadersDirectory + "/" + "shader.frag")
 #define DummyFilePath        std::string(ResourceDirectory + "/" + "dummy.txt")
+#define ExternalFilePath     std::string("external_file.lol")
 
 #define MaximumTimeoutWaitMS long long(5000)

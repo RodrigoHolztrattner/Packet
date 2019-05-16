@@ -38,7 +38,7 @@
 namespace FWPacket
 {
 	/// Type for a string
-	typedef std::string String;
+	typedef std::string string;
 	/// Type for a watch id
 	typedef unsigned long WatchID;
 
@@ -51,7 +51,7 @@ namespace FWPacket
 	class Exception : public std::runtime_error
 	{
 	public:
-		Exception(const String& message)
+		Exception(const string& message)
 			: std::runtime_error(message)
 		{}
 	};
@@ -65,7 +65,7 @@ namespace FWPacket
 			: Exception("File not found")
 		{}
 
-		FileNotFoundException(const String& filename)
+		FileNotFoundException(const string& filename)
 			: Exception("File not found (" + filename + ")")
 		{}
 	};
@@ -103,10 +103,10 @@ namespace FWPacket
 
 		/// Add a directory watch
 		/// @exception FileNotFoundException Thrown when the requested directory does not exist
-		WatchID addWatch(const String& directory, FileWatchListener* watcher);
+		WatchID addWatch(const string& directory, FileWatchListener* watcher);
 
 		/// Remove a directory watch. This is a brute force search O(nlogn).
-		void removeWatch(const String& directory);
+		void removeWatch(const string& directory);
 
 		/// Remove a directory watch. This is a map lookup O(logn).
 		void removeWatch(WatchID watchid);
@@ -134,7 +134,7 @@ namespace FWPacket
 		/// @param dir The directory
 		/// @param filename The filename that was accessed (not full path)
 		/// @param action Action that was performed
-		virtual void handleFileAction(WatchID watchid, const String& dir, const String& filename, Action action) = 0;
+		virtual void handleFileAction(WatchID watchid, const string& dir, const string& filename, Action action) = 0;
 
 	};//class FileWatchListener
 

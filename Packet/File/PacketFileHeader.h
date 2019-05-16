@@ -98,6 +98,13 @@ protected:
     // Set this header info
     void SetFileSize(FileDataSize _file_size);
     void SetFileType(FileType _file_type);
+    void UpdateDataSizes(
+        FileDataSize _icon_size,
+        FileDataSize _properties_size,
+        FileDataSize _original_size,
+        FileDataSize _intermediate_size,
+        FileDataSize _final_size,
+        FileDataSize _references_size);
 
     // Get this header as pure data
     std::vector<uint8_t> GetRawData() const;

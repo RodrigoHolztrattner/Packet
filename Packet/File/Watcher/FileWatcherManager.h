@@ -34,7 +34,7 @@ public:
 		FileWatchListener(FileWatcherManager* _FileWatcherManager) : m_FileWatcherPtr(_FileWatcherManager) {}
 
 		// Forward the file action to the resource watcher object
-		void handleFileAction(FWPacket::WatchID _watchid, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action) override
+		void handleFileAction(FWPacket::WatchID _watchid, const FWPacket::string& _dir, const FWPacket::string& _filename, FWPacket::Action _action) override
 		{
 			m_FileWatcherPtr->HandleFileAction(_watchid, _dir, _filename, _action);
 		}
@@ -99,7 +99,7 @@ public: //////////
 protected:
 
 	// The handle file action method
-	void HandleFileAction(FWPacket::WatchID _watchid, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action);
+	void HandleFileAction(FWPacket::WatchID _watchid, const FWPacket::string& _dir, const FWPacket::string& _filename, FWPacket::Action _action);
 
     // This method will add a watch to a resource (the resource don't need to be fully loaded but it must has it hash 
     // object updated

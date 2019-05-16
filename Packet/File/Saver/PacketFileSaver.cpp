@@ -159,6 +159,10 @@ bool PacketFileSaver::SaveFileHelper(std::unique_ptr<PacketFile> _file) const
         return false;
     }
 
+    // Get the file path
+    auto file_path = _file->GetFileHeader().GetPath();
+
+    /*
     // Get the current data sizes
     FileDataSize icon_data_size         = _file->GetIconData().size();
     FileDataSize properties_data_size   = _file->GetPropertiesData().size();
@@ -166,6 +170,7 @@ bool PacketFileSaver::SaveFileHelper(std::unique_ptr<PacketFile> _file) const
     FileDataSize intermediate_data_size = _file->GetIntermediateData().size();
     FileDataSize final_data_size        = _file->GetFinalData().size();
     FileDataSize references_data_size   = _file->GetReferencesData().size();
+    */
 
     // Transform the file into raw data
     auto file_raw_data = PacketFile::CreateRawDataFromFile(std::move(_file));
@@ -174,13 +179,16 @@ bool PacketFileSaver::SaveFileHelper(std::unique_ptr<PacketFile> _file) const
         return false;
     }
 
+    /*
     // Get an editable file header from the raw data
     auto* file_header = PacketFileHeader::GetHeaderDataPtr(file_raw_data);
     if (!file_header)
     {
         return false;
     }
-
+    */
+    
+    /*
     // Update the header positions
     file_header->icon_position              = sizeof(PacketFileHeader::FileHeaderData);
     file_header->properties_position        = file_header->icon_position + icon_data_size;
@@ -188,9 +196,10 @@ bool PacketFileSaver::SaveFileHelper(std::unique_ptr<PacketFile> _file) const
     file_header->intermediate_data_position = file_header->original_data_position + original_data_size;
     file_header->final_data_position        = file_header->intermediate_data_position + intermediate_data_size;
     file_header->references_data_position   = file_header->final_data_position + final_data_size;
+    */
 
     // Determine the system path this file must be saved on
-    auto file_output_path = MergeSystemPathWithFilePath(m_PacketPath, file_header->file_path);
+    auto file_output_path = MergeSystemPathWithFilePath(m_PacketPath, file_path);
 
     // Open the file and check if we are ok to proceed
     std::ofstream system_file(file_output_path, std::ios::binary);

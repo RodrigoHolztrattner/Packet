@@ -36,7 +36,7 @@ const std::set<Path>& PacketFileReferences::GetFileDependencies() const
 
 PacketFileReferences PacketFileReferences::CreateFromData(const std::vector<uint8_t>& _data)
 {
-    return CreateFromJSON(nlohmann::json::parse(_data.begin(), _data.end()));
+    return CreateFromJSON(_data.size() == 0 ? nlohmann::json::object() : nlohmann::json::from_bson(_data));
 }
 
 PacketFileReferences PacketFileReferences::CreateFromJSON(nlohmann::json _json)
@@ -81,19 +81,26 @@ PacketFileReferences PacketFileReferences::CreateFromSets(std::set<Path> _file_l
 nlohmann::json PacketFileReferences::SaveIntoJSON() const
 {
     std::set<std::string> files_that_depends_on_this;
-    for (auto& entry : m_FileLinks)
+    std::set<std::string> file_dependencies;
+
+    for (auto entry : m_FileLinks)
     {
-        files_that_depends_on_this.insert(entry.String());
+        files_that_depends_on_this.insert(entry.string());
+    }
+
+    for (auto entry : m_FileDependencies)
+    {
+        file_dependencies.insert(entry.string());
     }
 
     return nlohmann::json{
-    {"FilesDependentOnThis", m_FileLinks},
-    {"FileDependencies", m_FileDependencies} };
+    {"FilesDependentOnThis", files_that_depends_on_this},
+    {"FileDependencies", file_dependencies} };
 }
 
 std::vector<uint8_t> PacketFileReferences::TransformIntoData(PacketFileReferences _references)
 {
-    return _references.SaveIntoJSON();
+    return nlohmann::json::to_bson(_references.SaveIntoJSON());
 }
 
 void PacketFileReferences::AddFileLink(Path _new_link)

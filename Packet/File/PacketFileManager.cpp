@@ -134,7 +134,7 @@ bool PacketFileManager::CopyFile(Path _source_file_path, Path _target_file_path)
         uint32_t counter         = 1;
         while (m_FileIndexer->IsFileIndexed(Hash(updated_target_path)))
         {
-            std::string internal_path = _target_file_path.String();
+            std::string internal_path = _target_file_path.string();
             internal_path += "_" + std::to_string(counter++);
             updated_target_path = internal_path;
         }
@@ -190,7 +190,7 @@ bool PacketFileManager::MoveFile(Path _source_file_path, Path _target_file_path)
         uint32_t counter = 1;
         while (m_FileIndexer->IsFileIndexed(Hash(updated_target_path)))
         {
-            std::string internal_path = _target_file_path.String();
+            std::string internal_path = _target_file_path.string();
             internal_path += "_" + std::to_string(counter++);
             updated_target_path = internal_path;
         }

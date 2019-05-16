@@ -22,7 +22,7 @@ PacketFileImporter::PacketFileImporter(
     m_FileLoader(_file_loader), 
     m_ReferenceManager(_reference_manager), 
     m_FileWriteCallback(_file_write_callback), 
-    m_RetrieveConverterForTypeCallback(), 
+    m_RetrieveConverterForTypeCallback(_retrieve_converter_for_type_callback),
     m_ResourcePath(_resource_path)
 {
 	// Set the initial data
@@ -55,6 +55,12 @@ bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original
         // The file already exist and we are not overwriting it
         return false;
     }
+    else if (file_already_indexed)
+    {
+        // Delete the old file
+        // ...
+        throw "Not implemented yet";
+    }
 
     // Determine the file original extension
     std::string file_extension = _file_original_path.extension().string();
@@ -75,7 +81,8 @@ bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original
     }
 
     // Reserve space for the entire file
-    std::vector<uint8_t> entire_file_data(std::filesystem::file_size(_file_original_path));
+    std::vector<uint8_t> entire_file_data;
+    entire_file_data.reserve(std::filesystem::file_size(_file_original_path));
 
     // Read the entire file data
     entire_file_data.insert(

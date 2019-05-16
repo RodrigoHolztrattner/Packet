@@ -19,6 +19,7 @@ static void SetupResourcePlayground()
 {
     // Clear old data
     std::filesystem::remove_all(ResourceDirectory);
+    std::filesystem::remove(ExternalFilePath);
 
     // Base data dir and other directories
     std::filesystem::create_directory(ResourceDirectory);
@@ -30,6 +31,7 @@ static void SetupResourcePlayground()
     CreateResourceFile(ImageFilePath);
     CreateResourceFile(ShaderFilePath);
     CreateResourceFile(DummyFilePath);
+    CreateResourceFile(ExternalFilePath);
 }
 
 static bool CreateResourceFile(std::string _filename, uint32_t _amountToWrite)
