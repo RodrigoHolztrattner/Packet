@@ -19,6 +19,24 @@ FileWatcherManager::FileWatcherManager(bool _use_dedicated_thread) :
             {
                 while (!m_ExitFileUpdateThread)
                 {
+                    // Process watch requests
+                    {
+                        AddWatcherRequest request;
+                        while (m_AddWatcherRequests.try_dequeue(request))
+                        {
+                            WatchFilePath(request.system_path, request.file_path);
+                        }
+                    }
+
+                    // Process watch releases
+                    {
+                        RemoveWatcherRequest request;
+                        while (m_RemoveWatcherRequests.try_dequeue(request))
+                        {
+                            RemoveWatch(request.system_path);
+                        }
+                    }
+
                     // Call the update method
                     Update();
 
@@ -36,6 +54,16 @@ FileWatcherManager::~FileWatcherManager()
     {
         m_FileUpdateThread.join();
     }
+}
+
+void FileWatcherManager::RequestWatcher(std::filesystem::path _system_path, Path _file_path)
+{
+    m_AddWatcherRequests.enqueue({ _system_path, _file_path });
+}
+
+void FileWatcherManager::ReleaseWatcher(std::filesystem::path _system_path)
+{
+    m_RemoveWatcherRequests.enqueue({ _system_path });
 }
 
 void FileWatcherManager::HandleFileAction(FWPacket::WatchID, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action)
@@ -78,7 +106,7 @@ void FileWatcherManager::HandleFileAction(FWPacket::WatchID, const FWPacket::Str
 bool FileWatcherManager::WatchFilePath(std::filesystem::path _system_path, Path _file_path)
 {
 	// Hash the path string
-	Hash pathHash = Hash(_system_path.string());
+	Hash pathHash = Hash(_system_path.parent_path().string());
 
 	// Check if we already have a watch on this directory
 	auto iter = m_WatchedDirectories.find(pathHash);

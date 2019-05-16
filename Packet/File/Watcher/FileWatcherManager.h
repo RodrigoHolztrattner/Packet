@@ -11,6 +11,7 @@
 #include <map>
 #include <functional>
 #include <thread>
+#include "concurrentqueue.h"
 
 ///////////////
 // NAMESPACE //
@@ -54,6 +55,18 @@ public:
 		std::map<HashPrimitive, Path> watchedFiles;
 	};
 
+    // The add and remove watcher request type
+    struct AddWatcherRequest
+    {
+        std::filesystem::path system_path;
+        Path                  file_path;
+    };
+
+    struct RemoveWatcherRequest
+    {
+        std::filesystem::path system_path;
+    };
+
 	// Friend classes/structs
 	friend FileWatchListener;
 
@@ -69,12 +82,13 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
-	// This method will add a watch to a resource (the resource don't need to be fully loaded but it must has it hash 
-	// object updated
-	bool WatchFilePath(std::filesystem::path _system_path, Path _file_path);
-
-	// This method will return a watch from the given resource (same conditions as the WatchFile() above)
-	void RemoveWatch(std::filesystem::path _system_path);
+    // Request/Release a watch, this call will be enqueued into an asynchronous thread that will, after
+    // some time, process this request. I had to do this way because for some reason the windows API
+    // doesn't allow creating the watcher and calling MsgWaitForMultipleObjectsEx from different threads,
+    // I believe this is the expected behavior and there is probably some way to make this work but I was
+    // unable to find much information, so I choose the easy approach
+    void RequestWatcher(std::filesystem::path _system_path, Path _file_path);
+    void ReleaseWatcher(std::filesystem::path _system_path);
 
 	// Register the on data changed callback method
 	void RegisterOnFileDataChangedMethod(std::function<void(Path _file_path)> _method);
@@ -87,19 +101,28 @@ protected:
 	// The handle file action method
 	void HandleFileAction(FWPacket::WatchID _watchid, const FWPacket::String& _dir, const FWPacket::String& _filename, FWPacket::Action _action);
 
+    // This method will add a watch to a resource (the resource don't need to be fully loaded but it must has it hash 
+    // object updated
+    bool WatchFilePath(std::filesystem::path _system_path, Path _file_path);
+
+    // This method will return a watch from the given resource (same conditions as the WatchFile() above)
+    void RemoveWatch(std::filesystem::path _system_path);
+
 ///////////////
 // VARIABLES //
 private: //////
 
 	// The thread that will periodically check for changes and its exit flag
     std::thread m_FileUpdateThread;
-    bool m_ExitFileUpdateThread = false;
+    bool        m_ExitFileUpdateThread = false;
 
-	// The file watcher object
+	// The file watcher and its listener
 	FWPacket::FileWatcher m_FileWatcher;
+	FileWatchListener     m_FileWatcherListener;
 
-	// The file watcher listener object
-	FileWatchListener m_FileWatcherListener;
+    // Requests for adding and removing watchers
+    moodycamel::ConcurrentQueue<AddWatcherRequest>    m_AddWatcherRequests;
+    moodycamel::ConcurrentQueue<RemoveWatcherRequest> m_RemoveWatcherRequests;
 
 	// All watched directories
 	std::map<HashPrimitive, WatchedDirectory> m_WatchedDirectories;

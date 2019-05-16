@@ -160,7 +160,7 @@ void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
     if (file->IsExternalFile())
     {
         // Register a watcher for this file
-        m_FileWatcherManager->WatchFilePath(system_filepath, _file_path);
+        m_FileWatcherManager->RequestWatcher(system_filepath, _file_path);
     }
 
     // Set the file extension and load data
@@ -191,5 +191,5 @@ void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
 
     // Remove the path watcher that potentially was added to watch this file if
     // it was an external one
-    m_FileWatcherManager->RemoveWatch(MergeSystemPathWithFilePath(m_PacketPath, _file_path));
+    m_FileWatcherManager->ReleaseWatcher(MergeSystemPathWithFilePath(m_PacketPath, _file_path));
 }
