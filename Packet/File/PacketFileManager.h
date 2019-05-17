@@ -62,11 +62,15 @@ public: //////////
         std::set<Path>&&       _file_dependencies,
         FileWriteFlags         _write_flags = 0) const;
 
-    // Copy a file to another location
-    bool CopyFile(Path _source_file_path, Path _target_file_path) const;
+    // Copy a file to another location, return the new file path
+    std::optional<Path> CopyFile(Path _source_file_path, Path _target_file_dir) const;
 
-    // Move a file to another location
-    bool MoveFile(Path _source_file_path, Path _target_file_path) const;
+    // Move a file to another location, return the file path
+    std::optional<Path> MoveFile(Path _source_file_path, Path _target_file_dir) const;
+
+    // Rename a file, the second argument must be only the filename without extension and not the
+    // a path, return the renamed file path
+    std::optional<Path> RenameFile(Path _source_file_path, Path _new_file_name) const;
 
     // Delete a file
     bool DeleteFile(Path _target_file_path) const;
@@ -80,6 +84,21 @@ protected:
 
     // Write a file data into an internal file, this doesn't check if the file should be overwritten
     bool WriteFileDataIntoInternalFile(Path _file_path, std::vector<uint8_t>&& _file_data) const;
+
+private:
+
+    // This method should be used when its necessary to extract path information about a file that is
+    // being created (copied/moved/renamed), it will compare the source and target paths and output
+    // the new target directory path, the filename and the file extension
+    // This method will take in consideration if the target path points directly to a file path, in
+    // this case the returned filename and extension will be the ones given by this path and not from
+    // the source one
+    std::tuple<std::filesystem::path, std::string, std::string> DetermineRequiredPaths(
+        Path _source_file_path,
+        Path _target_path) const;
+
+    // Return a valid file path that can be used to save a file without overwriting an existing file
+    Path RetrieveValidFilePath(const std::filesystem::path& _directory_path, const std::string& _file_name, const std::string& _file_extension) const;
 
 ///////////////
 // VARIABLES //

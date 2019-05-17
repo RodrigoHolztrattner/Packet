@@ -89,6 +89,15 @@ bool PacketFileManager::WriteFile(
         return false;
     }
 
+    // Check if all dependencies are valid
+    for (auto& file_dependency : _file_dependencies)
+    {
+        if (!m_FileIndexer->IsFileIndexed(Hash(file_dependency)))
+        {
+            return false;
+        }
+    }
+
     // Generate the file
     auto file = PacketFile::GenerateFileFromData(
         _target_path,
@@ -105,7 +114,7 @@ bool PacketFileManager::WriteFile(
     }
 
     // Save the file
-    if (!m_FileSaver->SaveFile(std::move(file)))
+    if (!m_FileSaver->SaveFile(std::move(file), file_already_indexed ? SaveOperation::Overwrite : SaveOperation::Create))
     {
         return false;
     }
@@ -120,29 +129,22 @@ bool PacketFileManager::WriteFile(
     return true;
 }
 
-bool PacketFileManager::CopyFile(Path _source_file_path, Path _target_file_path) const
+std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _target_file_dir) const
 {
     // Confirm that the source file is valid
     if (!m_FileIndexer->IsFileIndexed(Hash(_source_file_path)))
     {
-        return false;
+        return std::nullopt;
     }
+
+    // Transform to system path and get all necessary info
+    auto source_file_system_path = std::filesystem::path(_source_file_path.string());
+    auto [target_directory_system_path, required_file_name, required_file_extension] = DetermineRequiredPaths(_source_file_path, _target_file_dir);
 
     // Update the target file path with a valid file path if the current one is already in use
-    {
-        Path updated_target_path = _target_file_path;
-        uint32_t counter         = 1;
-        while (m_FileIndexer->IsFileIndexed(Hash(updated_target_path)))
-        {
-            std::string internal_path = _target_file_path.string();
-            internal_path += "_" + std::to_string(counter++);
-            updated_target_path = internal_path;
-        }
-        _target_file_path = updated_target_path;
-    }
-
+    Path target_file_path = RetrieveValidFilePath(target_directory_system_path.string(), required_file_name, required_file_extension);
     auto source_file_hash = Hash(_source_file_path);
-    auto target_file_hash = Hash(_target_file_path);
+    auto target_file_hash = Hash(target_file_path);
 
     // Check if the file is an external one, if true just do a normal system copy
     // TODO: ...
@@ -151,54 +153,56 @@ bool PacketFileManager::CopyFile(Path _source_file_path, Path _target_file_path)
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
     {
-        return false;
+        return std::nullopt;
     }
 
     // Duplicate the file
     auto duplicated_file = PacketFile::DuplicateFile(source_file);
     if (!duplicated_file)
     {
-        return false;
+        return std::nullopt;
     }
+
+    // Update the duplicated file path
+    duplicated_file->UpdateFilePath(target_file_path);
 
     // Clear the file links
     duplicated_file->ClearFileLinks();
 
     // Save the file
-    if (!m_FileSaver->SaveFile(std::move(duplicated_file)))
+    if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Copy))
     {
-        return false;
+        return std::nullopt;
     }
 
     // Insert a new entry on the file plain indexer
-    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(_target_file_path);
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(target_file_path);
 
-    return true;
+    return target_file_path;
 }
 
-bool PacketFileManager::MoveFile(Path _source_file_path, Path _target_file_path) const
+std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _target_file_dir) const
 {
     // Confirm that the source file is valid
     if (!m_FileIndexer->IsFileIndexed(Hash(_source_file_path)))
     {
-        return false;
+        return std::nullopt;
+    }
+
+    // Transform to system path and get all necessary info
+    auto source_file_system_path = std::filesystem::path(_source_file_path.string());
+    auto [target_directory_system_path, required_file_name, required_file_extension] = DetermineRequiredPaths(_source_file_path, _target_file_dir);
+
+    // If the resource and target directories are the same, we don't need to do anything
+    if (source_file_system_path.parent_path() == target_directory_system_path)
+    {
+        return _source_file_path;
     }
 
     // Update the target file path with a valid file path if the current one is already in use
-    {
-        Path updated_target_path = _target_file_path;
-        uint32_t counter = 1;
-        while (m_FileIndexer->IsFileIndexed(Hash(updated_target_path)))
-        {
-            std::string internal_path = _target_file_path.string();
-            internal_path += "_" + std::to_string(counter++);
-            updated_target_path = internal_path;
-        }
-        _target_file_path = updated_target_path;
-    }
-
+    Path target_file_path = RetrieveValidFilePath(target_directory_system_path.string(), required_file_name, required_file_extension);
     auto source_file_hash = Hash(_source_file_path);
-    auto target_file_hash = Hash(_target_file_path);
+    auto target_file_hash = Hash(target_file_path);
 
     // Check if the file is an external one, if true just do a normal system move
     // TODO: ...
@@ -207,35 +211,98 @@ bool PacketFileManager::MoveFile(Path _source_file_path, Path _target_file_path)
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
     {
-        return false;
+        return std::nullopt;
     }
 
     // Duplicate the file
     auto duplicated_file = PacketFile::DuplicateFile(source_file);
     if (!duplicated_file)
     {
-        return false;
+        return std::nullopt;
     }
 
+    // Update the duplicated file path
+    duplicated_file->UpdateFilePath(target_file_path);
+
     // Save the file
-    if (!m_FileSaver->SaveFile(std::move(duplicated_file)))
+    if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Move))
     {
-        return false;
+        return std::nullopt;
     }
 
     // Delete the old file
     if (!DeleteFile(_source_file_path))
     {
-        return false;
+        return std::nullopt;
     }
 
     // Insert a new entry on the file plain indexer
-    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(_target_file_path);
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(target_file_path);
 
     // Delete the old entry from the file plain indexer
     static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RemoveFileIndexData(_source_file_path);
 
-    return true;
+    return target_file_path;
+}
+
+std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _new_file_name) const
+{
+    // Confirm that the source file is valid
+    if (!m_FileIndexer->IsFileIndexed(Hash(_source_file_path)))
+    {
+        return std::nullopt;
+    }
+
+    // Check if the filename is the same
+    if (_source_file_path.path().stem() == _new_file_name.path())
+    {
+        return _source_file_path;
+    }
+
+    // Determine the new path for this file
+    auto new_file_path = _source_file_path.path().parent_path().string() + "/" + _new_file_name.string() + _source_file_path.path().extension().string();
+
+    // Confirm that the requested name is available
+    if (m_FileIndexer->IsFileIndexed(Hash(new_file_path)))
+    {
+        return std::nullopt;
+    }
+
+    auto source_file_hash = Hash(_source_file_path);
+    auto target_file_hash = Hash(new_file_path);
+
+    // Check if the file is an external one, if true just do a normal system move
+    // TODO: ...
+
+    // Load the source file
+    auto source_file = m_FileLoader->LoadFile(source_file_hash);
+    if (!source_file)
+    {
+        return std::nullopt;
+    }
+
+    // Update the file path
+    source_file->UpdateFilePath(new_file_path);
+
+    // Save the file
+    if (!m_FileSaver->SaveFile(std::move(source_file), SaveOperation::Move))
+    {
+        return std::nullopt;
+    }
+
+    // Delete the old file
+    if (!DeleteFile(_source_file_path))
+    {
+        return std::nullopt;
+    }
+
+    // Insert a new entry on the file plain indexer
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(new_file_path);
+
+    // Delete the old entry from the file plain indexer
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RemoveFileIndexData(_source_file_path);
+
+    return new_file_path;
 }
 
 bool PacketFileManager::DeleteFile(Path _target_file_path) const
@@ -284,6 +351,52 @@ bool PacketFileManager::WriteFileDataIntoInternalFile(Path _file_path, std::vect
     file.close();
 
     return true;
+}
+
+std::tuple<std::filesystem::path, std::string, std::string> PacketFileManager::DetermineRequiredPaths(
+    Path _source_file_path,
+    Path _target_path) const
+{
+    // Determine if the target path contains a file or a directory
+    if (std::filesystem::is_directory(MergeSystemPathWithFilePath(m_PacketPath, _target_path)))
+    {
+        // Transform to system path and get all necessary info
+        auto source_file_system_path = std::filesystem::path(_source_file_path.string());
+        auto target_directory_system_path = std::filesystem::path(_target_path.string());
+        auto required_file_name = source_file_system_path.stem().string();
+        auto required_file_extension = source_file_system_path.extension().string();
+
+        return { target_directory_system_path, required_file_name, required_file_extension };
+    }
+    else
+    {
+        // Transform to system path and get all necessary info
+        auto source_file_system_path = std::filesystem::path(_source_file_path.string());
+        auto target_file_system_path = std::filesystem::path(_target_path.string());
+        auto target_directory_system_path = std::filesystem::path(_target_path.string()).parent_path();
+        auto required_file_name = target_file_system_path.stem().string();
+        auto required_file_extension = target_file_system_path.extension().string();
+
+        return { target_directory_system_path, required_file_name, required_file_extension };
+    }
+}
+
+Path PacketFileManager::RetrieveValidFilePath(const std::filesystem::path& _directory_path, const std::string& _file_name, const std::string& _file_extension) const
+{
+    // Update the target file path with a valid file path if the current one is already in use
+    Path target_file_path = _directory_path.string() + "/" + _file_name + _file_extension;
+    {
+        Path updated_target_path = target_file_path;
+        uint32_t counter = 1;
+        while (m_FileIndexer->IsFileIndexed(Hash(updated_target_path)))
+        {
+            std::string internal_path = _file_name + "_" + std::to_string(counter++);
+            updated_target_path = _directory_path.string() + "/" + internal_path + _file_extension;
+        }
+        target_file_path = updated_target_path;
+    }
+
+    return target_file_path;
 }
 
 PacketFileIndexer& PacketFileManager::GetFileIndexer() const

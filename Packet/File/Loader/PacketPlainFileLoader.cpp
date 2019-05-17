@@ -63,7 +63,7 @@ std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) con
 std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> PacketPlainFileLoader::LoadFileDataPart(Hash _file_hash, FilePart _file_part) const
 {
     // Transform the file hash into a valid path
-    std::filesystem::path file_path = _file_hash.GetPath().string();
+    std::filesystem::path file_path = MergeSystemPathWithFilePath(m_PacketPath, _file_hash.GetPath());
 
     // Check if the file exist and is valid
     if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
@@ -73,7 +73,7 @@ std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> PacketPlainFil
     }
 
     // Open the file and check if we are ok to proceed
-    std::ifstream file(_file_hash.GetPath().string(), std::ios::binary);
+    std::ifstream file(file_path, std::ios::binary);
     if (!file.is_open())
     {
         // Error opening the file!

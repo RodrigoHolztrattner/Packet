@@ -109,6 +109,9 @@ public: //////////
 
 protected:
 
+    // Update this file path
+    void UpdateFilePath(Path _new_path);
+
     // Clear this file links, this should be used with extreme caution since it could
     // potentially result in invalid files, use only if copying a file and after its
     // new path was already set

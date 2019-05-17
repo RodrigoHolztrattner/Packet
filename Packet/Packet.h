@@ -62,6 +62,8 @@ typedef __development__Packet::PacketResourceManager		     ResourceManager;
 typedef __development__Packet::PacketSystem					     System;
 
 typedef __development__Packet::Hash							     Hash;
+typedef __development__Packet::Path							     Path;
+typedef __development__Packet::FileType							 FileType;
 typedef __development__Packet::PacketResourceData			     ResourceData;
 typedef __development__Packet::PacketResourceBuildInfo		     ResourceBuildInfo;
 typedef __development__Packet::ThreadIndexRetrieveMethod	     ThreadIndexRetrieveMethod;

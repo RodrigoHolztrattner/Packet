@@ -48,7 +48,7 @@ bool PacketReferenceManager::RegisterDependenciesForFile(std::set<Path> _file_de
 
 bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) const
 {
-    auto file_references_opt = m_FileLoaderPtr->LoadFileDataPart(Hash(_file_path), FilePart::ReferencesData);
+    auto file_references_opt = m_FileLoaderPtr->LoadFileDataPart(Hash(_reference), FilePart::ReferencesData);
     if (!file_references_opt)
     {
         // This should never happen if we follow all procedures correctly
@@ -58,20 +58,18 @@ bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) 
     auto references = PacketFileReferences::CreateFromData(references_data);
 
     // Add the link
-    references.AddFileLink(_reference);
+    references.AddFileLink(_file_path);
 
     // Transform back to data
     references_data = PacketFileReferences::TransformIntoData(references);
 
     // Save this file reference data
-    m_FileSaverPtr->SaveFile(header, FilePart::ReferencesData, std::move(references_data));
-
-    return true;
+    return m_FileSaverPtr->SaveFile(header, FilePart::ReferencesData, std::move(references_data));
 }
 
 bool PacketReferenceManager::RemoveReferenceLink(Path _file_path, Path _reference) const
 {
-    auto file_references_opt = m_FileLoaderPtr->LoadFileDataPart(Hash(_file_path), FilePart::ReferencesData);
+    auto file_references_opt = m_FileLoaderPtr->LoadFileDataPart(Hash(_reference), FilePart::ReferencesData);
     if (!file_references_opt)
     {
         // This should never happen if we follow all procedures correctly
@@ -81,15 +79,13 @@ bool PacketReferenceManager::RemoveReferenceLink(Path _file_path, Path _referenc
     auto references = PacketFileReferences::CreateFromData(references_data);
 
     // Remove the link
-    references.RemoveFileLink(_reference);
+    references.RemoveFileLink(_file_path);
 
     // Transform back to data
     references_data = PacketFileReferences::TransformIntoData(references);
 
     // Save this file reference data
-    m_FileSaverPtr->SaveFile(header, FilePart::ReferencesData, std::move(references_data));
-
-    return true;
+    return m_FileSaverPtr->SaveFile(header, FilePart::ReferencesData, std::move(references_data));
 }
 
 bool PacketReferenceManager::RedirectLinks(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const
@@ -120,7 +116,7 @@ bool PacketReferenceManager::RedirectLinks(std::set<Path> _referenced_files_path
         }
 
         // Write the file data into a system file
-        if (!m_FileSaverPtr->SaveFile(std::move(updated_file)))
+        if (!m_FileSaverPtr->SaveFile(std::move(updated_file), SaveOperation::Overwrite))
         {
             // This should never happen if we follow all procedures correctly
             operation_result = false;

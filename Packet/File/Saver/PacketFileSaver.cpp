@@ -28,23 +28,13 @@ PacketFileSaver::~PacketFileSaver()
 {
 }
 
-bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file) const
+bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file, SaveOperation _operation) const
 {
     // Check if the file is valid
     if (!_file || _file->IsExternalFile())
     {
         return false;
     }
-
-    // Check if this file already exist
-    bool file_already_exist = m_FileIndexer.IsFileIndexed(Hash(_file->GetFileHeader().GetOriginalPath()));
-
-    // Check if we are copying the file, if the original and current filenames are different this is a copy
-    bool is_copying_file = CompareFilenames(_file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
-
-    // Check if we are moving the file, if its original path is different from the current one,
-    // moving a file has the same effect as renaming
-    bool is_moving_file = _file->GetFileHeader().GetOriginalPath() != _file->GetFileHeader().GetPath();
 
     /*
         - To duplicate or rename a file, we must: Duplicate original file + Save duplicated one + Delete old file
@@ -56,7 +46,7 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file) const
     // If the original file doesn't exist, we are creating a new one
     // Its dependencies must be set and no link is necessary, this is a new file and
     // no other file must depend on it now
-    if (file_already_exist == false)
+    if (_operation == SaveOperation::Create)
     {
         if (_file->GetFileReferences().GetFileLinks().size() != 0)
         {
@@ -69,7 +59,7 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file) const
     // We are copying a file, so we must set its dependencies and do not update its
     // links, also its link data must be empty, this is considered a new file but must
     // inherit its original file dependencies
-    else if (is_copying_file == true)
+    else if (_operation == SaveOperation::Copy)
     {
         if (_file->GetFileReferences().GetFileLinks().size() != 0)
         {
@@ -82,7 +72,7 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file) const
     // We are overwriting/editing the original file, so we must verify if its dependencies 
     // are different and update them (by doing this we must update their links), also for 
     // each link we have we must update the target resource to point to the new file path
-    else if (is_moving_file == false)
+    else if (_operation == SaveOperation::Overwrite)
     {
         // Get the dependency diff
         auto [delete_dependencies, add_dependencies] = m_ReferenceManager.RetrieveDependencyDiffFromOriginalFile(_file);
@@ -106,11 +96,19 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file) const
     // We are moving or renaming the original file, so no need to verify its dependencies
     // because they didn't change, but for each link we have we must update the target 
     // resource to point to the new file path
-    else if (is_moving_file == true)
+    else if (_operation == SaveOperation::Rename || _operation == SaveOperation::Move)
     {
         // For each link, open the target file and make it depend on this file new path, 
         // also substitute the occurrences inside the target file data
         m_ReferenceManager.RedirectLinks(_file->GetFileReferences().GetFileLinks(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
+    }
+    // If this is the result of modifying the reference we shouldn't need to do anything 
+    // with them, it could cause a infinite loop or make us access a file that is being
+    // wrote
+    else if (_operation == SaveOperation::ReferenceUpdate)
+    {
+        // Do nothing
+        // ...
     }
     else
     {
@@ -148,7 +146,7 @@ bool PacketFileSaver::SaveFile(const PacketFileHeader& _file_header, FilePart _f
     }
 
     // Save the file
-    return SaveFile(std::move(file));
+    return SaveFile(std::move(file), _file_part == FilePart::ReferencesData ? SaveOperation ::ReferenceUpdate : SaveOperation::Overwrite);
 }
 
 bool PacketFileSaver::SaveFileHelper(std::unique_ptr<PacketFile> _file) const

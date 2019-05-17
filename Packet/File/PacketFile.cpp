@@ -248,6 +248,11 @@ bool PacketFile::IsExternalFile() const
     return !m_IsInternalFile;
 }
 
+void PacketFile::UpdateFilePath(Path _new_path)
+{
+    m_FileHeader.SetPath(_new_path);
+}
+
 void PacketFile::ClearFileLinks()
 {
     // Clear the links and update the data

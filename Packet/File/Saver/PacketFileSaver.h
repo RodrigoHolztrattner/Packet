@@ -45,10 +45,11 @@ public: //////////
 public: //////////
 
     // Save a file into disk, optionally set to not update the references
-    bool SaveFile(std::unique_ptr<PacketFile> _file) const;
+    bool SaveFile(std::unique_ptr<PacketFile> _file, SaveOperation _operation) const;
 
     // Save a part of a file data, if the given part of the file requires expansion or
     // shrinking, the entire file will be loaded to perform the change
+    // This operation is considered a overwrite operation since the file already exist
     bool SaveFile(const PacketFileHeader& _file_header, FilePart _file_part, std::vector<uint8_t>&& _file_data_part) const;
 
 private:

@@ -107,6 +107,17 @@ enum class FileWriteFlagBits
     CreateIfInexistent
 };
 
+// The save operation that must be passed to the file saver when saving a file into disk
+enum class SaveOperation
+{
+    Create, 
+    Overwrite,
+    Move,
+    Copy,
+    Rename, 
+    ReferenceUpdate
+};
+
 typedef uint32_t FileImportFlags;
 typedef uint32_t FileWriteFlags;
 
@@ -298,7 +309,12 @@ struct FixedSizeString
         m_PathString.fill(0);
         std::copy(_str.begin(), _str.end(), m_PathString.data());
     }
-	
+    FixedSizeString(const std::filesystem::path& _path)
+    {
+        m_PathString.fill(0);
+        std::copy(_path.string().begin(), _path.string().end(), m_PathString.data());
+    }
+
     FixedSizeString& operator =(const char* _str)
 	{
         std::string temp(_str);
@@ -321,25 +337,51 @@ struct FixedSizeString
 		return m_PathString.data();
 	}
 
+    operator std::filesystem::path() const
+    {
+        return std::string(m_PathString.data());
+    }
+
+    std::filesystem::path path() const
+    {
+        return std::string(m_PathString.data());
+    }
+
     std::string string() const
     {
         return std::string(m_PathString.data());
     }
 
-	bool Compare(const char* _str) const
+    bool operator ==(const FixedSizeString& _other) const
+    {
+        return m_PathString == _other.m_PathString;
+    }
+
+	bool compare(const char* _str) const
 	{
 		return strcmp(_str, m_PathString) == 0;
 	}
 
-    const std::array<char, TotalSize>& GetRaw() const
+    const std::array<char, TotalSize>& get_raw() const
     {
         return m_PathString;
     }
 
-    std::array<char, TotalSize>& GetRaw()
+    std::array<char, TotalSize>& get_raw()
     {
         return m_PathString;
     }
+
+    bool operator<(const FixedSizeString& other) const
+    {
+        return m_PathString > other.m_PathString;
+    }
+
+    bool operator()(const FixedSizeString& a, const FixedSizeString& b)
+    {
+        return a.m_PathString < b.m_PathString;
+    }
+
 
 private:
 
@@ -367,11 +409,11 @@ typedef uint64_t FileDataSize;
 namespace ns {
     static void to_json(nlohmann::json& j, const Path& s) {
 
-        j = nlohmann::json{ {"Path", s.GetRaw()} };
+        j = nlohmann::json{ {"Path", s.get_raw()} };
     }
 
     static void from_json(const nlohmann::json& j, Path& s) {
-        j.at("Path").get_to(s.GetRaw());
+        j.at("Path").get_to(s.get_raw());
     }
 } // namespace ns
 

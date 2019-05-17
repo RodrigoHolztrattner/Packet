@@ -3,7 +3,7 @@
 #include <vector>
 #include <fstream>
 
-#include "..\Packet\Packet.h"
+#include "../Packet/Packet.h"
 #include "MyResource.h"
 #include "MyFactory.h"
 #include "HelperMethods.h"
