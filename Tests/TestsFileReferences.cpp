@@ -25,11 +25,13 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
         auto& file_indexer = packetSystem.GetFileManager().GetFileIndexer();
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
-        // Setup the names for all files that are going to be used on this test
-        auto import_file_path = "Sounds/imported_file.olo";
-        auto first_created_file_path = "Images/first_created_file.olo";
+        // Setup the names for all paths that are going to be used on this test
+        auto import_file_path         = "Sounds/imported_file.olo";
+        auto first_created_file_path  = "Images/first_created_file.olo";
         auto second_created_file_path = "Images/second_created_file.olo";
-        auto third_created_file_path = "Shaders/third_created_file.olo";
+        auto third_created_file_path  = "Shaders/third_created_file.olo";
+        auto move_file_dir            = "Shaders";
+        auto copied_file_dir          = "Images";
 
         // Import the initial file
         bool import_result = file_importer.ImportExternalFile(ExternalFilePath, import_file_path);
@@ -111,7 +113,7 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
                 REQUIRE(write_result == true);
             }
 
-            WHEN("Those files are loaded")
+            WHEN("These files are loaded")
             {
                 // Load the files
                 auto imported_file = file_loader.LoadFile(Packet::Hash(import_file_path));
@@ -148,22 +150,56 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
                     REQUIRE(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
                     REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
                     REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().find(second_created_file_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
-                }
+                } 
             }
 
-
-
-
-
-            /*
-            WHEN("A file is created/wrote")
+            AND_WHEN("One of those files is moved to another folder")
             {
-                THEN("The file must be located on the new path")
+                auto move_result = packetSystem.GetFileManager().MoveFile(second_created_file_path, move_file_dir);
+                REQUIRE(move_result);
+
+                auto move_path = move_result.value();
+
+                AND_WHEN("These files are loaded")
                 {
-                    REQUIRE(std::filesystem::exists(ResourceDirectory + "/" + target_path.path().string()) == true);
+                    // Load the files
+                    auto imported_file = file_loader.LoadFile(Packet::Hash(import_file_path));
+                    auto first_created_file = file_loader.LoadFile(Packet::Hash(first_created_file_path));
+                    auto second_created_file = file_loader.LoadFile(Packet::Hash(move_path));
+                    auto third_created_file = file_loader.LoadFile(Packet::Hash(third_created_file_path));
+                    REQUIRE(imported_file);
+                    REQUIRE(first_created_file);
+                    REQUIRE(second_created_file);
+                    REQUIRE(third_created_file);
+
+                    THEN("The involved references must be adjusted and pointing to the correct paths")
+                    {
+                        // Imported file
+                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().size() == 2);
+                        REQUIRE(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
+                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(move_path) != imported_file->GetFileReferences().GetFileLinks().end());
+
+                        // First created file
+                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().size() == 1);
+                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
+                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().find(move_path) != first_created_file->GetFileReferences().GetFileLinks().end());
+
+                        // Second created file
+                        REQUIRE(second_created_file->GetFileReferences().GetFileLinks().size() == 1);
+                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
+                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        REQUIRE(second_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != second_created_file->GetFileReferences().GetFileLinks().end());
+
+                        // Third created file
+                        REQUIRE(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
+                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().find(move_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
+                    }
                 }
             }
-            */
         }
     }
 }

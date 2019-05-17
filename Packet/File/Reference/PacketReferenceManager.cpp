@@ -88,7 +88,7 @@ bool PacketReferenceManager::RemoveReferenceLink(Path _file_path, Path _referenc
     return m_FileSaverPtr->SaveFile(header, FilePart::ReferencesData, std::move(references_data));
 }
 
-bool PacketReferenceManager::RedirectLinks(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const
+bool PacketReferenceManager::SubstituteDependencyReferences(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const
 {
     // TODO: Create a method that will only update the references instead having to load the entire file to save it again
 
@@ -125,6 +125,38 @@ bool PacketReferenceManager::RedirectLinks(std::set<Path> _referenced_files_path
     }
 
     return operation_result;
+}
+
+bool PacketReferenceManager::RedirectLinksFromDependencies(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const
+{
+    for (auto& reference : _referenced_files_paths)
+    {
+        auto file_references_opt = m_FileLoaderPtr->LoadFileDataPart(Hash(reference), FilePart::ReferencesData);
+        if (!file_references_opt)
+        {
+            // This should never happen if we follow all procedures correctly
+            return false;
+        }
+        auto [header, references_data] = file_references_opt.value();
+        auto references = PacketFileReferences::CreateFromData(references_data);
+
+        // Remove the link
+        references.RemoveFileLink(_old_path);
+
+        // Add the new one
+        references.AddFileLink(_new_path);
+
+        // Transform back to data
+        references_data = PacketFileReferences::TransformIntoData(references);
+
+        // Save this file reference data
+        if (!m_FileSaverPtr->SaveFile(header, FilePart::ReferencesData, std::move(references_data)))
+        {
+            return false;
+        }
+    }  
+
+    return true;
 }
 
 std::pair<std::set<Path>, std::set<Path>> PacketReferenceManager::RetrieveDependencyDiffFromOriginalFile(const std::unique_ptr<PacketFile>& _file) const
@@ -168,16 +200,17 @@ void PacketReferenceManager::SubstituteAllPathReferences(std::vector<uint8_t>& _
     // TODO: This can be easily parallelized
 
     // Get the lookup string and the new path string
-    std::string lookup_string   = _lookup_path.string();
-    std::string new_path_string = _new_path.string();
+    std::string lookup_string                = _lookup_path.string();
+    std::string new_path_string              = _new_path.string();
+    std::string new_path_string_substitution = std::string(_new_path.get_raw().data(), _new_path.get_raw().size());
 
     std::string string_data(_file_data.begin(), _file_data.end());
 
     std::string::size_type n = 0;
     while ((n = string_data.find(lookup_string, n)) != std::string::npos)
     {
-        string_data.replace(n, lookup_string.size(), new_path_string);
-        n += new_path_string.size();
+        string_data.replace(n, _lookup_path.available_size(), new_path_string_substitution);
+        n += _new_path.available_size();
     }
 
     _file_data = std::vector<uint8_t>(string_data.begin(), string_data.end());

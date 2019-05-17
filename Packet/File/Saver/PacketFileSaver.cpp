@@ -89,18 +89,23 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file, SaveOperation 
             m_ReferenceManager.AddReferenceLink(dependency, _file->GetFileHeader().GetPath());
         }
 
-        // For each link, open the target file and make it depend on this file new path, 
-        // also substitute the occurrences inside the target file data
-        m_ReferenceManager.RedirectLinks(_file->GetFileReferences().GetFileLinks(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
+        // For each file that depends on this, in other words, for each link that we have,
+        // substitute all occurrences of the old path on this file by the new one
+        m_ReferenceManager.SubstituteDependencyReferences(_file->GetFileReferences().GetFileLinks(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
     }
     // We are moving or renaming the original file, so no need to verify its dependencies
     // because they didn't change, but for each link we have we must update the target 
     // resource to point to the new file path
     else if (_operation == SaveOperation::Rename || _operation == SaveOperation::Move)
     {
-        // For each link, open the target file and make it depend on this file new path, 
-        // also substitute the occurrences inside the target file data
-        m_ReferenceManager.RedirectLinks(_file->GetFileReferences().GetFileLinks(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
+        // Make all linked files point to another reference path, so if the file pointer to the 
+        // _old_path variable changed its path to _new_path, it will alert all files that it
+        // depends on to update their links, making them reference this new path
+        m_ReferenceManager.RedirectLinksFromDependencies(_file->GetFileReferences().GetFileDependencies(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
+
+        // For each file that depends on this, in other words, for each link that we have,
+        // substitute all occurrences of the old path on this file by the new one
+        m_ReferenceManager.SubstituteDependencyReferences(_file->GetFileReferences().GetFileLinks(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
     }
     // If this is the result of modifying the reference we shouldn't need to do anything 
     // with them, it could cause a infinite loop or make us access a file that is being

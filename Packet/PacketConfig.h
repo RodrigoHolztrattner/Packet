@@ -352,6 +352,21 @@ struct FixedSizeString
         return std::string(m_PathString.data());
     }
 
+    std::string to_raw_data_string() const
+    {
+        return std::string(m_PathString.data(), m_PathString.size());
+    }
+
+    static size_t available_size()
+    {
+        return TotalSize;
+    }
+
+    size_t used_size() const
+    {
+        return string().size();
+    }
+
     bool operator ==(const FixedSizeString& _other) const
     {
         return m_PathString == _other.m_PathString;

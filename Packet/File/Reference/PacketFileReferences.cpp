@@ -85,12 +85,12 @@ nlohmann::json PacketFileReferences::SaveIntoJSON() const
 
     for (auto entry : m_FileLinks)
     {
-        files_that_depends_on_this.insert(entry.string());
+        files_that_depends_on_this.insert(entry.to_raw_data_string());
     }
 
     for (auto entry : m_FileDependencies)
     {
-        file_dependencies.insert(entry.string());
+        file_dependencies.insert(entry.to_raw_data_string());
     }
 
     return nlohmann::json{

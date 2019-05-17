@@ -52,8 +52,13 @@ public: //////////
     // Remove a reference link from a given file
     bool RemoveReferenceLink(Path _file_path, Path _reference) const;
 
-    // Make all referenced files point to another reference path
-    bool RedirectLinks(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const;
+    // Update a file dependencies, modifying these dependencies to reference a different path
+    bool SubstituteDependencyReferences(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const;
+
+    // Make all linked files point to another reference path, so if the file pointer to the 
+    // _old_path variable changed its path to _new_path, it will alert all files that it
+    // depends on to update their links, making them reference this new path
+    bool RedirectLinksFromDependencies(std::set<Path> _referenced_files_paths, Path _old_path, Path _new_path) const;
 
     // This method will load the original file, retrieve its dependencies and get the difference
     // between the current file, returning 2 maps, the first is the dependencies that must be
