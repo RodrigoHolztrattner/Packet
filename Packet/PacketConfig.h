@@ -372,6 +372,11 @@ struct FixedSizeString
         return m_PathString == _other.m_PathString;
     }
 
+    bool operator !=(const FixedSizeString& _other) const
+    {
+        return m_PathString != _other.m_PathString;
+    }
+
 	bool compare(const char* _str) const
 	{
 		return strcmp(_str, m_PathString) == 0;

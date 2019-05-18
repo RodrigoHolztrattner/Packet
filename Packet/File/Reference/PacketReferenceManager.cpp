@@ -48,6 +48,11 @@ bool PacketReferenceManager::RegisterDependenciesForFile(std::set<Path> _file_de
 
 bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) const
 {
+    return AddReferenceLink(std::set<Path>({ _file_path }), _reference);
+}
+
+bool PacketReferenceManager::AddReferenceLink(std::set<Path> _file_paths, Path _reference) const
+{
     auto file_references_opt = m_FileLoaderPtr->LoadFileDataPart(Hash(_reference), FilePart::ReferencesData);
     if (!file_references_opt)
     {
@@ -58,7 +63,10 @@ bool PacketReferenceManager::AddReferenceLink(Path _file_path, Path _reference) 
     auto references = PacketFileReferences::CreateFromData(references_data);
 
     // Add the link
-    references.AddFileLink(_file_path);
+    for (auto& link : _file_paths)
+    {
+        references.AddFileLink(link);
+    }
 
     // Transform back to data
     references_data = PacketFileReferences::TransformIntoData(references);

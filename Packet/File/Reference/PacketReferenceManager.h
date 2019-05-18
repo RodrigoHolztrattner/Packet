@@ -47,7 +47,8 @@ public: //////////
     bool RegisterDependenciesForFile(std::set<Path> _file_dependencies, Path _file_path) const;
 
     // Add a reference link to a given file
-    bool AddReferenceLink(Path _file_path, Path _reference) const;
+    bool AddReferenceLink(Path _file_path, Path _reference)            const;
+    bool AddReferenceLink(std::set<Path> _file_paths, Path _reference) const;
 
     // Remove a reference link from a given file
     bool RemoveReferenceLink(Path _file_path, Path _reference) const;

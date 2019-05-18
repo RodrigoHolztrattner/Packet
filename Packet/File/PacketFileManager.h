@@ -50,6 +50,15 @@ public: //////////
     // Register a new converter
     void RegisterFileConverter(std::string _file_extension, std::unique_ptr<PacketFileConverter> _file_converter);
 
+    // Return a reference to our objects
+    PacketFileIndexer& GetFileIndexer()         const;
+    const PacketFileLoader& GetFileLoader()     const;
+    const PacketFileImporter& GetFileImporter() const;
+
+/////////////////////////////
+public: // FILE OPERATIONS //
+/////////////////////////////
+
     // Write to a file, if the file doesn't exist it will be created if specified by the FileWriteFlags
     bool WriteFile(
         Path                   _target_path,
@@ -72,15 +81,17 @@ public: //////////
     // a path, return the renamed file path
     std::optional<Path> RenameFile(Path _source_file_path, Path _new_file_name) const;
 
+    // Redirect all dependency links from one file to another, in other words this will
+    // make any file that depends on the first one to depend on the second instead, it 
+    // will change all references from the affected files
+    bool RedirectFileDependencies(Path _source_file_path, Path _target_file_path);
+
     // Delete a file
     bool DeleteFile(Path _target_file_path) const;
 
-    // Return a reference to our objects
-    PacketFileIndexer& GetFileIndexer()         const;
-    const PacketFileLoader& GetFileLoader()     const;
-    const PacketFileImporter& GetFileImporter() const;
-
-protected:
+///////////////////////////////
+protected: // HELPER METHODS //
+///////////////////////////////
 
     // Delete a file, optionally NOT removing its current dependency links, internal use only
     bool DeleteFile(Path _target_file_path, bool _remove_dependency_links) const;

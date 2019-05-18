@@ -305,6 +305,66 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
     return new_file_path;
 }
 
+bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _target_file_path)
+{
+    // Confirm that the source and target files are valid
+    if (!m_FileIndexer->IsFileIndexed(Hash(_source_file_path)) || !m_FileIndexer->IsFileIndexed(Hash(_target_file_path)))
+    {
+        return false;
+    }
+
+    // Load the source file
+    auto source_file = m_FileLoader->LoadFile(Hash(_source_file_path));
+    if (!source_file)
+    {
+        return false;
+    }
+
+    // Load the target file
+    auto target_file = m_FileLoader->LoadFile(Hash(_target_file_path));
+    if (!target_file)
+    {
+        return false;
+    }
+
+    // Check if both files are compatible
+    if (source_file->GetFileHeader().GetFileType() != target_file->GetFileHeader().GetFileType())
+    {
+        return false;
+    }
+
+    // TODO: Verify recursive/infinite dependency
+    // ...
+
+    // Make the redirection
+    {
+        // For each file that used to depend on the source one, modify all references on it to point to
+        // the target one
+        if (!m_FileReferenceManager->SubstituteDependencyReferences(source_file->GetFileReferences().GetFileLinks(), source_file->GetFileHeader().GetPath(), _target_file_path))
+        {
+            return false;
+        }
+
+        // Now the target resource must acknowledge all new resources that depends on it, lets add all the 
+        // source file links to it
+        if (!m_FileReferenceManager->AddReferenceLink(source_file->GetFileReferences().GetFileLinks(), _target_file_path))
+        {
+            return false;
+        }
+
+        // Clear the file links from the source file since it doesn't have them anymore
+        source_file->ClearFileLinks();
+    }
+
+    // Save the file
+    if (!m_FileSaver->SaveFile(std::move(source_file), SaveOperation::Overwrite))
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool PacketFileManager::DeleteFile(Path _target_file_path) const
 {
     return DeleteFile(_target_file_path, true);
