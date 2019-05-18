@@ -82,6 +82,9 @@ public: //////////
 
 protected:
 
+    // Delete a file, optionally NOT removing its current dependency links, internal use only
+    bool DeleteFile(Path _target_file_path, bool _remove_dependency_links) const;
+
     // Write a file data into an internal file, this doesn't check if the file should be overwritten
     bool WriteFileDataIntoInternalFile(Path _file_path, std::vector<uint8_t>&& _file_data) const;
 

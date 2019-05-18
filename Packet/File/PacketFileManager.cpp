@@ -231,7 +231,7 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
     }
 
     // Delete the old file
-    if (!DeleteFile(_source_file_path))
+    if (!DeleteFile(_source_file_path, false))
     {
         return std::nullopt;
     }
@@ -291,7 +291,7 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
     }
 
     // Delete the old file
-    if (!DeleteFile(_source_file_path))
+    if (!DeleteFile(_source_file_path, false))
     {
         return std::nullopt;
     }
@@ -307,6 +307,11 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
 
 bool PacketFileManager::DeleteFile(Path _target_file_path) const
 {
+    return DeleteFile(_target_file_path, true);
+}
+
+bool PacketFileManager::DeleteFile(Path _target_file_path, bool _remove_dependency_links) const
+{
     // Confirm that the source file is valid
     if (!m_FileIndexer->IsFileIndexed(Hash(_target_file_path)))
     {
@@ -318,6 +323,25 @@ bool PacketFileManager::DeleteFile(Path _target_file_path) const
     if (!std::filesystem::exists(file_sysytem_path))
     {
         return false;
+    }
+
+    // If this file dependency links must be removed
+    if (_remove_dependency_links)
+    {
+        // Load the file references
+        auto file_references_data_opt = m_FileLoader->LoadFileDataPart(Hash(_target_file_path), FilePart::ReferencesData);
+        if (!file_references_data_opt)
+        {
+            return false;
+        }
+        auto [header, file_references_data] = file_references_data_opt.value();
+        auto file_references = PacketFileReferences::CreateFromData(file_references_data);
+
+        // Remove all dependency links that this file had on other files
+        for (auto& dependency : file_references.GetFileDependencies())
+        {
+            m_FileReferenceManager->RemoveReferenceLink(header.GetPath(), dependency);
+        }
     }
 
     // Delete the file

@@ -258,6 +258,15 @@ void PacketFile::ClearFileLinks()
     // Clear the links and update the data
     m_ParsedFileReferences.ClearFileLinks();
     m_ReferencesData = PacketFileReferences::TransformIntoData(m_ParsedFileReferences);
+
+    // Update the header data sizes since this modification changed it
+    m_FileHeader.UpdateDataSizes(
+        m_FileIconData.size(),
+        m_PropertiesData.size(),
+        m_OriginalData.size(),
+        m_IntermediateData.size(),
+        m_FinalData.size(),
+        m_ReferencesData.size());
 }
 
 bool PacketFile::UpdateFilePart(FilePart _file_part, std::vector<uint8_t>&& _data)

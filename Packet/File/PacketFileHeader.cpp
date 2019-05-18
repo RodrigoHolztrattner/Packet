@@ -98,13 +98,13 @@ void PacketFileHeader::UpdateDataSizes(
     FileDataSize _final_size,
     FileDataSize _references_size)
 {
-    m_HeaderData.icon_position = sizeof(FileHeaderData);
-    m_HeaderData.properties_position = m_HeaderData.icon_position + _icon_size;
-    m_HeaderData.original_data_position = m_HeaderData.properties_position + _properties_size;
+    m_HeaderData.icon_position              = sizeof(FileHeaderData);
+    m_HeaderData.properties_position        = m_HeaderData.icon_position + _icon_size;
+    m_HeaderData.original_data_position     = m_HeaderData.properties_position + _properties_size;
     m_HeaderData.intermediate_data_position = m_HeaderData.original_data_position + _original_size;
-    m_HeaderData.final_data_position = m_HeaderData.intermediate_data_position + _intermediate_size;
-    m_HeaderData.references_data_position = m_HeaderData.final_data_position + _final_size;
-    m_HeaderData.total_size = m_HeaderData.references_data_position + _references_size;
+    m_HeaderData.final_data_position        = m_HeaderData.intermediate_data_position + _intermediate_size;
+    m_HeaderData.references_data_position   = m_HeaderData.final_data_position + _final_size;
+    m_HeaderData.total_size                 = m_HeaderData.references_data_position + _references_size;
 }
 
 std::vector<uint8_t> PacketFileHeader::GetRawData() const
