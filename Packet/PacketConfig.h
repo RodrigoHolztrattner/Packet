@@ -118,6 +118,14 @@ enum class SaveOperation
     ReferenceUpdate
 };
 
+// Our supported backup flags for the Plain operation mode
+enum BackupFlags
+{
+    None            = 0, 
+    BeforeOperation = 1 << 0, 
+    OnStartup       = 1 << 1
+};
+
 typedef uint32_t FileImportFlags;
 typedef uint32_t FileWriteFlags;
 

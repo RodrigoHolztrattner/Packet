@@ -101,6 +101,9 @@ public: // VIRTUAL METHODS //
     // Return a file properties
     virtual nlohmann::json GetFileProperties(HashPrimitive _file_hash) const = 0;
 
+    // Return the paths for all indexed files
+    virtual std::set<Path> GetAllIndexedFiles() const = 0;
+
 ///////////////
 // VARIABLES //
 protected: ////

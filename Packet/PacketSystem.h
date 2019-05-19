@@ -40,9 +40,18 @@ public: //////////
 // MAIN METHODS //
 public: //////////
 
-	// Initialize this object
-	bool Initialize(OperationMode _operation_mode, std::filesystem::path _resource_path, std::unique_ptr<PacketLogger>&& _logger = std::make_unique<PacketLogger>());
-    
+	// Initialize this object (usually for condensed mode)
+	bool Initialize(OperationMode                   _operation_mode, 
+                    std::filesystem::path           _resource_path, 
+                    std::unique_ptr<PacketLogger>&& _logger = std::make_unique<PacketLogger>());
+
+    // Initialize this object (usually for plain mode)
+    bool Initialize(OperationMode                   _operation_mode,
+                    BackupFlags                     _backup_flags,
+                    std::filesystem::path           _resource_path,
+                    std::filesystem::path           _backup_path,
+                    std::unique_ptr<PacketLogger>&& _logger = std::make_unique<PacketLogger>());
+
     // Return the resource (packet) path
     std::filesystem::path GetResourcePath() const;
 
@@ -54,9 +63,11 @@ public: //////////
 // VARIABLES //
 private: //////
 
-    // The resource path and operation mode
+    // The resource path, backup path, operation mode and backup flags
     std::filesystem::path m_ResourcePath;
+    std::filesystem::path m_BackupPath;
     OperationMode m_OperationMode = OperationMode::Plain;
+    BackupFlags m_BackupFlags     = BackupFlags::None;
 
 	// Our internal objects
     std::unique_ptr<PacketFileManager>      m_FileManager;

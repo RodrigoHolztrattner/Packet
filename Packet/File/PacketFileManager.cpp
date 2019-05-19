@@ -11,6 +11,7 @@
 #include "Converter/PacketFileConverter.h"
 #include "Converter/PacketFileDefaultConverter.h"
 #include "Importer/PacketFileImporter.h"
+#include "Backup/PacketBackupManager.h"
 #include "Reference/PacketReferenceManager.h"
 #include "Reference/PacketFileReferences.h"
 #include "PacketFileHeader.h"
@@ -21,9 +22,14 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketFileManager::PacketFileManager(OperationMode _operation_mode, std::wstring _resource_path) :
+PacketFileManager::PacketFileManager(OperationMode         _operation_mode,
+                                     BackupFlags           _backup_flags,
+                                     std::filesystem::path _packet_path,
+                                     std::filesystem::path _backup_path) :
     m_OperationMode(_operation_mode), 
-    m_PacketPath(_resource_path)
+    m_PacketPath(_packet_path), 
+    m_BackupPath(_backup_path), 
+    m_BackupFlags(_backup_flags)
 {
 	// Set the initial data
 	// ...
@@ -39,11 +45,12 @@ bool PacketFileManager::Initialize()
 
     // Create our file management objects
     // TODO: This need some urgently organization!
+    m_BackupManager        = std::make_unique<PacketBackupManager>(m_PacketPath, m_BackupPath);
     m_DefaultConverter     = std::make_unique<PacketFileDefaultConverter>();
     m_FileIndexer          = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileIndexer>(m_PacketPath) : std::make_unique<PacketPlainFileIndexer>(m_PacketPath);
     m_FileLoader           = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileLoader>(*m_FileIndexer, m_PacketPath) : std::make_unique<PacketPlainFileLoader>(*m_FileIndexer, m_PacketPath); // PacketCondensedFileLoader
     m_FileReferenceManager = std::make_unique<PacketReferenceManager>();
-    m_FileSaver            = std::make_unique<PacketFileSaver>(*m_FileIndexer, *m_FileReferenceManager, *m_FileLoader, m_PacketPath);
+    m_FileSaver            = std::make_unique<PacketFileSaver>(*m_FileIndexer, *m_FileReferenceManager, *m_FileLoader, *m_BackupManager, m_PacketPath, m_BackupFlags & BackupFlags::BeforeOperation);
     m_FileImporter         = std::make_unique<PacketFileImporter>(
         *m_FileIndexer,
         *m_FileLoader,
@@ -60,6 +67,17 @@ bool PacketFileManager::Initialize()
     if (!m_FileIndexer->Initialize())
     {
         return false;
+    }
+
+    // Check if we should perform a backup of all indexed files
+    if (m_OperationMode == OperationMode::Plain && m_BackupFlags & BackupFlags::OnStartup)
+    {
+        // Retrieve all indexed files and backup each one
+        auto all_indexed_file_paths = m_FileIndexer->GetAllIndexedFiles();
+        for (auto& indexed_file_path : all_indexed_file_paths)
+        {
+            m_BackupManager->BackupFile(indexed_file_path);
+        }
     }
 
     return true;
@@ -82,6 +100,15 @@ bool PacketFileManager::WriteFile(
     std::set<Path>&&       _file_dependencies,
     FileWriteFlags         _write_flags) const
 {
+    // Check if this operation is supported on the current mode
+    if (m_OperationMode == OperationMode::Condensed)
+    {
+        return false;
+    }
+
+    // Clear the affected files for the file saver before we start an operation
+    m_FileSaver->ClearAffectedFiles();
+
     // Check if we already have this file imported
     bool file_already_indexed = m_FileIndexer->IsFileIndexed(Hash(_target_path));
     if (file_already_indexed && !(_write_flags & static_cast<FileWriteFlags>(FileWriteFlagBits::CreateIfInexistent)))
@@ -131,6 +158,15 @@ bool PacketFileManager::WriteFile(
 
 std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _target_file_dir) const
 {
+    // Check if this operation is supported on the current mode
+    if (m_OperationMode == OperationMode::Condensed)
+    {
+        return std::nullopt;
+    }
+
+    // Clear the affected files for the file saver before we start an operation
+    m_FileSaver->ClearAffectedFiles();
+
     // Confirm that the source file is valid
     if (!m_FileIndexer->IsFileIndexed(Hash(_source_file_path)))
     {
@@ -153,6 +189,7 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
     {
+        SignalOperationError("CopyFile", "Failed to load source file");
         return std::nullopt;
     }
 
@@ -160,6 +197,7 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
     auto duplicated_file = PacketFile::DuplicateFile(source_file);
     if (!duplicated_file)
     {
+        SignalOperationError("CopyFile", "Failed to duplicated source file");
         return std::nullopt;
     }
 
@@ -172,6 +210,7 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
     // Save the file
     if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Copy))
     {
+        SignalOperationError("CopyFile", "Failed to save copied file");
         return std::nullopt;
     }
 
@@ -183,6 +222,15 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
 
 std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _target_file_dir) const
 {
+    // Check if this operation is supported on the current mode
+    if (m_OperationMode == OperationMode::Condensed)
+    {
+        return std::nullopt;
+    }
+
+    // Clear the affected files for the file saver before we start an operation
+    m_FileSaver->ClearAffectedFiles();
+
     // Confirm that the source file is valid
     if (!m_FileIndexer->IsFileIndexed(Hash(_source_file_path)))
     {
@@ -211,6 +259,7 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
     {
+        SignalOperationError("MoveFile", "Failed to load source file");
         return std::nullopt;
     }
 
@@ -218,6 +267,7 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
     auto duplicated_file = PacketFile::DuplicateFile(source_file);
     if (!duplicated_file)
     {
+        SignalOperationError("MoveFile", "Failed to duplicate source file");
         return std::nullopt;
     }
 
@@ -227,12 +277,14 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
     // Save the file
     if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Move))
     {
+        SignalOperationError("MoveFile", "Failed to save duplicated file");
         return std::nullopt;
     }
 
     // Delete the old file
     if (!DeleteFile(_source_file_path, false))
     {
+        SignalOperationError("MoveFile", "Failed to delete old file");
         return std::nullopt;
     }
 
@@ -247,6 +299,15 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
 
 std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _new_file_name) const
 {
+    // Check if this operation is supported on the current mode
+    if (m_OperationMode == OperationMode::Condensed)
+    {
+        return std::nullopt;
+    }
+
+    // Clear the affected files for the file saver before we start an operation
+    m_FileSaver->ClearAffectedFiles();
+
     // Confirm that the source file is valid
     if (!m_FileIndexer->IsFileIndexed(Hash(_source_file_path)))
     {
@@ -278,6 +339,7 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
     {
+        SignalOperationError("RenameFile", "Failed to load source file");
         return std::nullopt;
     }
 
@@ -287,12 +349,14 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
     // Save the file
     if (!m_FileSaver->SaveFile(std::move(source_file), SaveOperation::Move))
     {
+        SignalOperationError("RenameFile", "Failed to save source file");
         return std::nullopt;
     }
 
     // Delete the old file
     if (!DeleteFile(_source_file_path, false))
     {
+        SignalOperationError("RenameFile", "Failed to delete old file");
         return std::nullopt;
     }
 
@@ -307,6 +371,15 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
 
 bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _target_file_path)
 {
+    // Check if this operation is supported on the current mode
+    if (m_OperationMode == OperationMode::Condensed)
+    {
+        return false;
+    }
+
+    // Clear the affected files for the file saver before we start an operation
+    m_FileSaver->ClearAffectedFiles();
+
     // Confirm that the source and target files are valid
     if (!m_FileIndexer->IsFileIndexed(Hash(_source_file_path)) || !m_FileIndexer->IsFileIndexed(Hash(_target_file_path)))
     {
@@ -317,6 +390,7 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
     auto source_file = m_FileLoader->LoadFile(Hash(_source_file_path));
     if (!source_file)
     {
+        SignalOperationError("RedirectFileDependencies", "Failed to load source file");
         return false;
     }
 
@@ -324,12 +398,14 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
     auto target_file = m_FileLoader->LoadFile(Hash(_target_file_path));
     if (!target_file)
     {
+        SignalOperationError("RedirectFileDependencies", "Failed to load target file");
         return false;
     }
 
     // Check if both files are compatible
     if (source_file->GetFileHeader().GetFileType() != target_file->GetFileHeader().GetFileType())
     {
+        SignalOperationError("RedirectFileDependencies", "Source and target files are incompatible");
         return false;
     }
 
@@ -342,6 +418,7 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
         // the target one
         if (!m_FileReferenceManager->SubstituteDependencyReferences(source_file->GetFileReferences().GetFileLinks(), source_file->GetFileHeader().GetPath(), _target_file_path))
         {
+            SignalOperationError("RedirectFileDependencies", "Failed to substitute dependency references");
             return false;
         }
 
@@ -349,6 +426,7 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
         // source file links to it
         if (!m_FileReferenceManager->AddReferenceLink(source_file->GetFileReferences().GetFileLinks(), _target_file_path))
         {
+            SignalOperationError("RedirectFileDependencies", "Failed to add reference links");
             return false;
         }
 
@@ -359,6 +437,7 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
     // Save the file
     if (!m_FileSaver->SaveFile(std::move(source_file), SaveOperation::Overwrite))
     {
+        SignalOperationError("RedirectFileDependencies", "Failed to save source file");
         return false;
     }
 
@@ -367,6 +446,15 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
 
 bool PacketFileManager::DeleteFile(Path _target_file_path) const
 {
+    // Check if this operation is supported on the current mode
+    if (m_OperationMode == OperationMode::Condensed)
+    {
+        return false;
+    }
+
+    // Clear the affected files for the file saver before we start an operation
+    m_FileSaver->ClearAffectedFiles();
+
     return DeleteFile(_target_file_path, true);
 }
 
@@ -376,6 +464,12 @@ bool PacketFileManager::DeleteFile(Path _target_file_path, bool _remove_dependen
     if (!m_FileIndexer->IsFileIndexed(Hash(_target_file_path)))
     {
         return false;
+    }
+
+    // If enabled, perform a backup of this file
+    if (m_BackupFlags & BackupFlags::BeforeOperation)
+    {
+        m_BackupManager->BackupFile(_target_file_path);
     }
 
     // Determine the system path this file is located
@@ -481,6 +575,19 @@ Path PacketFileManager::RetrieveValidFilePath(const std::filesystem::path& _dire
     }
 
     return target_file_path;
+}
+
+void PacketFileManager::SignalOperationError(std::string _operation, std::string _error_message) const
+{
+    // Check if any file was affected
+    auto affected_files = m_FileSaver->GetAffectedFiles();
+    bool files_were_affected = affected_files.size() != 0;
+
+    // If the callback was set, call it
+    if (m_OperationFailureCallback)
+    {
+        m_OperationFailureCallback(_operation, _error_message, *m_BackupManager, affected_files);
+    }
 }
 
 PacketFileIndexer& PacketFileManager::GetFileIndexer() const

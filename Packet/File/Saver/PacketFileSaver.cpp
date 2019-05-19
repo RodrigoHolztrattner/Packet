@@ -5,6 +5,7 @@
 #include "../Indexer/PacketPlainFileIndexer.h"
 #include "../Reference/PacketReferenceManager.h"
 #include "../Loader/PacketFileLoader.h"
+#include "../Backup/PacketBackupManager.h"
 #include "../PacketFile.h"
 #include "../PacketFileHeader.h"
 
@@ -13,14 +14,18 @@
 ///////////////
 PacketUsingDevelopmentNamespace(Packet)
 
-PacketFileSaver::PacketFileSaver(const PacketFileIndexer& _file_indexer, 
+PacketFileSaver::PacketFileSaver(const PacketFileIndexer& _file_indexer,
                                  const PacketReferenceManager& _reference_manager,
-                                 const PacketFileLoader& _file_loader, 
-                                 std::filesystem::path _packet_path) :
+                                 const PacketFileLoader& _file_loader,
+                                 const PacketBackupManager& _backup_manager,
+                                 std::filesystem::path _packet_path, 
+                                 bool _backup_before_saving) :
     m_PacketPath(_packet_path), 
     m_ReferenceManager(_reference_manager), 
     m_FileLoader(_file_loader), 
-    m_FileIndexer(_file_indexer)
+    m_FileIndexer(_file_indexer), 
+    m_BackupManager(_backup_manager), 
+    m_BackupBeforeSaving(_backup_before_saving)
 {
 }
 
@@ -204,6 +209,17 @@ bool PacketFileSaver::SaveFileHelper(std::unique_ptr<PacketFile> _file) const
     // Determine the system path this file must be saved on
     auto file_output_path = MergeSystemPathWithFilePath(m_PacketPath, file_path);
 
+    // Mark this file as an affected file in case we need to retrieve all files that were modified in
+    // some way by an operation that failed
+    m_AffectedFiles.insert(file_path);
+
+    // Perform a backup if it was set to be done before any saving
+    if (m_BackupBeforeSaving)
+    {
+        // TODO: Add a log if this fail but doesn't return false, the backup shouldn't block an operation
+        m_BackupManager.BackupFile(file_path);
+    }
+    
     // Open the file and check if we are ok to proceed
     std::ofstream system_file(file_output_path, std::ios::binary);
     if (!system_file.is_open())
@@ -219,4 +235,14 @@ bool PacketFileSaver::SaveFileHelper(std::unique_ptr<PacketFile> _file) const
     system_file.close();
 
     return true;
+}
+
+void PacketFileSaver::ClearAffectedFiles()
+{
+    m_AffectedFiles.clear();
+}
+
+const std::set<Path> PacketFileSaver::GetAffectedFiles() const
+{
+    return m_AffectedFiles;
 }

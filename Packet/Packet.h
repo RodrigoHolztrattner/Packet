@@ -42,6 +42,7 @@ static const uint32_t CondensedMinorVersion = __development__Packet::CondensedMi
 static const uint32_t CondensedMajorVersion = __development__Packet::CondensedMajorVersion;
 
 typedef __development__Packet::OperationMode				     OperationMode;
+typedef __development__Packet::BackupFlags				         BackupFlags;
 typedef __development__Packet::FilePart				             FilePart;
 typedef __development__Packet::FileImportFlagBits				 FileImportFlagBits;
 typedef __development__Packet::FileWriteFlagBits				 FileWriteFlagBits;

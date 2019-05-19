@@ -99,6 +99,9 @@ public: //////////
     // Return a file properties
     nlohmann::json GetFileProperties(HashPrimitive _file_hash) const final;
 
+    // Return the paths for all indexed files
+    std::set<Path> GetAllIndexedFiles() const final;
+
 protected:
 
     // Insert a resource index info into our map

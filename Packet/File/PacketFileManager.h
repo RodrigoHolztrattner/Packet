@@ -26,6 +26,7 @@ class PacketFileSaver;
 class PacketFileConverter;
 class PacketFileDefaultConverter;
 class PacketFileImporter;
+class PacketBackupManager;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: PacketFileManager
@@ -37,8 +38,11 @@ class PacketFileManager
 public: //////////
 
 	// Constructor / destructor
-	PacketFileManager(OperationMode _operation_mode, std::wstring _resource_path);
-	~PacketFileManager();
+    PacketFileManager(OperationMode _operation_mode,
+                      BackupFlags _backup_flags,
+                      std::filesystem::path _packet_path, 
+                      std::filesystem::path _backup_path);
+    ~PacketFileManager();
 
 //////////////////
 // MAIN METHODS //
@@ -99,6 +103,9 @@ protected: // HELPER METHODS //
     // Write a file data into an internal file, this doesn't check if the file should be overwritten
     bool WriteFileDataIntoInternalFile(Path _file_path, std::vector<uint8_t>&& _file_data) const;
 
+    // Signal an operation error
+    void SignalOperationError(std::string _operation, std::string _error_message) const;
+
 private:
 
     // This method should be used when its necessary to extract path information about a file that is
@@ -118,11 +125,13 @@ private:
 // VARIABLES //
 private: //////
 
-    // Our operation mode
+    // Our operation mode and backup flags
     OperationMode m_OperationMode;
+    BackupFlags   m_BackupFlags;
 
-    // Our packet path
-    std::wstring m_PacketPath;
+    // Our packet path and our backup path
+    std::filesystem::path m_PacketPath;
+    std::filesystem::path m_BackupPath;
 
     // Our file management objects
     std::unique_ptr<PacketFileIndexer>      m_FileIndexer;
@@ -130,12 +139,17 @@ private: //////
     std::unique_ptr<PacketFileSaver>        m_FileSaver;
     std::unique_ptr<PacketFileImporter>     m_FileImporter;
     std::unique_ptr<PacketReferenceManager> m_FileReferenceManager;
+    std::unique_ptr<PacketBackupManager>    m_BackupManager;
 
     // The default converter
     std::unique_ptr<PacketFileDefaultConverter> m_DefaultConverter;
 
     // Our map with all registered converters with their extensions
     std::map<std::string, std::unique_ptr<PacketFileConverter>> m_Converters;
+
+    // Our callbacks
+    std::function<void(std::string, std::string, const PacketBackupManager& _backup_manager, std::set<Path>)> m_OperationFailureCallback;
+    std::function<void(Path, std::set<Path>)>                                                                 m_FileMissingDependenciesCallback;
 };
 
 // Packet data explorer

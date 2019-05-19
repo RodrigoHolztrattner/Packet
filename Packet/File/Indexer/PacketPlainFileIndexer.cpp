@@ -101,6 +101,18 @@ nlohmann::json PacketPlainFileIndexer::GetFileProperties(HashPrimitive _file_has
     return nlohmann::json();
 }
 
+std::set<Path> PacketPlainFileIndexer::GetAllIndexedFiles() const
+{
+    std::set<Path> indexed_paths;
+
+    for (auto& indexed_data : m_IndexDatas)
+    {
+        indexed_paths.insert(indexed_data.second.file_load_information.file_path);
+    }
+
+    return indexed_paths;
+}
+
 void PacketPlainFileIndexer::BuildFilesystemView(std::filesystem::path _resource_path)
 {
     // This method will recursively construct the packet tree
