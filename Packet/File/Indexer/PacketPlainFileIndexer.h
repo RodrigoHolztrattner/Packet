@@ -62,6 +62,9 @@ class PacketPlainFileIndexer : public PacketFileIndexer
         // The file properties json
         nlohmann::json file_properties;
 
+        // If this file is an external file
+        bool file_is_external;
+
         // The file load information
         FileLoadInformation file_load_information;
     };
@@ -98,6 +101,9 @@ public: //////////
 
     // Return a file properties
     nlohmann::json GetFileProperties(HashPrimitive _file_hash) const final;
+
+    // Return if a file is an external file
+    bool IsFileExternal(HashPrimitive _file_hash) const final;
 
     // Return the paths for all indexed files
     std::set<Path> GetAllIndexedFiles() const final;

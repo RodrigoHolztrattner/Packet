@@ -121,9 +121,10 @@ enum class SaveOperation
 // Our supported backup flags for the Plain operation mode
 enum BackupFlags
 {
-    None            = 0, 
-    BeforeOperation = 1 << 0, 
-    OnStartup       = 1 << 1
+    None                                   = 0, 
+    BackupBeforeOperation                  = 1 << 0, 
+    BackupOnStartup                        = 1 << 1, 
+    AutomaticallyRestoreOnOperationFailure = 1 << 2
 };
 
 typedef uint32_t FileImportFlags;

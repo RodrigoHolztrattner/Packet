@@ -50,7 +50,7 @@ bool PacketFileManager::Initialize()
     m_FileIndexer          = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileIndexer>(m_PacketPath) : std::make_unique<PacketPlainFileIndexer>(m_PacketPath);
     m_FileLoader           = m_OperationMode == OperationMode::Condensed ? std::make_unique<PacketPlainFileLoader>(*m_FileIndexer, m_PacketPath) : std::make_unique<PacketPlainFileLoader>(*m_FileIndexer, m_PacketPath); // PacketCondensedFileLoader
     m_FileReferenceManager = std::make_unique<PacketReferenceManager>();
-    m_FileSaver            = std::make_unique<PacketFileSaver>(*m_FileIndexer, *m_FileReferenceManager, *m_FileLoader, *m_BackupManager, m_PacketPath, m_BackupFlags & BackupFlags::BeforeOperation);
+    m_FileSaver            = std::make_unique<PacketFileSaver>(*m_FileIndexer, *m_FileReferenceManager, *m_FileLoader, *m_BackupManager, m_PacketPath, m_BackupFlags & BackupFlags::BackupBeforeOperation);
     m_FileImporter         = std::make_unique<PacketFileImporter>(
         *m_FileIndexer,
         *m_FileLoader,
@@ -70,7 +70,7 @@ bool PacketFileManager::Initialize()
     }
 
     // Check if we should perform a backup of all indexed files
-    if (m_OperationMode == OperationMode::Plain && m_BackupFlags & BackupFlags::OnStartup)
+    if (m_OperationMode == OperationMode::Plain && m_BackupFlags & BackupFlags::BackupOnStartup)
     {
         // Retrieve all indexed files and backup each one
         auto all_indexed_file_paths = m_FileIndexer->GetAllIndexedFiles();
@@ -120,6 +120,11 @@ bool PacketFileManager::WriteFile(
     for (auto& file_dependency : _file_dependencies)
     {
         if (!m_FileIndexer->IsFileIndexed(Hash(file_dependency)))
+        {
+            return false;
+        }
+
+        if (m_FileIndexer->IsFileExternal(Hash(file_dependency)))
         {
             return false;
         }
@@ -182,9 +187,6 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
     auto source_file_hash = Hash(_source_file_path);
     auto target_file_hash = Hash(target_file_path);
 
-    // Check if the file is an external one, if true just do a normal system copy
-    // TODO: ...
-
     // Load the source file
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
@@ -193,25 +195,45 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
         return std::nullopt;
     }
 
-    // Duplicate the file
-    auto duplicated_file = PacketFile::DuplicateFile(source_file);
-    if (!duplicated_file)
+    // Check if the source file is an external file, if true just perform a normal copy
+    if (source_file->IsExternalFile())
     {
-        SignalOperationError("CopyFile", "Failed to duplicated source file");
-        return std::nullopt;
+        // Setup the filesystem paths
+        auto system_source_path = MergeSystemPathWithFilePath(m_PacketPath, _source_file_path);
+        auto system_target_path = MergeSystemPathWithFilePath(m_PacketPath, target_file_path);
+
+        // Perform the copy, also there is no need to perform a backup since we are copying a file,
+        // so it's expected that the target file doesn't exist
+        std::error_code error;
+        std::filesystem::copy(system_source_path, system_target_path, std::filesystem::copy_options::overwrite_existing, error);
+        if (error)
+        {
+            SignalOperationError("CopyFile", "Failed to copy external file");
+            return std::nullopt;
+        }
     }
-
-    // Update the duplicated file path
-    duplicated_file->UpdateFilePath(target_file_path);
-
-    // Clear the file links
-    duplicated_file->ClearFileLinks();
-
-    // Save the file
-    if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Copy))
+    else
     {
-        SignalOperationError("CopyFile", "Failed to save copied file");
-        return std::nullopt;
+        // Duplicate the file
+        auto duplicated_file = PacketFile::DuplicateFile(source_file);
+        if (!duplicated_file)
+        {
+            SignalOperationError("CopyFile", "Failed to duplicated source file");
+            return std::nullopt;
+        }
+
+        // Update the duplicated file path
+        duplicated_file->UpdateFilePath(target_file_path);
+
+        // Clear the file links
+        duplicated_file->ClearFileLinks();
+
+        // Save the file
+        if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Copy))
+        {
+            SignalOperationError("CopyFile", "Failed to save copied file");
+            return std::nullopt;
+        }
     }
 
     // Insert a new entry on the file plain indexer
@@ -252,9 +274,6 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
     auto source_file_hash = Hash(_source_file_path);
     auto target_file_hash = Hash(target_file_path);
 
-    // Check if the file is an external one, if true just do a normal system move
-    // TODO: ...
-
     // Load the source file
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
@@ -263,29 +282,49 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
         return std::nullopt;
     }
 
-    // Duplicate the file
-    auto duplicated_file = PacketFile::DuplicateFile(source_file);
-    if (!duplicated_file)
+    // Check if the source file is an external file, if true just perform a normal move
+    if (source_file->IsExternalFile())
     {
-        SignalOperationError("MoveFile", "Failed to duplicate source file");
-        return std::nullopt;
+        // Setup the filesystem paths
+        auto system_source_path = MergeSystemPathWithFilePath(m_PacketPath, _source_file_path);
+        auto system_target_path = MergeSystemPathWithFilePath(m_PacketPath, target_file_path);
+
+        // Perform the copy, also there is no need to perform a backup since we are copying a file,
+        // so it's expected that the target file doesn't exist
+        std::error_code error;
+        std::filesystem::rename(system_source_path, system_target_path, error);
+        if (error)
+        {
+            SignalOperationError("MoveFile", "Failed to move external file");
+            return std::nullopt;
+        }
     }
-
-    // Update the duplicated file path
-    duplicated_file->UpdateFilePath(target_file_path);
-
-    // Save the file
-    if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Move))
+    else
     {
-        SignalOperationError("MoveFile", "Failed to save duplicated file");
-        return std::nullopt;
-    }
+        // Duplicate the file
+        auto duplicated_file = PacketFile::DuplicateFile(source_file);
+        if (!duplicated_file)
+        {
+            SignalOperationError("MoveFile", "Failed to duplicate source file");
+            return std::nullopt;
+        }
 
-    // Delete the old file
-    if (!DeleteFile(_source_file_path, false))
-    {
-        SignalOperationError("MoveFile", "Failed to delete old file");
-        return std::nullopt;
+        // Update the duplicated file path
+        duplicated_file->UpdateFilePath(target_file_path);
+
+        // Save the file
+        if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Move))
+        {
+            SignalOperationError("MoveFile", "Failed to save duplicated file");
+            return std::nullopt;
+        }
+
+        // Delete the old file
+        if (!DeleteFile(_source_file_path, false))
+        {
+            SignalOperationError("MoveFile", "Failed to delete old file");
+            return std::nullopt;
+        }
     }
 
     // Insert a new entry on the file plain indexer
@@ -332,9 +371,6 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
     auto source_file_hash = Hash(_source_file_path);
     auto target_file_hash = Hash(new_file_path);
 
-    // Check if the file is an external one, if true just do a normal system move
-    // TODO: ...
-
     // Load the source file
     auto source_file = m_FileLoader->LoadFile(source_file_hash);
     if (!source_file)
@@ -343,21 +379,41 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
         return std::nullopt;
     }
 
-    // Update the file path
-    source_file->UpdateFilePath(new_file_path);
-
-    // Save the file
-    if (!m_FileSaver->SaveFile(std::move(source_file), SaveOperation::Move))
+    // Check if the source file is an external file, if true just perform a normal rename
+    if (source_file->IsExternalFile())
     {
-        SignalOperationError("RenameFile", "Failed to save source file");
-        return std::nullopt;
+        // Setup the filesystem paths
+        auto system_source_path = MergeSystemPathWithFilePath(m_PacketPath, _source_file_path);
+        auto system_target_path = MergeSystemPathWithFilePath(m_PacketPath, new_file_path);
+
+        // Perform the copy, also there is no need to perform a backup since we are copying a file,
+        // so it's expected that the target file doesn't exist
+        std::error_code error;
+        std::filesystem::rename(system_source_path, system_target_path, error);
+        if (error)
+        {
+            SignalOperationError("RenameFile", "Failed to rename external file");
+            return std::nullopt;
+        }
     }
-
-    // Delete the old file
-    if (!DeleteFile(_source_file_path, false))
+    else
     {
-        SignalOperationError("RenameFile", "Failed to delete old file");
-        return std::nullopt;
+        // Update the file path
+        source_file->UpdateFilePath(new_file_path);
+
+        // Save the file
+        if (!m_FileSaver->SaveFile(std::move(source_file), SaveOperation::Move))
+        {
+            SignalOperationError("RenameFile", "Failed to save source file");
+            return std::nullopt;
+        }
+
+        // Delete the old file
+        if (!DeleteFile(_source_file_path, false))
+        {
+            SignalOperationError("RenameFile", "Failed to delete old file");
+            return std::nullopt;
+        }
     }
 
     // Insert a new entry on the file plain indexer
@@ -399,6 +455,13 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
     if (!target_file)
     {
         SignalOperationError("RedirectFileDependencies", "Failed to load target file");
+        return false;
+    }
+
+    // Check if both files aren't external
+    if (source_file->IsExternalFile() || target_file->IsExternalFile())
+    {
+        SignalOperationError("RedirectFileDependencies", "Source and/or target file is invalid (external)");
         return false;
     }
 
@@ -467,7 +530,7 @@ bool PacketFileManager::DeleteFile(Path _target_file_path, bool _remove_dependen
     }
 
     // If enabled, perform a backup of this file
-    if (m_BackupFlags & BackupFlags::BeforeOperation)
+    if (m_BackupFlags & BackupFlags::BackupBeforeOperation)
     {
         m_BackupManager->BackupFile(_target_file_path);
     }
@@ -582,6 +645,15 @@ void PacketFileManager::SignalOperationError(std::string _operation, std::string
     // Check if any file was affected
     auto affected_files = m_FileSaver->GetAffectedFiles();
     bool files_were_affected = affected_files.size() != 0;
+
+    // Verify if the backups for the affected files should be automatically restored
+    if (m_BackupFlags & BackupFlags::AutomaticallyRestoreOnOperationFailure)
+    {
+        for (auto& affected_file_path : affected_files)
+        {
+            m_BackupManager->RestoreFile(affected_file_path);
+        }
+    }
 
     // If the callback was set, call it
     if (m_OperationFailureCallback)

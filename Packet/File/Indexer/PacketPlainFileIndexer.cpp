@@ -101,6 +101,19 @@ nlohmann::json PacketPlainFileIndexer::GetFileProperties(HashPrimitive _file_has
     return nlohmann::json();
 }
 
+bool PacketPlainFileIndexer::IsFileExternal(HashPrimitive _file_hash) const
+{
+    auto iter = m_IndexDatas.find(_file_hash);
+    if (iter != m_IndexDatas.end())
+    {
+        return m_IndexDatas.find(_file_hash)->second.file_is_external;
+    }
+
+    // Returning true is the safest option on this case if not throwing
+    throw "Invalid file hash";
+    return true;
+}
+
 std::set<Path> PacketPlainFileIndexer::GetAllIndexedFiles() const
 {
     std::set<Path> indexed_paths;
@@ -181,6 +194,7 @@ void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
     new_index_entry.file_load_information.file_hash = Hash(_file_path);
     new_index_entry.file_load_information.file_data_position = 0;
     new_index_entry.file_load_information.file_data_size = std::filesystem::file_size(system_filepath);
+    new_index_entry.file_is_external = file->IsExternalFile();
 
     // Add the entry
     m_IndexDatas.insert({ Hash(_file_path), std::move(new_index_entry) });
