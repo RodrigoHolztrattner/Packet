@@ -103,8 +103,9 @@ enum class FileImportFlagBits
 // Write file flags
 enum class FileWriteFlagBits
 {
-    None,
-    CreateIfInexistent
+    None                      = 0,
+    Overwrite                 = 1 << 0,
+    IgnoreMissingDependencies = 1 << 1
 };
 
 // The save operation that must be passed to the file saver when saving a file into disk

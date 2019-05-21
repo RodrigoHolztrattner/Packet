@@ -126,6 +126,40 @@ std::set<Path> PacketPlainFileIndexer::GetAllIndexedFiles() const
     return indexed_paths;
 }
 
+std::vector<std::pair<Path, std::set<Path>>> PacketPlainFileIndexer::GetMissingDependenciesInfo() const
+{
+    std::vector<std::pair<Path, std::set<Path>>> result;
+
+    // For each indexed data
+    for (auto& indexed_data_pair : m_IndexDatas)
+    {
+        const IndexData& indexed_data = indexed_data_pair.second;
+
+        // Setup the entry
+        std::pair<Path, std::set<Path>> entry;
+        entry = { indexed_data.file_load_information.file_path, {} };
+
+        // For each dependency
+        for (auto& file_dependency : indexed_data.file_references.GetFileDependencies())
+        {
+            // Check if this file is indexed
+            if (m_IndexDatas.find(Hash(file_dependency)) == m_IndexDatas.end())
+            {
+                // Insert into our entry
+                entry.second.insert(file_dependency);
+            }
+        }
+
+        // If we have at least one missing dependency, add the entry into our result
+        if (entry.second.size() > 0)
+        {
+            result.push_back(std::move(entry));
+        }
+    }
+
+    return result;
+}
+
 void PacketPlainFileIndexer::BuildFilesystemView(std::filesystem::path _resource_path)
 {
     // This method will recursively construct the packet tree
@@ -195,6 +229,7 @@ void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
     new_index_entry.file_load_information.file_data_position = 0;
     new_index_entry.file_load_information.file_data_size = std::filesystem::file_size(system_filepath);
     new_index_entry.file_is_external = file->IsExternalFile();
+    new_index_entry.file_references = file->GetFileReferences();
 
     // Add the entry
     m_IndexDatas.insert({ Hash(_file_path), std::move(new_index_entry) });

@@ -107,6 +107,10 @@ public: // VIRTUAL METHODS //
     // Return the paths for all indexed files
     virtual std::set<Path> GetAllIndexedFiles() const = 0;
 
+    // Return a vector with pairs for each missing file dependency <file path, file missing dependency>
+    // Only works on Plain mode, else return an empty vector
+    virtual std::vector<std::pair<Path, std::set<Path>>> GetMissingDependenciesInfo() const;
+
 ///////////////
 // VARIABLES //
 protected: ////
@@ -117,8 +121,8 @@ protected: ////
     // The file loader references
     const PacketFileLoader* m_FileLoaderPtr = nullptr;
 
-    // All callbacks that must be run when some file is modified/added
-    std::vector<FileModificationCallback> m_FileModificationCallbacks;
+    // Our callbacks (only active on Plain move)
+    std::vector<FileModificationCallback>                         m_FileModificationCallbacks;
 };
 
 // Packet data explorer

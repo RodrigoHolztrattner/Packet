@@ -65,6 +65,9 @@ class PacketPlainFileIndexer : public PacketFileIndexer
         // If this file is an external file
         bool file_is_external;
 
+        // This file references
+        PacketFileReferences file_references;
+
         // The file load information
         FileLoadInformation file_load_information;
     };
@@ -107,6 +110,9 @@ public: //////////
 
     // Return the paths for all indexed files
     std::set<Path> GetAllIndexedFiles() const final;
+
+    // Return a vector with pairs for each missing file reference <file path, file missing references>
+    std::vector<std::pair<Path, std::set<Path>>> GetMissingDependenciesInfo() const final;
 
 protected:
 

@@ -93,6 +93,13 @@ public: // FILE OPERATIONS //
     // Delete a file
     bool DeleteFile(Path _target_file_path) const;
 
+///////////////////////
+public: // CALLBACKS //
+///////////////////////
+
+    // Register the file operation failure callback
+    void RegisterOperationFailureCallback(std::function<void(std::string, std::string, const PacketBackupManager& _backup_manager, std::set<Path>)> _callback);
+
 ///////////////////////////////
 protected: // HELPER METHODS //
 ///////////////////////////////
@@ -149,7 +156,6 @@ private: //////
 
     // Our callbacks
     std::function<void(std::string, std::string, const PacketBackupManager& _backup_manager, std::set<Path>)> m_OperationFailureCallback;
-    std::function<void(Path, std::set<Path>)>                                                                 m_FileMissingDependenciesCallback;
 };
 
 // Packet data explorer

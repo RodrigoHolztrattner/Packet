@@ -111,22 +111,26 @@ bool PacketFileManager::WriteFile(
 
     // Check if we already have this file imported
     bool file_already_indexed = m_FileIndexer->IsFileIndexed(Hash(_target_path));
-    if (file_already_indexed && !(_write_flags & static_cast<FileWriteFlags>(FileWriteFlagBits::CreateIfInexistent)))
+    if (file_already_indexed && !(_write_flags & static_cast<FileWriteFlags>(FileWriteFlagBits::Overwrite)))
     {
         return false;
     }
 
-    // Check if all dependencies are valid
-    for (auto& file_dependency : _file_dependencies)
+    // Check if we should ignore missing dependencies
+    if (!(_write_flags & static_cast<FileWriteFlags>(FileWriteFlagBits::IgnoreMissingDependencies)))
     {
-        if (!m_FileIndexer->IsFileIndexed(Hash(file_dependency)))
+        // Check if all dependencies are valid
+        for (auto& file_dependency : _file_dependencies)
         {
-            return false;
-        }
+            if (!m_FileIndexer->IsFileIndexed(Hash(file_dependency)))
+            {
+                return false;
+            }
 
-        if (m_FileIndexer->IsFileExternal(Hash(file_dependency)))
-        {
-            return false;
+            if (m_FileIndexer->IsFileExternal(Hash(file_dependency)))
+            {
+                return false;
+            }
         }
     }
 
@@ -151,12 +155,8 @@ bool PacketFileManager::WriteFile(
         return false;
     }
 
-    // If this file isn't indexed yet, index it
-    if (!file_already_indexed)
-    {
-        // Insert a new entry on the file plain indexer
-        static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(_target_path);
-    }
+    // Insert a new entry or update an existing one on the file indexer
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(_target_path);
 
     return true;
 }
@@ -519,6 +519,11 @@ bool PacketFileManager::DeleteFile(Path _target_file_path) const
     m_FileSaver->ClearAffectedFiles();
 
     return DeleteFile(_target_file_path, true);
+}
+
+void PacketFileManager::RegisterOperationFailureCallback(std::function<void(std::string, std::string, const PacketBackupManager& _backup_manager, std::set<Path>)> _callback)
+{
+    m_OperationFailureCallback = _callback;
 }
 
 bool PacketFileManager::DeleteFile(Path _target_file_path, bool _remove_dependency_links) const
