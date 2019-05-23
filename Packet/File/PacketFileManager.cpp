@@ -106,7 +106,7 @@ bool PacketFileManager::WriteFile(
         return false;
     }
 
-    // Check if the file extension is the packet one
+    // Check if the file extension is correct
     if (_target_path.path().extension() != PacketExtension)
     {
         return false;

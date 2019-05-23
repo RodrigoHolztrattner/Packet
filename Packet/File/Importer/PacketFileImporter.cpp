@@ -48,6 +48,12 @@ bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original
         return false;
     }
 
+    // Check if the file extension is correct
+    if (_target_path.path().extension() != PacketExtension)
+    {
+        return false;
+    }
+
     // Check if we already have this file imported, if true, check if we must overwrite it
     bool file_already_indexed = m_FileIndexer.IsFileIndexed(Hash(_target_path));
     if (file_already_indexed && !(_import_flags & static_cast<FileImportFlags>(FileImportFlagBits::Overwrite)))
