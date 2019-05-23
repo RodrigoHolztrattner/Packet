@@ -42,11 +42,15 @@ bool PacketPlainFileIndexer::Initialize()
 
 bool PacketPlainFileIndexer::IsFileIndexed(HashPrimitive _file_hash) const
 {
+    std::shared_lock lock(m_Mutex);
+
     return m_IndexDatas.find(_file_hash) != m_IndexDatas.end();
 }
 
 std::optional<PacketFileIndexer::FileLoadInformation> PacketPlainFileIndexer::RetrieveFileLoadInformation(HashPrimitive _file_hash) const
 {
+    std::shared_lock lock(m_Mutex);
+
     auto iter = m_IndexDatas.find(_file_hash);
     if (iter != m_IndexDatas.end())
     {
@@ -58,6 +62,8 @@ std::optional<PacketFileIndexer::FileLoadInformation> PacketPlainFileIndexer::Re
 
 std::optional<std::string> PacketPlainFileIndexer::GetFileExtension(HashPrimitive _file_hash) const
 {
+    std::shared_lock lock(m_Mutex);
+
     auto iter = m_IndexDatas.find(_file_hash);
     if (iter != m_IndexDatas.end())
     {
@@ -69,6 +75,8 @@ std::optional<std::string> PacketPlainFileIndexer::GetFileExtension(HashPrimitiv
 
 std::optional<PacketFileHeader> PacketPlainFileIndexer::GetFileHeader(HashPrimitive _file_hash) const
 {
+    std::shared_lock lock(m_Mutex);
+
     auto iter = m_IndexDatas.find(_file_hash);
     if (iter != m_IndexDatas.end())
     {
@@ -80,6 +88,8 @@ std::optional<PacketFileHeader> PacketPlainFileIndexer::GetFileHeader(HashPrimit
 
 std::vector<uint8_t> PacketPlainFileIndexer::GetFileIconData(HashPrimitive _file_hash) const
 {
+    std::shared_lock lock(m_Mutex);
+
     auto iter = m_IndexDatas.find(_file_hash);
     if (iter != m_IndexDatas.end())
     {
@@ -91,6 +101,8 @@ std::vector<uint8_t> PacketPlainFileIndexer::GetFileIconData(HashPrimitive _file
 
 nlohmann::json PacketPlainFileIndexer::GetFileProperties(HashPrimitive _file_hash) const
 {
+    std::shared_lock lock(m_Mutex);
+
     auto iter = m_IndexDatas.find(_file_hash);
     if (iter != m_IndexDatas.end())
     {
@@ -103,6 +115,8 @@ nlohmann::json PacketPlainFileIndexer::GetFileProperties(HashPrimitive _file_has
 
 bool PacketPlainFileIndexer::IsFileExternal(HashPrimitive _file_hash) const
 {
+    std::shared_lock lock(m_Mutex);
+
     auto iter = m_IndexDatas.find(_file_hash);
     if (iter != m_IndexDatas.end())
     {
@@ -116,6 +130,7 @@ bool PacketPlainFileIndexer::IsFileExternal(HashPrimitive _file_hash) const
 
 std::set<Path> PacketPlainFileIndexer::GetAllIndexedFiles() const
 {
+    std::shared_lock lock(m_Mutex);
     std::set<Path> indexed_paths;
 
     for (auto& indexed_data : m_IndexDatas)
@@ -128,6 +143,7 @@ std::set<Path> PacketPlainFileIndexer::GetAllIndexedFiles() const
 
 std::vector<std::pair<Path, std::set<Path>>> PacketPlainFileIndexer::GetMissingDependenciesInfo() const
 {
+    std::shared_lock lock(m_Mutex);
     std::vector<std::pair<Path, std::set<Path>>> result;
 
     // For each indexed data
@@ -192,6 +208,8 @@ void PacketPlainFileIndexer::BuildFilesystemView(std::filesystem::path _resource
 
 void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
 {
+    std::unique_lock lock(m_Mutex);
+
     // Get the system file info
     auto system_filepath = MergeSystemPathWithFilePath(m_PacketPath, _file_path);
 
@@ -243,6 +261,8 @@ void PacketPlainFileIndexer::InsertFileIndexData(Path _file_path)
 
 void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
 {
+    std::unique_lock lock(m_Mutex);
+
     // Find an entry with this path
     auto iter = m_IndexDatas.find(Hash(_file_path));
     if (iter != m_IndexDatas.end())

@@ -80,7 +80,6 @@ private: //////
     // Our file loader and importer references
     const PacketFileLoader*   m_FileLoaderPtr;
     const PacketFileSaver*    m_FileSaverPtr;
-
 };
 
 // Packet data explorer

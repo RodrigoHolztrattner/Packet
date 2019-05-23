@@ -112,6 +112,9 @@ bool PacketFileManager::WriteFile(
         return false;
     }
 
+    // Lock the main mutex
+    std::unique_lock lock(m_Mutex);
+
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
 
@@ -174,6 +177,9 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
     {
         return std::nullopt;
     }
+
+    // Lock the main mutex
+    std::unique_lock lock(m_Mutex);
 
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
@@ -255,6 +261,9 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
     {
         return std::nullopt;
     }
+
+    // Lock the main mutex
+    std::unique_lock lock(m_Mutex);
 
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
@@ -350,6 +359,9 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
         return std::nullopt;
     }
 
+    // Lock the main mutex
+    std::unique_lock lock(m_Mutex);
+
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
 
@@ -439,6 +451,9 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
         return false;
     }
 
+    // Lock the main mutex
+    std::unique_lock lock(m_Mutex);
+
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
 
@@ -520,6 +535,9 @@ bool PacketFileManager::DeleteFile(Path _target_file_path) const
     {
         return false;
     }
+
+    // Lock the main mutex
+    std::unique_lock lock(m_Mutex);
 
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();

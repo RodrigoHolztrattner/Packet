@@ -11,6 +11,8 @@
 #include <string>
 #include <map>
 #include <set>
+#include <mutex>
+#include <shared_mutex>
 
 ///////////////
 // NAMESPACE //
@@ -147,6 +149,9 @@ private: //////
     std::unique_ptr<PacketFileImporter>     m_FileImporter;
     std::unique_ptr<PacketReferenceManager> m_FileReferenceManager;
     std::unique_ptr<PacketBackupManager>    m_BackupManager;
+
+    // The main mutex used for all necessary synchronization for this class
+    mutable std::shared_mutex m_Mutex;
 
     // The default converter
     std::unique_ptr<PacketFileDefaultConverter> m_DefaultConverter;
