@@ -39,6 +39,14 @@ PacketResourceManager::PacketResourceManager(
         m_FileIndexer.RegisterFileModificationCallback(
             [&](const Path& _path)
             {
+                // This mutex must be locked to prevent new items from being added into
+                // the modified queue temporarily, allowing the asynchronous processing
+                // thread to reach an idle status whenever this is necessary
+                // Also this can only happens on Plain mode but there is no need to check
+                // the mode since the file modification functionality is only enabled while
+                // on it
+                std::lock_guard modification_lock(m_ModificationMutex);
+
                 // Register this path hash
                 m_ModifiedFiles.enqueue(Hash(_path));
             });
@@ -210,7 +218,6 @@ PacketResourceManager::~PacketResourceManager()
     m_RegisteredFactories.clear();
 }
 
-
 std::vector<PacketResourceExternalConstructor> PacketResourceManager::GetResourceExternalConstructors()
 {
     std::vector<PacketResourceExternalConstructor> outConstructors;
@@ -240,6 +247,12 @@ std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>> Pac
     // Lock the main mutex, preventing any future operation until this lock is
     // released
     std::unique_lock request_lock(m_RequestMutex);
+
+    // Prevent adding new files into the modified queue, this lock doesn't
+    // need to be retained and can be released when returning from this
+    // function, this will prevent incoming modified resources from being
+    // processed after we check if the queues are empty (below)
+    std::lock_guard modification_lock(m_ModificationMutex);
 
     // To proper reach an idle status now we need to wait until all pending 
     // resources and resource requests are fulfilled

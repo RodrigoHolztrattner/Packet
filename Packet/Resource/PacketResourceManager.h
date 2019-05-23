@@ -306,6 +306,7 @@ private: //////
     // of resource operations if necessary, only available on Plain mode
     mutable std::shared_mutex m_RequestMutex;
     mutable std::mutex        m_ProcessMutex;
+    mutable std::mutex        m_ModificationMutex;
 
 	// The object storage, the file loader, the resource watcher, the reference manager and the logger ptrs
 	PacketResourceStorage&  m_ResourceStorage;
