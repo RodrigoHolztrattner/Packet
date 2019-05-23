@@ -21,6 +21,8 @@
 #include <cstdint>
 #include <vector>
 #include <thread>
+#include <mutex>
+#include <shared_mutex>
 
 ///////////////
 // NAMESPACE //
@@ -105,6 +107,13 @@ public: //////////
     {
         assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
 
+        // Shared lock that allows concurrent access but will lock in case we need to stop all operations
+        // by deep locking this mutex
+        if (m_OperationMode == OperationMode::Plain)
+        {
+            std::shared_lock lock(m_RequestMutex);
+        }
+        
         // Check if a resource with the given hash exist
         if (!m_FileIndexer.IsFileIndexed(_hash))
         {
@@ -145,6 +154,13 @@ public: //////////
                                   PacketResourceBuildInfo _resourceBuildInfo = PacketResourceBuildInfo())
     {
         assert(m_RegisteredFactories.find(ctti::type_id<ResourceClass>().hash()) != m_RegisteredFactories.end());
+
+        // Shared lock that allows concurrent access but will lock in case we need to stop all operations
+        // by deep locking this mutex
+        if (m_OperationMode == OperationMode::Plain)
+        {
+            std::shared_lock lock(m_RequestMutex);
+        }
 
         // Check if a resource with the given hash exist
         if (!m_FileIndexer.IsFileIndexed(_hash))
@@ -216,6 +232,11 @@ public: //////////
     // to be created or released
     uint32_t GetAproximatedResourceAmount() const;
 
+    // Lock all operations for this resource manager, returning two unique_lock objects that when destroyed,
+    // will resume all operations, this function is only available on Plain mode and will throw an exception
+    // in other modes
+    std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>> LockAllOperations();
+
 protected:
 
     // Return a valid usable resource creation proxy object
@@ -280,6 +301,11 @@ private: //////
 
 	// The current operation mode
 	OperationMode m_OperationMode;
+
+    // These mutexes will be used to enforce an idle status when required while also enabling the total lock
+    // of resource operations if necessary, only available on Plain mode
+    mutable std::shared_mutex m_RequestMutex;
+    mutable std::mutex        m_ProcessMutex;
 
 	// The object storage, the file loader, the resource watcher, the reference manager and the logger ptrs
 	PacketResourceStorage&  m_ResourceStorage;

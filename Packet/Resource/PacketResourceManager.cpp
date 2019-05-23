@@ -230,6 +230,40 @@ uint32_t PacketResourceManager::GetAproximatedResourceAmount() const
         GetApproximatedNumberResourcesPendingDeletion();
 }
 
+std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>> PacketResourceManager::LockAllOperations()
+{
+    if (m_OperationMode != OperationMode::Plain)
+    {
+        throw "Cannot lock all operations while not on Plain mode";
+    }
+
+    // Lock the main mutex, preventing any future operation until this lock is
+    // released
+    std::unique_lock request_lock(m_RequestMutex);
+
+    // To proper reach an idle status now we need to wait until all pending 
+    // resources and resource requests are fulfilled
+    auto IsIdle = [&]()
+    {
+        return m_ResourceCreateProxyQueue.size_approx() == 0
+            && m_ResourcesPendingExternalConstruction.size_approx() == 0
+            && m_ResourcesPendingDeletionEvaluation.size_approx() == 0
+            && m_ResourcesPendingDeletion.size() == 0
+            && m_ResourcesPendingReplacement.size() == 0
+            && m_ModifiedFiles.size_approx() == 0;
+    };
+
+    while (!IsIdle())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+    // No more resources or resource requests are going to be added, lock
+    // the process mutex now
+    std::unique_lock process_lock(m_ProcessMutex);
+
+    return { std::move(request_lock), std::move(process_lock) };
+}
 
 void PacketResourceManager::RegisterResourceForDeletion(PacketResource * _resourcePtr)
 {
@@ -258,6 +292,8 @@ uint32_t PacketResourceManager::GetApproximatedNumberResourcesPendingDeletion() 
 
 void PacketResourceManager::AsynchronousResourceProcessment()
 {
+    std::lock_guard lock(m_ProcessMutex);
+
     // For each file that was modified, call the OnResourceDataChanged method for its resource, 
     // if any
     {
