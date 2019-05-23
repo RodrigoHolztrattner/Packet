@@ -67,9 +67,6 @@ static const std::string CondensedInfoName      = "Data";
 static const std::string CondensedInfoExtension = ".manifest";
 static const std::string TemporaryFileExtension = ".temp";
 
-// The internal folder that shouldn't be compressed
-static const std::string InternalFolderName     = "Internal";
-
 // The current condensed file minor and major versions
 static const uint16_t CondensedMinorVersion     = 1;
 static const uint16_t CondensedMajorVersion     = 0;
