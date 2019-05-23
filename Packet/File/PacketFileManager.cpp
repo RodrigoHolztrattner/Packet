@@ -112,8 +112,8 @@ bool PacketFileManager::WriteFile(
         return false;
     }
 
-    // Lock the main mutex
-    std::unique_lock lock(m_Mutex);
+    // Lock all resource operations until this file operation is finished
+    auto resource_locks = m_LockResourceOperationsCallback();
 
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
@@ -178,8 +178,8 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
         return std::nullopt;
     }
 
-    // Lock the main mutex
-    std::unique_lock lock(m_Mutex);
+    // Lock all resource operations until this file operation is finished
+    auto resource_locks = m_LockResourceOperationsCallback();
 
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
@@ -262,8 +262,8 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
         return std::nullopt;
     }
 
-    // Lock the main mutex
-    std::unique_lock lock(m_Mutex);
+    // Lock all resource operations until this file operation is finished
+    auto resource_locks = m_LockResourceOperationsCallback();
 
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
@@ -359,8 +359,8 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
         return std::nullopt;
     }
 
-    // Lock the main mutex
-    std::unique_lock lock(m_Mutex);
+    // Lock all resource operations until this file operation is finished
+    auto resource_locks = m_LockResourceOperationsCallback();
 
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
@@ -451,8 +451,8 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
         return false;
     }
 
-    // Lock the main mutex
-    std::unique_lock lock(m_Mutex);
+    // Lock all resource operations until this file operation is finished
+    auto resource_locks = m_LockResourceOperationsCallback();
 
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
@@ -536,8 +536,8 @@ bool PacketFileManager::DeleteFile(Path _target_file_path) const
         return false;
     }
 
-    // Lock the main mutex
-    std::unique_lock lock(m_Mutex);
+    // Lock all resource operations until this file operation is finished
+    auto resource_locks = m_LockResourceOperationsCallback();
 
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
@@ -548,6 +548,11 @@ bool PacketFileManager::DeleteFile(Path _target_file_path) const
 void PacketFileManager::RegisterOperationFailureCallback(std::function<void(std::string, std::string, const PacketBackupManager& _backup_manager, std::set<Path>)> _callback)
 {
     m_OperationFailureCallback = _callback;
+}
+
+void PacketFileManager::RegisterLockResourceOperationsCallback(std::function<std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>>()> _callback)
+{
+    m_LockResourceOperationsCallback = _callback;
 }
 
 bool PacketFileManager::DeleteFile(Path _target_file_path, bool _remove_dependency_links) const

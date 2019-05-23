@@ -70,6 +70,13 @@ bool PacketSystem::Initialize(
         m_FileManager->GetFileIndexer(),
         m_Logger.get());
 
+    // Register the lock all resource operations callback for the file manager
+    m_FileManager->RegisterLockResourceOperationsCallback(
+        [&]()
+        {
+            return m_ResourceManager->LockAllOperations();
+        });
+
     return true;
 }
 

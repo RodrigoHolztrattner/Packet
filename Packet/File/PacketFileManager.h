@@ -102,6 +102,9 @@ public: // CALLBACKS //
     // Register the file operation failure callback
     void RegisterOperationFailureCallback(std::function<void(std::string, std::string, const PacketBackupManager& _backup_manager, std::set<Path>)> _callback);
 
+    // Register the lock resource operations callback
+    void RegisterLockResourceOperationsCallback(std::function<std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>>()> _callback);
+
 ///////////////////////////////
 protected: // HELPER METHODS //
 ///////////////////////////////
@@ -150,9 +153,6 @@ private: //////
     std::unique_ptr<PacketReferenceManager> m_FileReferenceManager;
     std::unique_ptr<PacketBackupManager>    m_BackupManager;
 
-    // The main mutex used for all necessary synchronization for this class
-    mutable std::shared_mutex m_Mutex;
-
     // The default converter
     std::unique_ptr<PacketFileDefaultConverter> m_DefaultConverter;
 
@@ -161,6 +161,7 @@ private: //////
 
     // Our callbacks
     std::function<void(std::string, std::string, const PacketBackupManager& _backup_manager, std::set<Path>)> m_OperationFailureCallback;
+    std::function<std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>>()>             m_LockResourceOperationsCallback;
 };
 
 // Packet data explorer
