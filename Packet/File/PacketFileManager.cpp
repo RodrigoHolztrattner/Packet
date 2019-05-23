@@ -106,6 +106,12 @@ bool PacketFileManager::WriteFile(
         return false;
     }
 
+    // Check if the file extension is the packet one
+    if (_target_path.path().extension() != PacketExtension)
+    {
+        return false;
+    }
+
     // Clear the affected files for the file saver before we start an operation
     m_FileSaver->ClearAffectedFiles();
 

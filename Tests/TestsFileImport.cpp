@@ -33,7 +33,7 @@ SCENARIO("External files can be imported into the packet system", "[import]")
         WHEN("An external file is imported")
         {
             // Setup the path we will import the file
-            auto new_file_path = "Sounds/imported_file.olo";
+            auto new_file_path = "Sounds/imported_file.pckfile";
 
             bool import_result = file_importer.ImportExternalFile(ExternalFilePath, new_file_path);
 

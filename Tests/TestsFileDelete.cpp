@@ -26,7 +26,7 @@ SCENARIO("Internal files can be deleted", "[delete]")
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the path we will import the file
-        auto file_path = "Sounds/imported_file.olo";
+        auto file_path = "Sounds/imported_file.pckfile";
 
         // Import the file
         bool import_result = file_importer.ImportExternalFile(ExternalFilePath, file_path);
@@ -46,7 +46,7 @@ SCENARIO("Internal files can be deleted", "[delete]")
         WHEN("An invalid (non-existent) packet file is deleted")
         {
             // Delete the file
-            bool delete_result = packetSystem.GetFileManager().DeleteFile("Sounds/invalid_file.olo");
+            bool delete_result = packetSystem.GetFileManager().DeleteFile("Sounds/invalid_file.pckfile");
 
             AND_THEN("The delete result must be false")
             {

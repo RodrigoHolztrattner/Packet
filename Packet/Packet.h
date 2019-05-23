@@ -40,6 +40,7 @@ static const uint32_t MaximumPackageSize    = __development__Packet::MaximumPack
 static const uint32_t MaximumPackageFiles   = __development__Packet::MaximumPackageFiles;
 static const uint32_t CondensedMinorVersion = __development__Packet::CondensedMinorVersion;
 static const uint32_t CondensedMajorVersion = __development__Packet::CondensedMajorVersion;
+static const std::string PacketExtension    = __development__Packet::PacketExtension;
 
 typedef __development__Packet::OperationMode				     OperationMode;
 typedef __development__Packet::BackupFlags				         BackupFlags;

@@ -90,7 +90,7 @@ SCENARIO("Internal files can be moved to any location inside the packet path", "
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the path we will import the file
-        auto file_path = "Sounds/imported_file.olo";
+        auto file_path = "Sounds/imported_file.pckfile";
 
         // Import the file
         bool import_result = file_importer.ImportExternalFile(ExternalFilePath, file_path);

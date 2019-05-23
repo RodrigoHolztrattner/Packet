@@ -26,13 +26,13 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the names for all paths that are going to be used on this test
-        auto import_file_path         = "Sounds/imported_file.olo";
-        auto first_created_file_path  = "Images/first_created_file.olo";
-        auto second_created_file_path = "Images/second_created_file.olo";
-        auto third_created_file_path  = "Shaders/third_created_file.olo";
+        auto import_file_path         = "Sounds/imported_file.pckfile";
+        auto first_created_file_path  = "Images/first_created_file.pckfile";
+        auto second_created_file_path = "Images/second_created_file.pckfile";
+        auto third_created_file_path  = "Shaders/third_created_file.pckfile";
         auto move_file_dir            = "Shaders";
         auto copied_file_dir          = "Images";
-        auto renamed_file_name        = "renamed_file.olo";
+        auto renamed_file_name        = "renamed_file.pckfile";
 
         // Import the initial file
         bool import_result = file_importer.ImportExternalFile(ExternalFilePath, import_file_path);

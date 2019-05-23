@@ -89,7 +89,7 @@ SCENARIO("Internal files can be renamed to any valid filename", "[rename]")
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the path we will import the file
-        auto file_path = "Sounds/imported_file.olo";
+        auto file_path = "Sounds/imported_file.pckfile";
 
         // Import the file
         bool import_result = file_importer.ImportExternalFile(ExternalFilePath, file_path);
@@ -122,7 +122,7 @@ SCENARIO("Internal files can be renamed to any valid filename", "[rename]")
         AND_WHEN("The operation must fail if it's being renamed to an invalid name (there is already an existing file with that name)")
         {
             // Setup the path we will import the second file
-            auto second_file_path = "Sounds/second_imported_file.olo";
+            auto second_file_path = "Sounds/second_imported_file.pckfile";
 
             // Import the second file
             bool second_import_result = file_importer.ImportExternalFile(ExternalFilePath, second_file_path);

@@ -26,7 +26,7 @@ SCENARIO("Internal files can be created", "[create]")
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the path we will import the file
-        auto import_file_path = "Sounds/imported_file.olo";
+        auto import_file_path = "Sounds/imported_file.pckfile";
 
         // Import the file
         bool import_result = file_importer.ImportExternalFile(ExternalFilePath, import_file_path);
@@ -34,7 +34,7 @@ SCENARIO("Internal files can be created", "[create]")
 
         AND_GIVEN("Some valid file data")
         {
-            Packet::Path           target_path       = "Sounds/created_file.olo";
+            Packet::Path           target_path       = "Sounds/created_file.pckfile";
             Packet::FileType       file_type         = "custom";
             std::vector<uint8_t>   icon_data         = std::vector<uint8_t>();
             std::vector<uint8_t>   properties_data   = std::vector<uint8_t>();
