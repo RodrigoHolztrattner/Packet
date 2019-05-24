@@ -109,9 +109,10 @@ public: //////////
 
         // Shared lock that allows concurrent access but will lock in case we need to stop all operations
         // by deep locking this mutex
+        std::optional<std::shared_lock<std::shared_mutex>> lock;
         if (m_OperationMode == OperationMode::Plain)
         {
-            std::shared_lock lock(m_RequestMutex);
+            lock = std::shared_lock(m_RequestMutex);
         }
         
         // Check if a resource with the given hash exist
@@ -157,9 +158,10 @@ public: //////////
 
         // Shared lock that allows concurrent access but will lock in case we need to stop all operations
         // by deep locking this mutex
+        std::optional<std::shared_lock<std::shared_mutex>> lock;
         if (m_OperationMode == OperationMode::Plain)
         {
-            std::shared_lock lock(m_RequestMutex);
+            lock = std::shared_lock(m_RequestMutex);
         }
 
         // Check if a resource with the given hash exist

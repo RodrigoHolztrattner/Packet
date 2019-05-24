@@ -193,6 +193,11 @@ void PacketPlainFileIndexer::BuildFilesystemView(std::filesystem::path _resource
                 // Gather this resource data and insert it into our index
                 InsertFileIndexData(ConvertSystemPathIntoInternalPath(_resource_path, path));
             }
+            else
+            {
+                // Enter this folder and continue searching
+                ScanResourcePathRecursive(path);
+            }
         }
     };
 
