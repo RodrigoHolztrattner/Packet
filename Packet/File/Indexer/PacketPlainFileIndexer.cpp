@@ -190,8 +190,11 @@ void PacketPlainFileIndexer::BuildFilesystemView(std::filesystem::path _resource
             // Check if this is a file
             if (std::filesystem::is_regular_file(p))
             {
+                auto path_string = path.string();
+                std::replace(path_string.begin(), path_string.end(), '\\', '/');
+
                 // Gather this resource data and insert it into our index
-                InsertFileIndexData(ConvertSystemPathIntoInternalPath(_resource_path, path));
+                InsertFileIndexData(ConvertSystemPathIntoInternalPath(_resource_path, path_string));
             }
             else
             {
