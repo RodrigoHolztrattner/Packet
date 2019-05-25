@@ -62,12 +62,12 @@ SCENARIO("Internal files can be created", "[create]")
 
                 THEN("The file must be located on the new path")
                 {
-                    REQUIRE(std::filesystem::exists(ResourceDirectory + "/" + target_path.path().string()) == true);
+                    CHECK(std::filesystem::exists(ResourceDirectory + "/" + target_path.path().string()) == true);
                 }
 
                 AND_THEN("The file path must be indexed")
                 {
-                    REQUIRE(file_indexer.IsFileIndexed(Packet::Hash(target_path)) == true);
+                    CHECK(file_indexer.IsFileIndexed(Packet::Hash(target_path)) == true);
                 }
 
                 AND_THEN("The file data must valid")
@@ -76,20 +76,20 @@ SCENARIO("Internal files can be created", "[create]")
                     auto created_file = file_loader.LoadFile(Packet::Hash(target_path));
                     REQUIRE(created_file);
                     
-                    REQUIRE(created_file->GetFileHeader().GetVersion() == Packet::Version);
-                    REQUIRE(created_file->GetFileHeader().GetFileSize() > 0);
-                    REQUIRE(created_file->GetFileHeader().GetFileType().string() == "custom");
-                    REQUIRE(created_file->GetFileHeader().GetPath() == target_path);
-                    REQUIRE(created_file->GetIconData().size() == 0);
-                    REQUIRE(created_file->GetPropertiesData().size() == 0);
-                    REQUIRE(created_file->GetOriginalData().size() == 100);
-                    REQUIRE(created_file->GetIntermediateData().size() == 20);
-                    REQUIRE(created_file->GetFinalData().size() == 50);
-                    REQUIRE(created_file->GetReferencesData().size() > 0);
-                    REQUIRE(created_file->GetFileReferences().GetFileLinks().size() == 0);
-                    REQUIRE(created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                    REQUIRE(created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != created_file->GetFileReferences().GetFileDependencies().end());
-                    REQUIRE(created_file->IsExternalFile() == false);
+                    CHECK(created_file->GetFileHeader().GetVersion() == Packet::Version);
+                    CHECK(created_file->GetFileHeader().GetFileSize() > 0);
+                    CHECK(created_file->GetFileHeader().GetFileType().string() == "custom");
+                    CHECK(created_file->GetFileHeader().GetPath() == target_path);
+                    CHECK(created_file->GetIconData().size() == 0);
+                    CHECK(created_file->GetPropertiesData().size() == 0);
+                    CHECK(created_file->GetOriginalData().size() == 100);
+                    CHECK(created_file->GetIntermediateData().size() == 20);
+                    CHECK(created_file->GetFinalData().size() == 50);
+                    CHECK(created_file->GetReferencesData().size() > 0);
+                    CHECK(created_file->GetFileReferences().GetFileLinks().size() == 0);
+                    CHECK(created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                    CHECK(created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != created_file->GetFileReferences().GetFileDependencies().end());
+                    CHECK(created_file->IsExternalFile() == false);
                 }
 
                 AND_THEN("The initial imported file must have a link with this recently created file since it depends on this initial imported file")
@@ -98,8 +98,8 @@ SCENARIO("Internal files can be created", "[create]")
                     auto imported_file = file_loader.LoadFile(Packet::Hash(import_file_path));
                     REQUIRE(imported_file != nullptr);
 
-                    REQUIRE(imported_file->GetFileReferences().GetFileLinks().size() == 1);
-                    REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(target_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                    CHECK(imported_file->GetFileReferences().GetFileLinks().size() == 1);
+                    CHECK(imported_file->GetFileReferences().GetFileLinks().find(target_path) != imported_file->GetFileReferences().GetFileLinks().end());
                 }
             }
         }

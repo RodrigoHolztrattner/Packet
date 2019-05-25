@@ -129,28 +129,28 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
                 THEN("Their dependencies and links must match the ones specified on their creation")
                 {
                     // Imported file
-                    REQUIRE(imported_file->GetFileReferences().GetFileLinks().size() == 2);
-                    REQUIRE(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
-                    REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
-                    REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                    CHECK(imported_file->GetFileReferences().GetFileLinks().size() == 2);
+                    CHECK(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
+                    CHECK(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                    CHECK(imported_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
 
                     // First created file
-                    REQUIRE(first_created_file->GetFileReferences().GetFileLinks().size() == 1);
-                    REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                    REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
-                    REQUIRE(first_created_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != first_created_file->GetFileReferences().GetFileLinks().end());
+                    CHECK(first_created_file->GetFileReferences().GetFileLinks().size() == 1);
+                    CHECK(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                    CHECK(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
+                    CHECK(first_created_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != first_created_file->GetFileReferences().GetFileLinks().end());
 
                     // Second created file
-                    REQUIRE(second_created_file->GetFileReferences().GetFileLinks().size() == 1);
-                    REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
-                    REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
-                    REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
-                    REQUIRE(second_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != second_created_file->GetFileReferences().GetFileLinks().end());
+                    CHECK(second_created_file->GetFileReferences().GetFileLinks().size() == 1);
+                    CHECK(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
+                    CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                    CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                    CHECK(second_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != second_created_file->GetFileReferences().GetFileLinks().end());
 
                     // Third created file
-                    REQUIRE(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
-                    REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                    REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().find(second_created_file_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
+                    CHECK(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
+                    CHECK(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                    CHECK(third_created_file->GetFileReferences().GetFileDependencies().find(second_created_file_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
                 } 
             }
 
@@ -176,28 +176,28 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
                     THEN("The involved references must be adjusted and pointing to the correct paths")
                     {
                         // Imported file
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().size() == 2);
-                        REQUIRE(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(move_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().size() == 2);
+                        CHECK(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(move_path) != imported_file->GetFileReferences().GetFileLinks().end());
 
                         // First created file
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().size() == 1);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().find(move_path) != first_created_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().size() == 1);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().find(move_path) != first_created_file->GetFileReferences().GetFileLinks().end());
 
                         // Second created file
-                        REQUIRE(second_created_file->GetFileReferences().GetFileLinks().size() == 1);
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(second_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != second_created_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileLinks().size() == 1);
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != second_created_file->GetFileReferences().GetFileLinks().end());
 
                         // Third created file
-                        REQUIRE(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().find(move_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().find(move_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
                     }
                 }
             }
@@ -226,36 +226,36 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
                     THEN("The involved references must be the same, except by the ones affected by the copied file")
                     {
                         // Imported file
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().size() == 3);
-                        REQUIRE(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(copy_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().size() == 3);
+                        CHECK(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(copy_path) != imported_file->GetFileReferences().GetFileLinks().end());
 
                         // First created file
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().size() == 2);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != first_created_file->GetFileReferences().GetFileLinks().end());
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().find(copy_path) != first_created_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().size() == 2);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != first_created_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().find(copy_path) != first_created_file->GetFileReferences().GetFileLinks().end());
 
                         // Second created file
-                        REQUIRE(second_created_file->GetFileReferences().GetFileLinks().size() == 1);
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(second_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != second_created_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileLinks().size() == 1);
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != second_created_file->GetFileReferences().GetFileLinks().end());
 
                         // Third created file
-                        REQUIRE(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().find(second_created_file_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().find(second_created_file_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
 
                         // Copied file
-                        REQUIRE(copied_file->GetFileReferences().GetFileLinks().size() == 0);
-                        REQUIRE(copied_file->GetFileReferences().GetFileDependencies().size() == 2);
-                        REQUIRE(copied_file->GetFileReferences().GetFileDependencies().find(import_file_path) != copied_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(copied_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != copied_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(copied_file->GetFileReferences().GetFileLinks().size() == 0);
+                        CHECK(copied_file->GetFileReferences().GetFileDependencies().size() == 2);
+                        CHECK(copied_file->GetFileReferences().GetFileDependencies().find(import_file_path) != copied_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(copied_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != copied_file->GetFileReferences().GetFileDependencies().end());
                     }
                 }
             }
@@ -282,28 +282,28 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
                     THEN("The involved references must be adjusted and pointing to the correct paths")
                     {
                         // Imported file
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().size() == 2);
-                        REQUIRE(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(rename_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().size() == 2);
+                        CHECK(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(rename_path) != imported_file->GetFileReferences().GetFileLinks().end());
 
                         // First created file
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().size() == 1);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().find(rename_path) != first_created_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().size() == 1);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().find(rename_path) != first_created_file->GetFileReferences().GetFileLinks().end());
 
                         // Second created file
-                        REQUIRE(second_created_file->GetFileReferences().GetFileLinks().size() == 1);
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(second_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != second_created_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileLinks().size() == 1);
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != second_created_file->GetFileReferences().GetFileLinks().end());
 
                         // Third created file
-                        REQUIRE(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().find(rename_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().find(rename_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
                     }
                 }
             }
@@ -326,25 +326,25 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
                     THEN("Trying to load the deleted file must fail")
                     {
                         auto second_created_file = file_loader.LoadFile(Packet::Hash(second_created_file_path));
-                        REQUIRE(second_created_file == nullptr);
+                        CHECK(second_created_file == nullptr);
                     }
 
                     AND_THEN("The files that the deleted one had a dependency must have their links removed, but the files who depends on the deleted one must keep their dependencies")
                     {
                         // Imported file
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().size() == 1);
-                        REQUIRE(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().size() == 1);
+                        CHECK(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
 
                         // First created file
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().size() == 0);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().size() == 0);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
 
                         // Third created file
-                        REQUIRE(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().find(second_created_file_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().find(second_created_file_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
                     }
                 }
             }
@@ -369,28 +369,28 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
                     THEN("The dependencies must be moved to the other file")
                     {
                         // Imported file
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().size() == 2);
-                        REQUIRE(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
-                        REQUIRE(imported_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().size() == 2);
+                        CHECK(imported_file->GetFileReferences().GetFileDependencies().size() == 0);
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(first_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(imported_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != imported_file->GetFileReferences().GetFileLinks().end());
 
                         // First created file
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().size() == 2);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != first_created_file->GetFileReferences().GetFileLinks().end());
-                        REQUIRE(first_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != first_created_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().size() == 2);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(first_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != first_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().find(second_created_file_path) != first_created_file->GetFileReferences().GetFileLinks().end());
+                        CHECK(first_created_file->GetFileReferences().GetFileLinks().find(third_created_file_path) != first_created_file->GetFileReferences().GetFileLinks().end());
 
                         // Second created file
-                        REQUIRE(second_created_file->GetFileReferences().GetFileLinks().size() == 0);
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
-                        REQUIRE(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileLinks().size() == 0);
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().size() == 2);
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(import_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(second_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != second_created_file->GetFileReferences().GetFileDependencies().end());
 
                         // Third created file
-                        REQUIRE(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
-                        REQUIRE(third_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
+                        CHECK(third_created_file->GetFileReferences().GetFileLinks().size() == 0);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().size() == 1);
+                        CHECK(third_created_file->GetFileReferences().GetFileDependencies().find(first_created_file_path) != third_created_file->GetFileReferences().GetFileDependencies().end());
                     }
                 }
             }

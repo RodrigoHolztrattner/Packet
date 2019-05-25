@@ -39,7 +39,7 @@ SCENARIO("Internal files can be deleted", "[delete]")
 
             AND_THEN("The delete result must be true")
             {
-                REQUIRE(delete_result == true);
+                CHECK(delete_result == true);
             }
         }
 
@@ -50,7 +50,7 @@ SCENARIO("Internal files can be deleted", "[delete]")
 
             AND_THEN("The delete result must be false")
             {
-                REQUIRE(delete_result == false);
+                CHECK(delete_result == false);
             }
         }
     }

@@ -30,25 +30,25 @@ void ValidateMove(Packet::System& _packet_system,
     {
         if (_original_path != move_result.value().string())
         {
-            REQUIRE(std::filesystem::exists(ResourceDirectory + "/" + _original_path) == false);
+            CHECK(std::filesystem::exists(ResourceDirectory + "/" + _original_path) == false);
         }
     }
 
     AND_THEN("The file must be located on the new path")
     {
-        REQUIRE(std::filesystem::exists(ResourceDirectory + "/" + move_result.value().string()) == true);
+        CHECK(std::filesystem::exists(ResourceDirectory + "/" + move_result.value().string()) == true);
     }
 
     AND_THEN("The original file path must not be indexed and the new path must be (if they are different)")
     {
         if (_original_path == move_result.value().string())
         {
-            REQUIRE(_file_indexer.IsFileIndexed(Packet::Hash(move_result.value())) == true);
+            CHECK(_file_indexer.IsFileIndexed(Packet::Hash(move_result.value())) == true);
         }
         else
         {
-            REQUIRE(_file_indexer.IsFileIndexed(Packet::Hash(_original_path)) == false);
-            REQUIRE(_file_indexer.IsFileIndexed(Packet::Hash(move_result.value())) == true);
+            CHECK(_file_indexer.IsFileIndexed(Packet::Hash(_original_path)) == false);
+            CHECK(_file_indexer.IsFileIndexed(Packet::Hash(move_result.value())) == true);
         }
     }
 
@@ -58,18 +58,18 @@ void ValidateMove(Packet::System& _packet_system,
         auto moved_file = _file_loader.LoadFile(Packet::Hash(move_result.value()));
         REQUIRE(moved_file);
 
-        REQUIRE(initial_file->GetFileHeader().GetVersion() == moved_file->GetFileHeader().GetVersion());
-        REQUIRE(initial_file->GetFileHeader().GetFileSize() == moved_file->GetFileHeader().GetFileSize());
-        REQUIRE(initial_file->GetFileHeader().GetFileType().string() == moved_file->GetFileHeader().GetFileType().string());
-        REQUIRE(initial_file->GetIconData() == moved_file->GetIconData());
-        REQUIRE(initial_file->GetPropertiesData() == moved_file->GetPropertiesData());
-        REQUIRE(initial_file->GetOriginalData() == moved_file->GetOriginalData());
-        REQUIRE(initial_file->GetIntermediateData() == moved_file->GetIntermediateData());
-        REQUIRE(initial_file->GetFinalData() == moved_file->GetFinalData());
-        REQUIRE(initial_file->GetReferencesData() == moved_file->GetReferencesData());
-        REQUIRE(initial_file->GetFileReferences().GetFileLinks() == moved_file->GetFileReferences().GetFileLinks());
-        REQUIRE(initial_file->GetFileReferences().GetFileDependencies() == moved_file->GetFileReferences().GetFileDependencies());
-        REQUIRE(initial_file->IsExternalFile() == moved_file->IsExternalFile());
+        CHECK(initial_file->GetFileHeader().GetVersion() == moved_file->GetFileHeader().GetVersion());
+        CHECK(initial_file->GetFileHeader().GetFileSize() == moved_file->GetFileHeader().GetFileSize());
+        CHECK(initial_file->GetFileHeader().GetFileType().string() == moved_file->GetFileHeader().GetFileType().string());
+        CHECK(initial_file->GetIconData() == moved_file->GetIconData());
+        CHECK(initial_file->GetPropertiesData() == moved_file->GetPropertiesData());
+        CHECK(initial_file->GetOriginalData() == moved_file->GetOriginalData());
+        CHECK(initial_file->GetIntermediateData() == moved_file->GetIntermediateData());
+        CHECK(initial_file->GetFinalData() == moved_file->GetFinalData());
+        CHECK(initial_file->GetReferencesData() == moved_file->GetReferencesData());
+        CHECK(initial_file->GetFileReferences().GetFileLinks() == moved_file->GetFileReferences().GetFileLinks());
+        CHECK(initial_file->GetFileReferences().GetFileDependencies() == moved_file->GetFileReferences().GetFileDependencies());
+        CHECK(initial_file->IsExternalFile() == moved_file->IsExternalFile());
     }
 }
 

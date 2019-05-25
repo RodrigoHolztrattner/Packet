@@ -28,18 +28,18 @@ void ValidateCopy(Packet::System& _packet_system,
 
     AND_THEN("The old path must still be valid")
     {
-        REQUIRE(std::filesystem::exists(ResourceDirectory + "/" + _original_path) == true);
+        CHECK(std::filesystem::exists(ResourceDirectory + "/" + _original_path) == true);
     }
 
     AND_THEN("The new path must contain a new file")
     {
-        REQUIRE(std::filesystem::exists(ResourceDirectory + "/" + copy_result.value().string()) == true);
+        CHECK(std::filesystem::exists(ResourceDirectory + "/" + copy_result.value().string()) == true);
     }
 
     AND_THEN("The original and new file paths must be indexed")
     {
-        REQUIRE(_file_indexer.IsFileIndexed(Packet::Hash(_original_path)) == true);
-        REQUIRE(_file_indexer.IsFileIndexed(Packet::Hash(copy_result.value())) == true);
+        CHECK(_file_indexer.IsFileIndexed(Packet::Hash(_original_path)) == true);
+        CHECK(_file_indexer.IsFileIndexed(Packet::Hash(copy_result.value())) == true);
     }
 
     AND_THEN("The file data must be identical, except by the path")
@@ -48,19 +48,19 @@ void ValidateCopy(Packet::System& _packet_system,
         auto copied_file = _file_loader.LoadFile(Packet::Hash(copy_result.value()));
         REQUIRE(copied_file);
 
-        REQUIRE(initial_file->GetFileHeader().GetVersion() == copied_file->GetFileHeader().GetVersion());
-        REQUIRE(initial_file->GetFileHeader().GetFileSize() == copied_file->GetFileHeader().GetFileSize());
-        REQUIRE(initial_file->GetFileHeader().GetFileType().string() == copied_file->GetFileHeader().GetFileType().string());
-        REQUIRE(initial_file->GetFileHeader().GetPath().string() != copied_file->GetFileHeader().GetPath().string());
-        REQUIRE(initial_file->GetIconData() == copied_file->GetIconData());
-        REQUIRE(initial_file->GetPropertiesData() == copied_file->GetPropertiesData());
-        REQUIRE(initial_file->GetOriginalData() == copied_file->GetOriginalData());
-        REQUIRE(initial_file->GetIntermediateData() == copied_file->GetIntermediateData());
-        REQUIRE(initial_file->GetFinalData() == copied_file->GetFinalData());
-        REQUIRE(initial_file->GetReferencesData() == copied_file->GetReferencesData());
-        REQUIRE(initial_file->GetFileReferences().GetFileLinks() == copied_file->GetFileReferences().GetFileLinks());
-        REQUIRE(initial_file->GetFileReferences().GetFileDependencies() == copied_file->GetFileReferences().GetFileDependencies());
-        REQUIRE(initial_file->IsExternalFile() == copied_file->IsExternalFile());
+        CHECK(initial_file->GetFileHeader().GetVersion() == copied_file->GetFileHeader().GetVersion());
+        CHECK(initial_file->GetFileHeader().GetFileSize() == copied_file->GetFileHeader().GetFileSize());
+        CHECK(initial_file->GetFileHeader().GetFileType().string() == copied_file->GetFileHeader().GetFileType().string());
+        CHECK(initial_file->GetFileHeader().GetPath().string() != copied_file->GetFileHeader().GetPath().string());
+        CHECK(initial_file->GetIconData() == copied_file->GetIconData());
+        CHECK(initial_file->GetPropertiesData() == copied_file->GetPropertiesData());
+        CHECK(initial_file->GetOriginalData() == copied_file->GetOriginalData());
+        CHECK(initial_file->GetIntermediateData() == copied_file->GetIntermediateData());
+        CHECK(initial_file->GetFinalData() == copied_file->GetFinalData());
+        CHECK(initial_file->GetReferencesData() == copied_file->GetReferencesData());
+        CHECK(initial_file->GetFileReferences().GetFileLinks() == copied_file->GetFileReferences().GetFileLinks());
+        CHECK(initial_file->GetFileReferences().GetFileDependencies() == copied_file->GetFileReferences().GetFileDependencies());
+        CHECK(initial_file->IsExternalFile() == copied_file->IsExternalFile());
     }
 }
 

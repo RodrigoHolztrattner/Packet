@@ -44,7 +44,7 @@ SCENARIO("External files can be imported into the packet system", "[import]")
 
             AND_THEN("The file must be indexed")
             {
-                REQUIRE(file_indexer.IsFileIndexed(Packet::Hash(new_file_path)) == true);
+                CHECK(file_indexer.IsFileIndexed(Packet::Hash(new_file_path)) == true);
             }
 
             AND_WHEN("This new file is loaded as a packet file")
@@ -53,37 +53,37 @@ SCENARIO("External files can be imported into the packet system", "[import]")
 
                 THEN("The loaded file must be valid")
                 {
-                    REQUIRE(new_file != nullptr);
+                    CHECK(new_file != nullptr);
                 }
 
                 AND_THEN("Its header must contain the correct information")
                 {
-                    REQUIRE(new_file->GetFileHeader().GetVersion() == Packet::Version);
-                    REQUIRE(new_file->GetFileHeader().GetFileSize() > 0);
-                    REQUIRE(new_file->GetFileHeader().GetFileType().string() == "default");
-                    REQUIRE(new_file->GetFileHeader().GetPath().string() == new_file_path);
-                    REQUIRE(new_file->GetFileHeader().GetDataSize(Packet::FilePart::FinalData) == external_file_size);
+                    CHECK(new_file->GetFileHeader().GetVersion() == Packet::Version);
+                    CHECK(new_file->GetFileHeader().GetFileSize() > 0);
+                    CHECK(new_file->GetFileHeader().GetFileType().string() == "default");
+                    CHECK(new_file->GetFileHeader().GetPath().string() == new_file_path);
+                    CHECK(new_file->GetFileHeader().GetDataSize(Packet::FilePart::FinalData) == external_file_size);
                 }
 
                 AND_THEN("Its original and final datas must be equal to the original raw data collected")
                 {
-                    REQUIRE(new_file->GetOriginalData() == file_raw_data);
-                    REQUIRE(new_file->GetFinalData() == file_raw_data);
+                    CHECK(new_file->GetOriginalData() == file_raw_data);
+                    CHECK(new_file->GetFinalData() == file_raw_data);
                 }
 
                 AND_THEN("It must be considered an internal file")
                 {
-                    REQUIRE(new_file->IsExternalFile() == false);
+                    CHECK(new_file->IsExternalFile() == false);
                 }
 
                 AND_THEN("Its remaining data must be empty, or at least represent empty data")
                 {
-                    REQUIRE(new_file->GetIconData().size() == 0);
-                    REQUIRE(new_file->GetPropertiesData().size() == 0);
-                    REQUIRE(new_file->GetIntermediateData().size() == 0);
-                    REQUIRE(new_file->GetReferencesData().size() > 0);
-                    REQUIRE(new_file->GetFileReferences().GetFileLinks().size() == 0);
-                    REQUIRE(new_file->GetFileReferences().GetFileDependencies().size() == 0);
+                    CHECK(new_file->GetIconData().size() == 0);
+                    CHECK(new_file->GetPropertiesData().size() == 0);
+                    CHECK(new_file->GetIntermediateData().size() == 0);
+                    CHECK(new_file->GetReferencesData().size() > 0);
+                    CHECK(new_file->GetFileReferences().GetFileLinks().size() == 0);
+                    CHECK(new_file->GetFileReferences().GetFileDependencies().size() == 0);
                 }
             }
         }

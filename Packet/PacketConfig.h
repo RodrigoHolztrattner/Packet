@@ -185,19 +185,43 @@ public:
 	}
 
 	constexpr void
-		update(const char *const data, const std::size_t size) noexcept
+		apply(const char *const data, const std::size_t size) noexcept
 	{
 		auto acc = this->state_;
 		for (auto i = std::size_t{}; i < size; ++i)
 		{
+            // Ignore forward and backward slashes
+            if (data[i] == '/' || data[i] == '\\')
+            {
+                continue;
+            }
+
 			const auto next = std::size_t(data[i] );
 			acc = ResultT((acc ^ next) * Prime);
 		}
 		this->state_ = acc;
 	}
 
+    constexpr void
+        apply_for_path(const char* const data, const std::size_t size) noexcept
+    {
+        auto acc = this->state_;
+        for (auto i = std::size_t{}; i < size; ++i)
+        {
+            // Ignore forward and backward slashes
+            if (data[i] == '/' || data[i] == '\\')
+            {
+                continue;
+            }
+
+            const auto next = std::size_t(data[i]);
+            acc = ResultT((acc ^ next) * Prime);
+        }
+        this->state_ = acc;
+    }
+
 	constexpr void
-		update(const char *const data) noexcept
+        apply(const char *const data) noexcept
 	{
 		auto acc = this->state_;
 		for (auto i = std::size_t{}; data[i] != 0; ++i)
@@ -207,6 +231,24 @@ public:
 		}
 		this->state_ = acc;
 	}
+
+    constexpr void
+        apply_for_path(const char* const data) noexcept
+    {
+        auto acc = this->state_;
+        for (auto i = std::size_t{}; data[i] != 0; ++i)
+        {
+            // Ignore forward and backward slashes
+            if (data[i] == '/' || data[i] == '\\')
+            {
+                continue;
+            }
+
+            const auto next = std::size_t(data[i]);
+            acc = ResultT((acc ^ next) * Prime);
+        }
+        this->state_ = acc;
+    }
 
 	constexpr result_type
 		digest() const noexcept
@@ -223,18 +265,32 @@ using fnv1a_64 = basic_fnv1a<std::uint64_t,
 	UINT64_C(14695981039346656037),
 	UINT64_C(1099511628211)>;
 
-constexpr std::size_t fnv1a(const char *const _str, const std::size_t _size) noexcept
+constexpr uint64_t fnv1a(const char *const _str, const uint64_t _size) noexcept
 {
-	fnv1a_32 hashfn;;
-	hashfn.update(_str, _size);
+	fnv1a_64 hashfn;;
+	hashfn.apply(_str, _size);
 	return hashfn.digest();
 }
 
-constexpr std::size_t fnv1a(const char *const _str) noexcept
+constexpr uint64_t fnv1a_path(const char* const _str, const uint64_t _size) noexcept
 {
-	fnv1a_32 hashfn;;
-	hashfn.update(_str);
+    fnv1a_64 hashfn;;
+    hashfn.apply_for_path(_str, _size);
+    return hashfn.digest();
+}
+
+constexpr uint64_t fnv1a(const char *const _str) noexcept
+{
+	fnv1a_64 hashfn;;
+	hashfn.apply(_str);
 	return hashfn.digest();
+}
+
+constexpr uint64_t fnv1a_path(const char* const _str) noexcept
+{
+    fnv1a_64 hashfn;;
+    hashfn.apply_for_path(_str);
+    return hashfn.digest();
 }
 
 // The logger class
@@ -453,12 +509,12 @@ struct Hash
 	Hash() {}
 	Hash(const std::string _str)
 	{
-		m_Hash = fnv1a(_str.c_str());
+		m_Hash = fnv1a_path(_str.c_str());
 		m_Path = _str;
 	}
 	Hash(const char* _str)
 	{
-		m_Hash = fnv1a(_str);
+		m_Hash = fnv1a_path(_str);
 		m_Path = _str;
 	}
 

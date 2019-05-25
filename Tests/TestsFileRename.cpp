@@ -33,22 +33,22 @@ void ValidateRename(Packet::System& _packet_system,
     {
         AND_THEN("The old path must not be valid anymore")
         {
-            REQUIRE(std::filesystem::exists(ResourceDirectory + "/" + _original_path) == false);
+            CHECK(std::filesystem::exists(ResourceDirectory + "/" + _original_path) == false);
         }
     }
 
     AND_THEN("The file must be located on the new path")
     {
-        REQUIRE(std::filesystem::exists(ResourceDirectory + "/" + rename_result.value().string()) == true);
+        CHECK(std::filesystem::exists(ResourceDirectory + "/" + rename_result.value().string()) == true);
     }
 
     AND_THEN("The original file path must not be indexed and the new path must be")
     {
         if (!file_names_are_equal)
         {
-            REQUIRE(_file_indexer.IsFileIndexed(Packet::Hash(_original_path)) == false);
+            CHECK(_file_indexer.IsFileIndexed(Packet::Hash(_original_path)) == false);
         }
-        REQUIRE(_file_indexer.IsFileIndexed(Packet::Hash(rename_result.value())) == true);
+        CHECK(_file_indexer.IsFileIndexed(Packet::Hash(rename_result.value())) == true);
     }
 
     AND_THEN("The file data must be identical")
@@ -57,18 +57,18 @@ void ValidateRename(Packet::System& _packet_system,
         auto renamed_file = _file_loader.LoadFile(Packet::Hash(rename_result.value()));
         REQUIRE(renamed_file);
 
-        REQUIRE(initial_file->GetFileHeader().GetVersion() == renamed_file->GetFileHeader().GetVersion());
-        REQUIRE(initial_file->GetFileHeader().GetFileSize() == renamed_file->GetFileHeader().GetFileSize());
-        REQUIRE(initial_file->GetFileHeader().GetFileType().string() == renamed_file->GetFileHeader().GetFileType().string());
-        REQUIRE(initial_file->GetIconData() == renamed_file->GetIconData());
-        REQUIRE(initial_file->GetPropertiesData() == renamed_file->GetPropertiesData());
-        REQUIRE(initial_file->GetOriginalData() == renamed_file->GetOriginalData());
-        REQUIRE(initial_file->GetIntermediateData() == renamed_file->GetIntermediateData());
-        REQUIRE(initial_file->GetFinalData() == renamed_file->GetFinalData());
-        REQUIRE(initial_file->GetReferencesData() == renamed_file->GetReferencesData());
-        REQUIRE(initial_file->GetFileReferences().GetFileLinks() == renamed_file->GetFileReferences().GetFileLinks());
-        REQUIRE(initial_file->GetFileReferences().GetFileDependencies() == renamed_file->GetFileReferences().GetFileDependencies());
-        REQUIRE(initial_file->IsExternalFile() == renamed_file->IsExternalFile());
+        CHECK(initial_file->GetFileHeader().GetVersion() == renamed_file->GetFileHeader().GetVersion());
+        CHECK(initial_file->GetFileHeader().GetFileSize() == renamed_file->GetFileHeader().GetFileSize());
+        CHECK(initial_file->GetFileHeader().GetFileType().string() == renamed_file->GetFileHeader().GetFileType().string());
+        CHECK(initial_file->GetIconData() == renamed_file->GetIconData());
+        CHECK(initial_file->GetPropertiesData() == renamed_file->GetPropertiesData());
+        CHECK(initial_file->GetOriginalData() == renamed_file->GetOriginalData());
+        CHECK(initial_file->GetIntermediateData() == renamed_file->GetIntermediateData());
+        CHECK(initial_file->GetFinalData() == renamed_file->GetFinalData());
+        CHECK(initial_file->GetReferencesData() == renamed_file->GetReferencesData());
+        CHECK(initial_file->GetFileReferences().GetFileLinks() == renamed_file->GetFileReferences().GetFileLinks());
+        CHECK(initial_file->GetFileReferences().GetFileDependencies() == renamed_file->GetFileReferences().GetFileDependencies());
+        CHECK(initial_file->IsExternalFile() == renamed_file->IsExternalFile());
     }
 }
 
