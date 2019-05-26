@@ -35,8 +35,6 @@ PacketPlainFileIndexer::~PacketPlainFileIndexer()
     if (file.is_open())
     {
         nlohmann::json j = nlohmann::json::array();
-
-        // For each index data
         for (auto& [hash, index_data]: m_IndexDatas)
         {
             // If this index data doesn't have a cache, ignore it
@@ -48,9 +46,9 @@ PacketPlainFileIndexer::~PacketPlainFileIndexer()
             // Setup the new entry
             nlohmann::json cache_entry;
             cache_entry["file_is_external"] = index_data.file_cache->file_is_external;
-            cache_entry["icon_data"] = index_data.file_cache->icon_data;
-            cache_entry["file_properties"] = index_data.file_cache->file_properties;
-            cache_entry["file_path"] = index_data.file_load_information.file_path.string();
+            cache_entry["icon_data"]        = index_data.file_cache->icon_data;
+            cache_entry["file_properties"]  = index_data.file_cache->file_properties;
+            cache_entry["file_path"]        = index_data.file_load_information.file_path.string();
 
             j.push_back(cache_entry);
         }
@@ -68,10 +66,9 @@ bool PacketPlainFileIndexer::Initialize()
     std::ifstream file(IndexerCacheData, std::ios::binary);
     if (file.is_open())
     {
-        // Gather the cache data
+        // Get the cache data
         nlohmann::json j;
         file >> j;
-
         file.close();
 
         // For each cache data
@@ -215,41 +212,6 @@ std::optional<PacketPlainFileIndexer::CacheData> PacketPlainFileIndexer::GetCach
     }
 
     return std::nullopt;
-}
-
-std::vector<std::pair<Path, std::set<Path>>> PacketPlainFileIndexer::GetMissingDependenciesInfo() const
-{
-    std::shared_lock lock(m_Mutex);
-    std::vector<std::pair<Path, std::set<Path>>> result;
-    /*
-    // For each indexed data
-    for (auto& indexed_data_pair : m_IndexDatas)
-    {
-        const IndexData& indexed_data = indexed_data_pair.second;
-
-        // Setup the entry
-        std::pair<Path, std::set<Path>> entry;
-        entry = { indexed_data.file_load_information.file_path, {} };
-
-        // For each dependency
-        for (auto& file_dependency : indexed_data.file_references.GetFileDependencies())
-        {
-            // Check if this file is indexed
-            if (m_IndexDatas.find(Hash(file_dependency)) == m_IndexDatas.end())
-            {
-                // Insert into our entry
-                entry.second.insert(file_dependency);
-            }
-        }
-
-        // If we have at least one missing dependency, add the entry into our result
-        if (entry.second.size() > 0)
-        {
-            result.push_back(std::move(entry));
-        }
-    }
-    */
-    return result;
 }
 
 void PacketPlainFileIndexer::BuildFilesystemView(std::filesystem::path _resource_path)

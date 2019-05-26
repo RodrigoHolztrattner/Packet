@@ -104,10 +104,6 @@ public: // VIRTUAL METHODS //
     // Return the paths for all indexed files
     virtual std::set<Path> GetAllIndexedFiles() const = 0;
 
-    // Return a vector with pairs for each missing file dependency <file path, file missing dependency>
-    // Only works on Plain mode, else return an empty vector
-    virtual std::vector<std::pair<Path, std::set<Path>>> GetMissingDependenciesInfo() const;
-
 ///////////////
 // VARIABLES //
 protected: ////

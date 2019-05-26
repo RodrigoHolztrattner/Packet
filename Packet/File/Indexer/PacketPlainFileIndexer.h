@@ -110,9 +110,6 @@ public: //////////
     // Return the paths for all indexed files
     std::set<Path> GetAllIndexedFiles() const final;
 
-    // Return a vector with pairs for each missing file reference <file path, file missing references>
-    std::vector<std::pair<Path, std::set<Path>>> GetMissingDependenciesInfo() const final;
-
 protected:
 
     // Register or update a file cache for the given file path, this will also index the file path is not

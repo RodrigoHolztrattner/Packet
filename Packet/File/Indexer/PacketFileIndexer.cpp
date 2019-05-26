@@ -28,8 +28,3 @@ void PacketFileIndexer::RegisterFileModificationCallback(FileModificationCallbac
 {
     m_FileModificationCallbacks.push_back(_callback);
 }
-
-std::vector<std::pair<Path, std::set<Path>>> PacketFileIndexer::GetMissingDependenciesInfo() const
-{
-    return {};
-}
