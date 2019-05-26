@@ -50,28 +50,28 @@ class PacketPlainFileIndexer : public PacketFileIndexer
     // Friend classes
     friend PacketFileManager;
 
-    struct IndexData
+    struct CacheData
     {
-        // The file header
-        std::optional<PacketFileHeader> file_header;
+        // If this file is an external file
+        bool file_is_external;
 
         // The icon data
         std::vector<uint8_t> icon_data;
 
+        // The file properties json
+        nlohmann::json file_properties;
+    };
+
+    struct IndexData
+    {
         // The file extension
         std::string file_extension;
 
-        // The file properties json
-        nlohmann::json file_properties;
-
-        // If this file is an external file
-        bool file_is_external;
-
-        // This file references
-        PacketFileReferences file_references;
-
         // The file load information
         FileLoadInformation file_load_information;
+
+        // The file optional cache (not always available)
+        std::optional<CacheData> file_cache;
     };
 
 //////////////////
@@ -98,9 +98,6 @@ public: //////////
     // Return a file extension, if applicable
     std::optional<std::string> GetFileExtension(HashPrimitive _file_hash) const final;
 
-    // Return a file header, if applicable
-    std::optional<PacketFileHeader> GetFileHeader(HashPrimitive _file_hash) const final;
-
     // Return a file icon data
     std::vector<uint8_t> GetFileIconData(HashPrimitive _file_hash) const final;
 
@@ -118,23 +115,33 @@ public: //////////
 
 protected:
 
-    // Insert a resource index info into our map
-    void InsertFileIndexData(Path _file_path);
+    // Register or update a file cache for the given file path, this will also index the file path is not
+    // already indexed
+    void RegisterFileCacheData(Path _file_path, nlohmann::json _file_properties, std::vector<uint8_t> _icon_data, bool _file_is_external);
 
     // Remove a resource index info from our map
     void RemoveFileIndexData(Path _file_path);
 
 private:
 
+    // Load and cache a file data from the given file path
+    void LoadAndCacheFile(Path _file_path) const;
+
+    // Index a file from the given file path
+    void IndexFileFromPath(Path _file_path);
+
     // Index all files inside our packet path
     void BuildFilesystemView(std::filesystem::path _resource_path);
+
+    // Return the cache data for the given file hash
+    std::optional<CacheData> GetCacheForFileHash(HashPrimitive _file_hash) const;
 
 ///////////////
 // VARIABLES //
 private: //////
 
-    // Our index data
-    std::map<HashPrimitive, IndexData> m_IndexDatas;
+    // Our index data (mutable to allow caching while requesting data)
+    mutable std::map<HashPrimitive, IndexData> m_IndexDatas;
 
     // The file watcher manager, used to detect changes when an external
     // resource is modified

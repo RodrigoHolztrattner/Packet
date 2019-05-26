@@ -40,13 +40,13 @@ public: //////////
 public: //////////
 
     // Load a file
-    std::unique_ptr<PacketFile> LoadFile(Hash _file_hash) const final;
+    std::unique_ptr<PacketFile> LoadFile(HashPrimitive _file_hash) const final;
 
     // Load a file raw data
-    std::vector<uint8_t> LoadFileRawData(Hash _file_hash) const final;
+    std::vector<uint8_t> LoadFileRawData(HashPrimitive _file_hash) const final;
 
     // Load a file data part
-    std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> LoadFileDataPart(Hash _file_hash, FilePart _file_part) const final;
+    std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> LoadFileDataPart(HashPrimitive _file_hash, FilePart _file_part) const final;
 
 ///////////////
 // VARIABLES //

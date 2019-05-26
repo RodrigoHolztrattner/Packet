@@ -19,15 +19,32 @@ PacketPlainFileLoader::~PacketPlainFileLoader()
 {
 }
 
-std::unique_ptr<PacketFile> PacketPlainFileLoader::LoadFile(Hash _file_hash) const
+std::unique_ptr<PacketFile> PacketPlainFileLoader::LoadFile(HashPrimitive _file_hash) const
 {
-    return PacketFile::CreateFileFromRawData(LoadFileRawData(_file_hash), _file_hash.GetPath());
+    // Retrieve the file load information for this hash
+    // TODO: This can be optimized since the LoadFileRawData() function will call the function below too
+    auto file_load_info = m_FileIndexer.RetrieveFileLoadInformation(_file_hash);
+    if (!file_load_info)
+    {
+        // Invalid hash/file not indexed
+        return nullptr;
+    }
+
+    return PacketFile::CreateFileFromRawData(LoadFileRawData(_file_hash), file_load_info->file_path);
 }
 
-std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) const
+std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(HashPrimitive _file_hash) const
 {
+    // Retrieve the file load information for this hash
+    auto file_load_info = m_FileIndexer.RetrieveFileLoadInformation(_file_hash);
+    if (!file_load_info)
+    {
+        // Invalid hash/file not indexed
+        return {};
+    }
+
     // Transform the file hash into a valid path
-    std::filesystem::path file_path = MergeSystemPathWithFilePath(m_PacketPath, _file_hash.GetPath());
+    std::filesystem::path file_path = MergeSystemPathWithFilePath(m_PacketPath, file_load_info->file_path);
 
     // Check if the file exist and is valid
     if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))
@@ -60,10 +77,18 @@ std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(Hash _file_hash) con
     return entire_file_data;
 }
 
-std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> PacketPlainFileLoader::LoadFileDataPart(Hash _file_hash, FilePart _file_part) const
+std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> PacketPlainFileLoader::LoadFileDataPart(HashPrimitive _file_hash, FilePart _file_part) const
 {
+    // Retrieve the file load information for this hash
+    auto file_load_info = m_FileIndexer.RetrieveFileLoadInformation(_file_hash);
+    if (!file_load_info)
+    {
+        // Invalid hash/file not indexed
+        return {};
+    }
+
     // Transform the file hash into a valid path
-    std::filesystem::path file_path = MergeSystemPathWithFilePath(m_PacketPath, _file_hash.GetPath());
+    std::filesystem::path file_path = MergeSystemPathWithFilePath(m_PacketPath, file_load_info->file_path);
 
     // Check if the file exist and is valid
     if (!std::filesystem::exists(file_path) || std::filesystem::is_directory(file_path))

@@ -56,13 +56,13 @@ public: //////////
 public: //////////
 
     // Load a file
-    virtual std::unique_ptr<PacketFile> LoadFile(Hash _file_hash) const = 0;
+    virtual std::unique_ptr<PacketFile> LoadFile(HashPrimitive _file_hash) const = 0;
 
     // Load a file raw data
-    virtual std::vector<uint8_t> LoadFileRawData(Hash _file_hash) const = 0;
+    virtual std::vector<uint8_t> LoadFileRawData(HashPrimitive _file_hash) const = 0;
 
     // Load a file data part
-    virtual std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> LoadFileDataPart(Hash _file_hash, FilePart _file_part) const = 0;
+    virtual std::optional<std::tuple<PacketFileHeader, std::vector<uint8_t>>> LoadFileDataPart(HashPrimitive _file_hash, FilePart _file_part) const = 0;
 
 ///////////////
 // VARIABLES //

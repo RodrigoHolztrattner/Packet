@@ -92,9 +92,6 @@ public: // VIRTUAL METHODS //
     // Return a file extension, if applicable
     virtual std::optional<std::string> GetFileExtension(HashPrimitive _file_hash) const = 0;
 
-    // Return a file header, if applicable
-    virtual std::optional<PacketFileHeader> GetFileHeader(HashPrimitive _file_hash) const = 0;
-
     // Return a file icon data
     virtual std::vector<uint8_t> GetFileIconData(HashPrimitive _file_hash) const = 0;
 

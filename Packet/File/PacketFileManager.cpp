@@ -143,6 +143,9 @@ bool PacketFileManager::WriteFile(
         }
     }
 
+    // Duplicate the icon data for cache usage
+    auto duplicated_icon_data = _icon_data;
+
     // Generate the file
     auto file = PacketFile::GenerateFileFromData(
         _target_path,
@@ -165,7 +168,7 @@ bool PacketFileManager::WriteFile(
     }
 
     // Insert a new entry or update an existing one on the file indexer
-    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(_target_path);
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RegisterFileCacheData(_target_path, {}, duplicated_icon_data, false);
 
     return true;
 }
@@ -207,6 +210,9 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
         return std::nullopt;
     }
 
+    // The icon data that will be used for index caching
+    std::vector<uint8_t> file_icon_data;
+
     // Check if the source file is an external file, if true just perform a normal copy
     if (source_file->IsExternalFile())
     {
@@ -240,6 +246,9 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
         // Clear the file links
         duplicated_file->ClearFileLinks();
 
+        // Retrieve the icon data that will be sent to the file indexer
+        file_icon_data = duplicated_file->GetIconData();
+
         // Save the file
         if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Copy))
         {
@@ -249,7 +258,7 @@ std::optional<Path> PacketFileManager::CopyFile(Path _source_file_path, Path _ta
     }
 
     // Insert a new entry on the file plain indexer
-    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(target_file_path);
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RegisterFileCacheData(target_file_path, {}, file_icon_data, false);
 
     return target_file_path;
 }
@@ -297,6 +306,9 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
         return std::nullopt;
     }
 
+    // The icon data that will be used for index caching
+    std::vector<uint8_t> file_icon_data;
+
     // Check if the source file is an external file, if true just perform a normal move
     if (source_file->IsExternalFile())
     {
@@ -327,6 +339,9 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
         // Update the duplicated file path
         duplicated_file->UpdateFilePath(target_file_path);
 
+        // Retrieve the icon data that will be sent to the file indexer
+        file_icon_data = duplicated_file->GetIconData();
+
         // Save the file
         if (!m_FileSaver->SaveFile(std::move(duplicated_file), SaveOperation::Move))
         {
@@ -343,7 +358,7 @@ std::optional<Path> PacketFileManager::MoveFile(Path _source_file_path, Path _ta
     }
 
     // Insert a new entry on the file plain indexer
-    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(target_file_path);
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RegisterFileCacheData(target_file_path, {}, file_icon_data, false);
 
     // Delete the old entry from the file plain indexer
     static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RemoveFileIndexData(_source_file_path);
@@ -397,6 +412,9 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
         return std::nullopt;
     }
 
+    // The icon data that will be used for index caching
+    std::vector<uint8_t> file_icon_data;
+
     // Check if the source file is an external file, if true just perform a normal rename
     if (source_file->IsExternalFile())
     {
@@ -419,6 +437,9 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
         // Update the file path
         source_file->UpdateFilePath(new_file_path);
 
+        // Retrieve the icon data that will be sent to the file indexer
+        file_icon_data = source_file->GetIconData();
+
         // Save the file
         if (!m_FileSaver->SaveFile(std::move(source_file), SaveOperation::Move))
         {
@@ -435,7 +456,7 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
     }
 
     // Insert a new entry on the file plain indexer
-    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->InsertFileIndexData(new_file_path);
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RegisterFileCacheData(new_file_path, {}, file_icon_data, false);
 
     // Delete the old entry from the file plain indexer
     static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RemoveFileIndexData(_source_file_path);
