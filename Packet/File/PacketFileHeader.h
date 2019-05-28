@@ -39,7 +39,6 @@ public:
 
         // Basic information
         uint32_t      version    = PacketVersion;
-        FileType      file_type;
         Path          file_path;
         HashPrimitive file_hash  = 0;
         FileDataSize  total_size = sizeof(FileHeaderData);
@@ -74,7 +73,6 @@ public: //////////
 
     // Return this header info
     uint32_t GetVersion()      const;
-    FileType GetFileType()     const;
     Path GetPath()             const;
     Path GetOriginalPath()     const;
     HashPrimitive GetHash()    const;
@@ -97,7 +95,6 @@ protected:
 
     // Set this header info
     void SetFileSize(FileDataSize _file_size);
-    void SetFileType(FileType _file_type);
     void UpdateDataSizes(
         FileDataSize _icon_size,
         FileDataSize _properties_size,

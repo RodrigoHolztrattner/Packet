@@ -26,7 +26,7 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the names for all paths that are going to be used on this test
-        auto import_file_path         = "Sounds/imported_file.pckfile";
+        auto import_file_dir         = "Sounds/";
         auto first_created_file_path  = "Images/first_created_file.pckfile";
         auto second_created_file_path = "Images/second_created_file.pckfile";
         auto third_created_file_path  = "Shaders/third_created_file.pckfile";
@@ -35,11 +35,11 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
         auto renamed_file_name        = "renamed_file.pckfile";
 
         // Import the initial file
-        bool import_result = file_importer.ImportExternalFile(ExternalFilePath, import_file_path);
-        REQUIRE(import_result == true);
+        auto import_result = file_importer.ImportExternalFile(ExternalFilePath, import_file_dir);
+        REQUIRE(import_result);
+        auto import_file_path = import_result.value().string();
 
         // Setup the initial data for the files that will be created
-        Packet::FileType       file_type = "custom";
         std::vector<uint8_t>   icon_data = std::vector<uint8_t>();
         std::vector<uint8_t>   properties_data = std::vector<uint8_t>();
         std::vector<uint8_t>   original_data = std::vector<uint8_t>(100);
@@ -60,7 +60,6 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
 
                 bool write_result = packetSystem.GetFileManager().WriteFile(
                     target_path,
-                    file_type,
                     std::move(file_icon_data),
                     std::move(file_properties_data),
                     std::move(file_original_data),
@@ -82,7 +81,6 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
 
                 bool write_result = packetSystem.GetFileManager().WriteFile(
                     target_path,
-                    file_type,
                     std::move(file_icon_data),
                     std::move(file_properties_data),
                     std::move(file_original_data),
@@ -104,7 +102,6 @@ SCENARIO("Internal files depend and reference other internal files", "[reference
 
                 bool write_result = packetSystem.GetFileManager().WriteFile(
                     target_path,
-                    file_type,
                     std::move(file_icon_data),
                     std::move(file_properties_data),
                     std::move(file_original_data),

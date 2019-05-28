@@ -60,7 +60,6 @@ void ValidateMove(Packet::System& _packet_system,
 
         CHECK(initial_file->GetFileHeader().GetVersion() == moved_file->GetFileHeader().GetVersion());
         CHECK(initial_file->GetFileHeader().GetFileSize() == moved_file->GetFileHeader().GetFileSize());
-        CHECK(initial_file->GetFileHeader().GetFileType().string() == moved_file->GetFileHeader().GetFileType().string());
         CHECK(initial_file->GetIconData() == moved_file->GetIconData());
         CHECK(initial_file->GetPropertiesData() == moved_file->GetPropertiesData());
         CHECK(initial_file->GetOriginalData() == moved_file->GetOriginalData());
@@ -90,11 +89,12 @@ SCENARIO("Internal files can be moved to any location inside the packet path", "
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the path we will import the file
-        auto file_path = "Sounds/imported_file.pckfile";
+        auto file_dir = "Sounds/";
 
         // Import the file
-        bool import_result = file_importer.ImportExternalFile(ExternalFilePath, file_path);
-        REQUIRE(import_result == true);
+        auto import_result = file_importer.ImportExternalFile(ExternalFilePath, file_dir);
+        REQUIRE(import_result);
+        auto import_file_path = import_result.value().string();
 
         WHEN("The packet file is moved to a different path")
         {
@@ -104,7 +104,7 @@ SCENARIO("Internal files can be moved to any location inside the packet path", "
             ValidateMove(packetSystem,
                          file_indexer,
                          file_loader,
-                         file_path,
+                         import_file_path,
                          move_target_path);
         }
 
@@ -116,19 +116,19 @@ SCENARIO("Internal files can be moved to any location inside the packet path", "
             ValidateMove(packetSystem,
                          file_indexer,
                          file_loader,
-                         file_path,
+                         import_file_path,
                          same_folder_move_path);
         }
 
         AND_WHEN("The packet file is moved to the same folder with the same name")
         {
             // Setup the path we will move the file
-            auto same_folder_move_path = file_path;
+            auto same_folder_move_path = import_file_path;
 
             ValidateMove(packetSystem,
                          file_indexer,
                          file_loader,
-                         file_path,
+                         import_file_path,
                          same_folder_move_path);
         }
     }

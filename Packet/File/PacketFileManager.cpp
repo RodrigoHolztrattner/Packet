@@ -55,7 +55,7 @@ bool PacketFileManager::Initialize()
         *m_FileIndexer,
         *m_FileLoader,
         *m_FileReferenceManager,
-        std::bind(&PacketFileManager::WriteFile, this, _1, _2, _3, _4, _5, _6, _7, _8, _9),
+        std::bind(&PacketFileManager::WriteFile, this, _1, _2, _3, _4, _5, _6, _7, _8),
         [&](std::string _file_extension) {return m_Converters.find(_file_extension) != m_Converters.end() ? m_Converters.find(_file_extension)->second.get() : m_DefaultConverter.get(); },
         m_PacketPath);
 
@@ -91,7 +91,6 @@ void PacketFileManager::RegisterFileConverter(std::string _file_extension, std::
 
 bool PacketFileManager::WriteFile(
     Path                   _target_path,
-    FileType               _file_type,
     std::vector<uint8_t>&& _icon_data,
     std::vector<uint8_t>&& _properties_data,
     std::vector<uint8_t>&& _original_data,
@@ -102,12 +101,6 @@ bool PacketFileManager::WriteFile(
 {
     // Check if this operation is supported on the current mode
     if (m_OperationMode == OperationMode::Condensed)
-    {
-        return false;
-    }
-
-    // Check if the file extension is correct
-    if (_target_path.path().extension() != PacketExtension)
     {
         return false;
     }
@@ -149,7 +142,6 @@ bool PacketFileManager::WriteFile(
     // Generate the file
     auto file = PacketFile::GenerateFileFromData(
         _target_path,
-        _file_type,
         std::move(_icon_data),
         std::move(_properties_data),
         std::move(_original_data),
@@ -508,7 +500,7 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
     }
 
     // Check if both files are compatible
-    if (source_file->GetFileHeader().GetFileType() != target_file->GetFileHeader().GetFileType())
+    if (_source_file_path.path().extension() != _target_file_path.path().extension())
     {
         SignalOperationError("RedirectFileDependencies", "Source and target files are incompatible");
         return false;

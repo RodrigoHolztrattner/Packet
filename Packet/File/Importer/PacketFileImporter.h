@@ -56,7 +56,7 @@ public: //////////
         const PacketReferenceManager&                     _reference_manager,
         FileWriteCallback                                 _file_write_callback,
         std::function<PacketFileConverter* (std::string)> _retrieve_converter_for_type_callback,
-        std::wstring                                      _resource_path);
+        std::filesystem::path                             _packet_path);
 	~PacketFileImporter();
 
 //////////////////
@@ -67,7 +67,7 @@ public: //////////
     bool Initialize();
 
     // Import an external file
-    bool ImportExternalFile(std::filesystem::path _file_original_path, Path _target_path, FileImportFlags _import_flags = 0) const;
+    std::optional<Path> ImportExternalFile(std::filesystem::path _file_original_path, Path _target_dir, FileImportFlags _import_flags = 0) const;
 
 protected:
 
@@ -80,8 +80,8 @@ private: //////
     const PacketFileLoader& m_FileLoader;
     const PacketReferenceManager& m_ReferenceManager;
 
-    // Our resource path
-    std::wstring m_ResourcePath;
+    // Our packet path
+    std::filesystem::path m_PacketPath;
 
     // The default converter
     std::unique_ptr<PacketFileConverter> m_DefaultConverter;

@@ -34,7 +34,6 @@ std::unique_ptr<PacketFile> PacketFile::CreateFileFromExternal(std::vector<uint8
 
     // Create an empty file header data object and set its initial values
     PacketFileHeader file_header;
-    file_header.SetFileType("external");
     file_header.SetPath(_file_path);
 
     // Create a new empty file marked as external one
@@ -160,7 +159,6 @@ std::vector<uint8_t> PacketFile::CreateRawDataFromFile(std::unique_ptr<PacketFil
 
 std::unique_ptr<PacketFile> PacketFile::GenerateFileFromData(
     Path                   _file_path,
-    FileType               _file_type,
     std::vector<uint8_t>&& _icon_data,
     std::vector<uint8_t>&& _properties_data,
     std::vector<uint8_t>&& _original_data, 
@@ -170,7 +168,6 @@ std::unique_ptr<PacketFile> PacketFile::GenerateFileFromData(
 {
     // Create an empty file header data object and set its initial values
     PacketFileHeader file_header;
-    file_header.SetFileType(_file_type);
     file_header.SetPath(_file_path);
 
     // Create the file references object and generate the vector data

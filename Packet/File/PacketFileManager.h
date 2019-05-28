@@ -68,7 +68,6 @@ public: // FILE OPERATIONS //
     // Write to a file, if the file doesn't exist it will be created if specified by the FileWriteFlags
     bool WriteFile(
         Path                   _target_path,
-        FileType               _file_type,
         std::vector<uint8_t>&& _icon_data,
         std::vector<uint8_t>&& _properties_data,
         std::vector<uint8_t>&& _original_data,

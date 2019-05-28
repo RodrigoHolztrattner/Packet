@@ -26,16 +26,17 @@ SCENARIO("Internal files can be deleted", "[delete]")
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the path we will import the file
-        auto file_path = "Sounds/imported_file.pckfile";
+        auto file_dir = "Sounds/";
 
         // Import the file
-        bool import_result = file_importer.ImportExternalFile(ExternalFilePath, file_path);
-        REQUIRE(import_result == true);
+        auto import_result = file_importer.ImportExternalFile(ExternalFilePath, file_dir);
+        REQUIRE(import_result);
+        auto import_file_path = import_result.value().string();
 
         WHEN("The packet file is deleted")
         {
             // Delete the file
-            bool delete_result = packetSystem.GetFileManager().DeleteFile(file_path);
+            bool delete_result = packetSystem.GetFileManager().DeleteFile(import_file_path);
 
             AND_THEN("The delete result must be true")
             {

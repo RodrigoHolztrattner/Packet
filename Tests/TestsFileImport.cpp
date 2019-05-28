@@ -33,23 +33,25 @@ SCENARIO("External files can be imported into the packet system", "[import]")
         WHEN("An external file is imported")
         {
             // Setup the path we will import the file
-            auto new_file_path = "Sounds/imported_file.pckfile";
+            auto new_file_dir = "Sounds/";
 
-            bool import_result = file_importer.ImportExternalFile(ExternalFilePath, new_file_path);
+            auto import_result = file_importer.ImportExternalFile(ExternalFilePath, new_file_dir);
+            REQUIRE(import_result);
+            auto import_file_path = import_result.value().string();
 
             THEN("The import must be successful")
             {
-                REQUIRE(import_result == true);
+                REQUIRE(import_result);
             }
 
             AND_THEN("The file must be indexed")
             {
-                CHECK(file_indexer.IsFileIndexed(Packet::Hash(new_file_path)) == true);
+                CHECK(file_indexer.IsFileIndexed(Packet::Hash(import_file_path)) == true);
             }
 
             AND_WHEN("This new file is loaded as a packet file")
             {
-                auto new_file = file_loader.LoadFile(Packet::Hash(new_file_path));
+                auto new_file = file_loader.LoadFile(Packet::Hash(import_file_path));
 
                 THEN("The loaded file must be valid")
                 {
@@ -60,8 +62,7 @@ SCENARIO("External files can be imported into the packet system", "[import]")
                 {
                     CHECK(new_file->GetFileHeader().GetVersion() == Packet::Version);
                     CHECK(new_file->GetFileHeader().GetFileSize() > 0);
-                    CHECK(new_file->GetFileHeader().GetFileType().string() == "default");
-                    CHECK(new_file->GetFileHeader().GetPath().string() == new_file_path);
+                    CHECK(new_file->GetFileHeader().GetPath() == import_file_path);
                     CHECK(new_file->GetFileHeader().GetDataSize(Packet::FilePart::FinalData) == external_file_size);
                 }
 

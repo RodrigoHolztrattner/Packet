@@ -17,13 +17,13 @@ PacketFileImporter::PacketFileImporter(
     const PacketReferenceManager&                     _reference_manager,
     FileWriteCallback                                 _file_write_callback,
     std::function<PacketFileConverter* (std::string)> _retrieve_converter_for_type_callback,
-    std::wstring                                      _resource_path) :
+    std::filesystem::path                             _packet_path) :
     m_FileIndexer(_file_indexer),
     m_FileLoader(_file_loader), 
     m_ReferenceManager(_reference_manager), 
     m_FileWriteCallback(_file_write_callback), 
     m_RetrieveConverterForTypeCallback(_retrieve_converter_for_type_callback),
-    m_ResourcePath(_resource_path)
+    m_PacketPath(_packet_path)
 {
 	// Set the initial data
 	// ...
@@ -39,33 +39,21 @@ bool PacketFileImporter::Initialize()
     return true;
 }
 
-bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original_path, Path _target_path, FileImportFlags _import_flags) const
+std::optional<Path> PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original_path, Path _target_dir, FileImportFlags _import_flags) const
 {
     // Check if the file exist and is valid
     if (!std::filesystem::exists(_file_original_path) || std::filesystem::is_directory(_file_original_path))
     {
         // Invalid file
-        return false;
+        return std::nullopt;
     }
 
-    // Check if the file extension is correct
-    if (_target_path.path().extension() != PacketExtension)
+    // Setup the target path and verify if it's valid and a directory
+    auto target_system_path = MergeSystemPathWithFilePath(m_PacketPath, _target_dir);
+    if (!std::filesystem::exists(target_system_path) || !std::filesystem::is_directory(target_system_path))
     {
-        return false;
-    }
-
-    // Check if we already have this file imported, if true, check if we must overwrite it
-    bool file_already_indexed = m_FileIndexer.IsFileIndexed(Hash(_target_path));
-    if (file_already_indexed && !(_import_flags & static_cast<FileImportFlags>(FileImportFlagBits::Overwrite)))
-    {
-        // The file already exist and we are not overwriting it
-        return false;
-    }
-    else if (file_already_indexed)
-    {
-        // Delete the old file
-        // ...
-        throw "Not implemented yet";
+        // Invalid target path
+        return std::nullopt;
     }
 
     // Determine the file original extension
@@ -75,7 +63,24 @@ bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original
     PacketFileConverter* converter = m_RetrieveConverterForTypeCallback(file_extension);
     if (!converter)
     {
-        return false;
+        return std::nullopt;
+    }
+
+    // Setup the target complete path
+    Path taget_path = _target_dir.string() + _file_original_path.stem().string() + converter->GetConversionFileExtension().string();
+
+    // Check if we already have this file imported, if true, check if we must overwrite it
+    bool file_already_indexed = m_FileIndexer.IsFileIndexed(Hash(taget_path));
+    if (file_already_indexed && !(_import_flags & static_cast<FileImportFlags>(FileImportFlagBits::Overwrite)))
+    {
+        // The file already exist and we are not overwriting it
+        return std::nullopt;
+    }
+    else if (file_already_indexed)
+    {
+        // Delete the old file
+        // ...
+        throw "Not implemented yet";
     }
 
     // Open the file and check if we are ok to proceed
@@ -83,7 +88,7 @@ bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original
     if (!file.is_open())
     {
         // Error opening the file!
-        return false;
+        return std::nullopt;
     }
 
     // Reserve space for the entire file
@@ -112,13 +117,12 @@ bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original
         intermediate_data,
         final_data))
     {
-        return false;
+        return std::nullopt;
     }
 
     // Write the file
     if (!m_FileWriteCallback(
-        _target_path,
-        converter->GetConversionFileType(),
+        taget_path,
         std::move(icon_data),
         std::move(properties_data),
         std::move(entire_file_data_copy),
@@ -127,8 +131,8 @@ bool PacketFileImporter::ImportExternalFile(std::filesystem::path _file_original
         {},
         static_cast<FileWriteFlags>(FileWriteFlagBits::Overwrite)))
     {
-        return false;
+        return std::nullopt;
     }
 
-    return true;
+    return taget_path;
 }

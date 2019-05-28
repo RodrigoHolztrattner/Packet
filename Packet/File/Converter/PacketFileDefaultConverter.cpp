@@ -31,7 +31,7 @@ bool PacketFileDefaultConverter::ConvertExternalFile(
     return true;
 }
 
-FileType PacketFileDefaultConverter::GetConversionFileType() const
+std::filesystem::path PacketFileDefaultConverter::GetConversionFileExtension() const
 {
-    return "default";
+    return DefaultConverterExtension;
 }

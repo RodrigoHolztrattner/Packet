@@ -42,7 +42,7 @@ public: //////////
         std::vector<uint8_t>& _final_data) const = 0;
 
     // Return the type that this converter produces
-    virtual FileType GetConversionFileType() const = 0;
+    virtual std::filesystem::path GetConversionFileExtension() const = 0;
 
 ///////////////
 // VARIABLES //

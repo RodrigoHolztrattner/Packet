@@ -50,7 +50,6 @@ void ValidateCopy(Packet::System& _packet_system,
 
         CHECK(initial_file->GetFileHeader().GetVersion() == copied_file->GetFileHeader().GetVersion());
         CHECK(initial_file->GetFileHeader().GetFileSize() == copied_file->GetFileHeader().GetFileSize());
-        CHECK(initial_file->GetFileHeader().GetFileType().string() == copied_file->GetFileHeader().GetFileType().string());
         CHECK(initial_file->GetFileHeader().GetPath().string() != copied_file->GetFileHeader().GetPath().string());
         CHECK(initial_file->GetIconData() == copied_file->GetIconData());
         CHECK(initial_file->GetPropertiesData() == copied_file->GetPropertiesData());
@@ -81,11 +80,12 @@ SCENARIO("Internal files can be copied to any location inside the packet path", 
         auto & file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the path we will import the file
-        auto file_path = "Sounds/imported_file.pckfile";
+        auto file_dir = "Sounds/";
 
         // Import the file
-        bool import_result = file_importer.ImportExternalFile(ExternalFilePath, file_path);
-        REQUIRE(import_result == true);
+        auto import_result = file_importer.ImportExternalFile(ExternalFilePath, file_dir);
+        REQUIRE(import_result);
+        auto file_path = import_result.value().string();
 
         WHEN("The packet file is copied to a different path")
         {

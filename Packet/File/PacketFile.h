@@ -75,7 +75,6 @@ public: //////////
     // added when attempting to save this file into disk
     static std::unique_ptr<PacketFile> GenerateFileFromData(
         Path                   _file_path,
-        FileType               _file_type,
         std::vector<uint8_t>&& _icon_data,
         std::vector<uint8_t>&& _properties_data,
         std::vector<uint8_t>&& _original_data,

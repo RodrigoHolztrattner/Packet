@@ -33,14 +33,14 @@ PacketNamespaceBegin(Packet)
 // GLOBAL //
 ////////////
 
-static const uint32_t Version               = __development__Packet::PacketVersion;
-static const uint32_t IconLengthSize        = __development__Packet::IconLengthSize;
-static const uint32_t IconTotalSize         = __development__Packet::IconTotalSize;
-static const uint32_t MaximumPackageSize    = __development__Packet::MaximumPackageSize;
-static const uint32_t MaximumPackageFiles   = __development__Packet::MaximumPackageFiles;
-static const uint32_t CondensedMinorVersion = __development__Packet::CondensedMinorVersion;
-static const uint32_t CondensedMajorVersion = __development__Packet::CondensedMajorVersion;
-static const std::string PacketExtension    = __development__Packet::PacketExtension;
+static const uint32_t Version                       = __development__Packet::PacketVersion;
+static const uint32_t IconLengthSize                = __development__Packet::IconLengthSize;
+static const uint32_t IconTotalSize                 = __development__Packet::IconTotalSize;
+static const uint32_t MaximumPackageSize            = __development__Packet::MaximumPackageSize;
+static const uint32_t MaximumPackageFiles           = __development__Packet::MaximumPackageFiles;
+static const uint32_t CondensedMinorVersion         = __development__Packet::CondensedMinorVersion;
+static const uint32_t CondensedMajorVersion         = __development__Packet::CondensedMajorVersion;
+static const std::string DefaultConverterExtension  = __development__Packet::DefaultConverterExtension;
 
 typedef __development__Packet::OperationMode				     OperationMode;
 typedef __development__Packet::BackupFlags				         BackupFlags;
@@ -65,7 +65,6 @@ typedef __development__Packet::PacketSystem					     System;
 
 typedef __development__Packet::Hash							     Hash;
 typedef __development__Packet::Path							     Path;
-typedef __development__Packet::FileType							 FileType;
 typedef __development__Packet::PacketResourceData			     ResourceData;
 typedef __development__Packet::PacketResourceBuildInfo		     ResourceBuildInfo;
 typedef __development__Packet::ThreadIndexRetrieveMethod	     ThreadIndexRetrieveMethod;

@@ -26,16 +26,16 @@ SCENARIO("Internal files can be created", "[create]")
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the path we will import the file
-        auto import_file_path = "Sounds/imported_file.pckfile";
+        auto import_file_dir = "Sounds/";
 
         // Import the file
-        bool import_result = file_importer.ImportExternalFile(ExternalFilePath, import_file_path);
-        REQUIRE(import_result == true);
+        auto import_result = file_importer.ImportExternalFile(ExternalFilePath, import_file_dir);
+        REQUIRE(import_result);
+        auto import_file_path = import_result.value().string();
 
         AND_GIVEN("Some valid file data")
         {
             Packet::Path           target_path       = "Sounds/created_file.pckfile";
-            Packet::FileType       file_type         = "custom";
             std::vector<uint8_t>   icon_data         = std::vector<uint8_t>();
             std::vector<uint8_t>   properties_data   = std::vector<uint8_t>();
             std::vector<uint8_t>   original_data     = std::vector<uint8_t>(100);
@@ -47,7 +47,6 @@ SCENARIO("Internal files can be created", "[create]")
             {
                 bool write_result = packetSystem.GetFileManager().WriteFile(
                     target_path,
-                    file_type,
                     std::move(icon_data),
                     std::move(properties_data),
                     std::move(original_data),
@@ -78,7 +77,6 @@ SCENARIO("Internal files can be created", "[create]")
                     
                     CHECK(created_file->GetFileHeader().GetVersion() == Packet::Version);
                     CHECK(created_file->GetFileHeader().GetFileSize() > 0);
-                    CHECK(created_file->GetFileHeader().GetFileType().string() == "custom");
                     CHECK(created_file->GetFileHeader().GetPath() == target_path);
                     CHECK(created_file->GetIconData().size() == 0);
                     CHECK(created_file->GetPropertiesData().size() == 0);

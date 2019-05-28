@@ -40,37 +40,37 @@ PacketDevelopmentNamespaceBegin(Packet)
 /////////////////////
 
 // Our current version
-static const uint32_t PacketVersion             = 0;
+static const uint32_t PacketVersion                 = 0;
 
 // The file magic, used to verify the initial integrity
-static const uint32_t FileMagic                 = 699555;
+static const uint32_t FileMagic                     = 699555;
 
 // The maximum file path name size (including the null terminated char, max length 119)
-static const int FilePathSize                   = 120;
+static const int FilePathSize                       = 120;
 
 // The maximum file type name size
-static const int FileTypeSize                   = 32;
+static const int FileTypeSize                       = 32;
 
 // The icon image length and total size
-static const int IconLengthSize                 = 64;
-static const int IconTotalSize                  = IconLengthSize * IconLengthSize * 4;
+static const int IconLengthSize                     = 64;
+static const int IconTotalSize                      = IconLengthSize * IconLengthSize * 4;
 
 // The maximum package file size and the maximum number of files inside each package
-static const uint64_t MaximumPackageSize        = 536870912;
-static const uint32_t MaximumPackageFiles       = 2048;
+static const uint64_t MaximumPackageSize            = 536870912;
+static const uint32_t MaximumPackageFiles           = 2048;
 
 // The reference file extension and the condensed file name/extension
-static const std::string PacketExtension        = ".pckfile";
-static const std::string CondensedName          = "Data";
-static const std::string CondensedExtension     = ".pack";
-static const std::string CondensedInfoName      = "Data";
-static const std::string CondensedInfoExtension = ".manifest";
-static const std::string TemporaryFileExtension = ".temp";
-static const std::string IndexerCacheData       = "IndexCache.tmp";
+static const std::string CondensedName              = "Data";
+static const std::string CondensedExtension         = ".pack";
+static const std::string CondensedInfoName          = "Data";
+static const std::string CondensedInfoExtension     = ".manifest";
+static const std::string TemporaryFileExtension     = ".temp";
+static const std::string IndexerCacheData           = "IndexCache.tmp";
+static const std::string DefaultConverterExtension  = ".pckdefault";
 
 // The current condensed file minor and major versions
-static const uint16_t CondensedMinorVersion     = 1;
-static const uint16_t CondensedMajorVersion     = 0;
+static const uint16_t CondensedMinorVersion         = 1;
+static const uint16_t CondensedMajorVersion         = 0;
 
 // The operation modes
 enum class OperationMode
@@ -486,7 +486,7 @@ namespace ns {
 } // namespace ns
 
 typedef FixedSizeString<FilePathSize> Path;
-typedef FixedSizeString<FileTypeSize> FileType;
+// typedef FixedSizeString<FileTypeSize> FileType;
 typedef uint64_t FileDataPosition;
 typedef uint64_t FileDataSize;
 
@@ -627,7 +627,6 @@ static bool CompareFilenames(Path _first, Path _second)
 
 typedef std::function<bool(
     Path,
-    FileType,
     std::vector<uint8_t>&&,
     std::vector<uint8_t>&&,
     std::vector<uint8_t>&&,

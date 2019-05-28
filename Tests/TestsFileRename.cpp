@@ -59,7 +59,6 @@ void ValidateRename(Packet::System& _packet_system,
 
         CHECK(initial_file->GetFileHeader().GetVersion() == renamed_file->GetFileHeader().GetVersion());
         CHECK(initial_file->GetFileHeader().GetFileSize() == renamed_file->GetFileHeader().GetFileSize());
-        CHECK(initial_file->GetFileHeader().GetFileType().string() == renamed_file->GetFileHeader().GetFileType().string());
         CHECK(initial_file->GetIconData() == renamed_file->GetIconData());
         CHECK(initial_file->GetPropertiesData() == renamed_file->GetPropertiesData());
         CHECK(initial_file->GetOriginalData() == renamed_file->GetOriginalData());
@@ -89,11 +88,12 @@ SCENARIO("Internal files can be renamed to any valid filename", "[rename]")
         auto& file_loader = packetSystem.GetFileManager().GetFileLoader();
 
         // Setup the path we will import the file
-        auto file_path = "Sounds/imported_file.pckfile";
+        auto file_dir = "Sounds/";
 
         // Import the file
-        bool import_result = file_importer.ImportExternalFile(ExternalFilePath, file_path);
-        REQUIRE(import_result == true);
+        auto import_result = file_importer.ImportExternalFile(ExternalFilePath, file_dir);
+        REQUIRE(import_result);
+        auto import_file_path = import_result.value().string();
 
         WHEN("The packet file is renamed to a different name")
         {
@@ -103,41 +103,36 @@ SCENARIO("Internal files can be renamed to any valid filename", "[rename]")
             ValidateRename(packetSystem,
                            file_indexer,
                            file_loader,
-                           file_path,
+                           import_file_path,
                            new_file_name);
+
+            AND_WHEN("The operation must fail if it's being renamed to an invalid name (there is already an existing file with that name)")
+            {
+                // Import the second file
+                auto second_import_result = file_importer.ImportExternalFile(ExternalFilePath, file_dir);
+                REQUIRE(second_import_result);
+                auto second_import_file_path = second_import_result.value().string();
+
+                // Try to rename
+                auto rename_result = packetSystem.GetFileManager().RenameFile(import_file_path, new_file_name);
+
+                AND_THEN("The rename result must be false")
+                {
+                    REQUIRE(rename_result == std::nullopt);
+                }
+            }
         }
 
         AND_WHEN("The packet file renamed to the same name")
         {
             // Setup the new file name
-            auto new_file_name = std::filesystem::path(file_path).stem().string();
+            auto new_file_name = std::filesystem::path(import_file_path).stem().string();
 
             ValidateRename(packetSystem,
                            file_indexer,
                            file_loader,
-                           file_path,
+                           import_file_path,
                            new_file_name);
-        }
-
-        AND_WHEN("The operation must fail if it's being renamed to an invalid name (there is already an existing file with that name)")
-        {
-            // Setup the path we will import the second file
-            auto second_file_path = "Sounds/second_imported_file.pckfile";
-
-            // Import the second file
-            bool second_import_result = file_importer.ImportExternalFile(ExternalFilePath, second_file_path);
-            REQUIRE(second_import_result == true);
-
-            // Setup the new file name
-            auto new_file_name = std::filesystem::path(second_file_path).stem().string();
-
-            // Try to rename
-            auto rename_result = packetSystem.GetFileManager().RenameFile(file_path, new_file_name);
-
-            AND_THEN("The rename result must be false")
-            {
-                REQUIRE(rename_result == std::nullopt);
-            }
         }
     }
 }

@@ -85,11 +85,6 @@ void PacketFileHeader::SetFileSize(FileDataSize _file_size)
     m_HeaderData.total_size = _file_size;
 }
 
-void PacketFileHeader::SetFileType(FileType _file_type)
-{
-    m_HeaderData.file_type = _file_type;
-}
-
 void PacketFileHeader::UpdateDataSizes(
     FileDataSize _icon_size,
     FileDataSize _properties_size,
@@ -123,11 +118,6 @@ void PacketFileHeader::SetPath(Path _file_path)
 uint32_t PacketFileHeader::GetVersion() const
 {
     return m_HeaderData.version;
-}
-
-FileType PacketFileHeader::GetFileType() const
-{
-    return m_HeaderData.file_type;
 }
 
 Path PacketFileHeader::GetPath() const
