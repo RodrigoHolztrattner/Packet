@@ -73,7 +73,7 @@ bool PacketFileManager::Initialize()
     if (m_OperationMode == OperationMode::Plain && m_BackupFlags & BackupFlags::BackupOnStartup)
     {
         // Retrieve all indexed files and backup each one
-        auto all_indexed_file_paths = m_FileIndexer->GetAllIndexedFiles();
+        auto all_indexed_file_paths = m_FileIndexer->QueryAllIndexedFiles();
         for (auto& indexed_file_path : all_indexed_file_paths)
         {
             m_BackupManager->BackupFile(indexed_file_path);

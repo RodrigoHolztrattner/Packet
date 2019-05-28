@@ -466,7 +466,6 @@ struct FixedSizeString
         return a.m_PathString < b.m_PathString;
     }
 
-
 private:
 
 	std::array<char, TotalSize> m_PathString;
@@ -486,7 +485,6 @@ namespace ns {
 } // namespace ns
 
 typedef FixedSizeString<FilePathSize> Path;
-// typedef FixedSizeString<FileTypeSize> FileType;
 typedef uint64_t FileDataPosition;
 typedef uint64_t FileDataSize;
 

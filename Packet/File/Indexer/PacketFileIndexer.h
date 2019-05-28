@@ -83,26 +83,19 @@ public: // VIRTUAL METHODS //
     // Initialize this indexer, populating its file map
     virtual bool Initialize() = 0;
 
-    // Return if a given file is indexed by its path hash by this indexer
-    virtual bool IsFileIndexed(HashPrimitive _file_hash) const = 0;
-
-    // Return a file load information (its path, the location inside the file and its total size)
+    // Return information about a given file
     virtual std::optional<FileLoadInformation> RetrieveFileLoadInformation(HashPrimitive _file_hash) const = 0;
-
-    // Return a file extension, if applicable
     virtual std::optional<std::string> GetFileExtension(HashPrimitive _file_hash) const = 0;
-
-    // Return a file icon data
     virtual std::vector<uint8_t> GetFileIconData(HashPrimitive _file_hash) const = 0;
-
-    // Return a file properties
     virtual nlohmann::json GetFileProperties(HashPrimitive _file_hash) const = 0;
 
-    // Return if a file is an external file
+    // Check some file property
     virtual bool IsFileExternal(HashPrimitive _file_hash) const = 0;
+    virtual bool IsFileIndexed(HashPrimitive _file_hash) const = 0;
 
-    // Return the paths for all indexed files
-    virtual std::set<Path> GetAllIndexedFiles() const = 0;
+    // Query multiple files
+    virtual std::vector<Path> QueryFilesFromType(std::vector<std::string> _file_types) const = 0;
+    virtual std::set<Path> QueryAllIndexedFiles() const = 0;
 
 ///////////////
 // VARIABLES //
@@ -115,7 +108,7 @@ protected: ////
     const PacketFileLoader* m_FileLoaderPtr = nullptr;
 
     // Our callbacks (only active on Plain move)
-    std::vector<FileModificationCallback>                         m_FileModificationCallbacks;
+    std::vector<FileModificationCallback> m_FileModificationCallbacks;
 };
 
 // Packet data explorer

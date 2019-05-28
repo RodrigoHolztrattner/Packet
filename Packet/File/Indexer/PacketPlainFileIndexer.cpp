@@ -186,7 +186,25 @@ bool PacketPlainFileIndexer::IsFileExternal(HashPrimitive _file_hash) const
     return true;
 }
 
-std::set<Path> PacketPlainFileIndexer::GetAllIndexedFiles() const
+std::vector<Path> PacketPlainFileIndexer::QueryFilesFromType(std::vector<std::string> _file_types) const
+{
+    std::vector<Path> result;
+
+    // For each type that we must query
+    for (auto& file_type : _file_types)
+    {
+        // Check if we have this type registered
+        auto iter = m_IndexedFilesByType.find(file_type);
+        if (iter != m_IndexedFilesByType.end())
+        {
+            std::copy(iter->second.begin(), iter->second.end(), std::back_inserter(result));
+        }
+    }
+
+    return result;
+}
+
+std::set<Path> PacketPlainFileIndexer::QueryAllIndexedFiles() const
 {
     std::shared_lock lock(m_Mutex);
     std::set<Path> indexed_paths;
@@ -349,6 +367,10 @@ void PacketPlainFileIndexer::IndexFileFromPath(Path _file_path)
     // Add/update the entry
     m_IndexDatas[Hash(_file_path)] = (index_data);
 
+    // Extract the file type and update the correct entry on the type map
+    std::string file_type = _file_path.path().extension().string();
+    m_IndexedFilesByType[file_type].insert(_file_path);
+
     // Call all registered callbacks since this file was modified/added
     for (auto& callback : m_FileModificationCallbacks)
     {
@@ -365,6 +387,14 @@ void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
     if (iter != m_IndexDatas.end())
     {
         m_IndexDatas.erase(iter);
+    }
+
+    // Extract the file type and remove the entry on the type map
+    std::string file_type = _file_path.path().extension().string();
+    auto type_iter = m_IndexedFilesByType.find(file_type);
+    if (type_iter != m_IndexedFilesByType.end())
+    {
+        type_iter->second.erase(_file_path);
     }
 
     // Remove the path watcher that potentially was added to watch this file if

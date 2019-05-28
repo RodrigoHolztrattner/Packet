@@ -89,26 +89,19 @@ public: //////////
     // Initialize this indexer, populating its file map
     bool Initialize() final;
 
-    // Return if a given file is indexed by its path hash by this indexer
-    bool IsFileIndexed(HashPrimitive _file_hash) const final;
-
-    // Return a file load information (its path, the location inside the file and its total size)
+    // Return information about a given file
     std::optional<FileLoadInformation> RetrieveFileLoadInformation(HashPrimitive _file_hash) const final;
-
-    // Return a file extension, if applicable
     std::optional<std::string> GetFileExtension(HashPrimitive _file_hash) const final;
-
-    // Return a file icon data
     std::vector<uint8_t> GetFileIconData(HashPrimitive _file_hash) const final;
-
-    // Return a file properties
     nlohmann::json GetFileProperties(HashPrimitive _file_hash) const final;
 
-    // Return if a file is an external file
+    // Check some file property
     bool IsFileExternal(HashPrimitive _file_hash) const final;
+    bool IsFileIndexed(HashPrimitive _file_hash) const final;
 
-    // Return the paths for all indexed files
-    std::set<Path> GetAllIndexedFiles() const final;
+    // Query multiple files
+    std::vector<Path> QueryFilesFromType(std::vector<std::string> _file_types) const final;
+    std::set<Path> QueryAllIndexedFiles() const final;
 
 protected:
 
@@ -139,6 +132,9 @@ private: //////
 
     // Our index data (mutable to allow caching while requesting data)
     mutable std::map<HashPrimitive, IndexData> m_IndexDatas;
+
+    // All indexed files by their types
+    std::map<std::string, std::set<Path>> m_IndexedFilesByType;
 
     // The file watcher manager, used to detect changes when an external
     // resource is modified
