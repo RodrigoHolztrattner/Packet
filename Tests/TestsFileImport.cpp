@@ -62,7 +62,7 @@ SCENARIO("External files can be imported into the packet system", "[import]")
                 {
                     CHECK(new_file->GetFileHeader().GetVersion() == Packet::Version);
                     CHECK(new_file->GetFileHeader().GetFileSize() > 0);
-                    CHECK(new_file->GetFileHeader().GetPath() == import_file_path);
+                    CHECK(new_file->GetFileHeader().path() == import_file_path);
                     CHECK(new_file->GetFileHeader().GetDataSize(Packet::FilePart::FinalData) == external_file_size);
                 }
 

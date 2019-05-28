@@ -50,7 +50,7 @@ void ValidateCopy(Packet::System& _packet_system,
 
         CHECK(initial_file->GetFileHeader().GetVersion() == copied_file->GetFileHeader().GetVersion());
         CHECK(initial_file->GetFileHeader().GetFileSize() == copied_file->GetFileHeader().GetFileSize());
-        CHECK(initial_file->GetFileHeader().GetPath().string() != copied_file->GetFileHeader().GetPath().string());
+        CHECK(initial_file->GetFileHeader().path().string() != copied_file->GetFileHeader().path().string());
         CHECK(initial_file->GetIconData() == copied_file->GetIconData());
         CHECK(initial_file->GetPropertiesData() == copied_file->GetPropertiesData());
         CHECK(initial_file->GetOriginalData() == copied_file->GetOriginalData());

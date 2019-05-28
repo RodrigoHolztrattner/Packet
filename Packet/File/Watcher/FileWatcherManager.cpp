@@ -69,14 +69,14 @@ void FileWatcherManager::ReleaseWatcher(std::filesystem::path _system_path)
 void FileWatcherManager::HandleFileAction(FWPacket::WatchID, const FWPacket::string& _dir, const FWPacket::string& _filename, FWPacket::Action _action)
 {
 	// Check if we have a watch on this directory
-	auto iter = m_WatchedDirectories.find(Hash(_dir).GetHashValue());
+	auto iter = m_WatchedDirectories.find(Hash(_dir).get_hash_value());
 	if (iter == m_WatchedDirectories.end())
 	{
 		return;
 	}
 
 	// Check if the resource exist
-	auto resourceIter = iter->second.watchedFiles.find(Hash(_filename).GetHashValue());
+	auto resourceIter = iter->second.watchedFiles.find(Hash(_filename).get_hash_value());
 	if (resourceIter == iter->second.watchedFiles.end())
 	{
 		return;
@@ -127,7 +127,7 @@ bool FileWatcherManager::WatchFilePath(std::filesystem::path _system_path, Path 
 	auto filename = _system_path.filename();
 
 	// Insert the resource into the watched resources
-	iter->second.watchedFiles.insert({ Hash(filename.string()).GetHashValue(), _file_path });
+	iter->second.watchedFiles.insert({ Hash(filename.string()).get_hash_value(), _file_path });
 	
 	return true;
 }
@@ -148,7 +148,7 @@ void FileWatcherManager::RemoveWatch(std::filesystem::path _system_path)
 	}
 
 	// Check if we have this file and the ptrs match
-	auto resourceIter = iter->second.watchedFiles.find(Hash(filename.string()).GetHashValue());
+	auto resourceIter = iter->second.watchedFiles.find(Hash(filename.string()).get_hash_value());
 	if (resourceIter == iter->second.watchedFiles.end())
 	{
 		return;

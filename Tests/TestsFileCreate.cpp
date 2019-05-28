@@ -77,7 +77,7 @@ SCENARIO("Internal files can be created", "[create]")
                     
                     CHECK(created_file->GetFileHeader().GetVersion() == Packet::Version);
                     CHECK(created_file->GetFileHeader().GetFileSize() > 0);
-                    CHECK(created_file->GetFileHeader().GetPath() == target_path);
+                    CHECK(created_file->GetFileHeader().path() == target_path);
                     CHECK(created_file->GetIconData().size() == 0);
                     CHECK(created_file->GetPropertiesData().size() == 0);
                     CHECK(created_file->GetOriginalData().size() == 100);

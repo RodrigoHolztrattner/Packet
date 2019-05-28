@@ -120,7 +120,7 @@ uint32_t PacketFileHeader::GetVersion() const
     return m_HeaderData.version;
 }
 
-Path PacketFileHeader::GetPath() const
+Path PacketFileHeader::path() const
 {
     return m_HeaderData.file_path;
 }

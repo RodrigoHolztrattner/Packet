@@ -411,6 +411,11 @@ struct FixedSizeString
         return std::string(m_PathString.data());
     }
 
+    std::string extension() const
+    {
+        return std::filesystem::path(m_PathString.data()).extension();
+    }
+
     std::string string() const
     {
         return std::string(m_PathString.data());
@@ -516,11 +521,21 @@ struct Hash
 		m_Hash = fnv1a_path(_str);
 		m_Path = _str;
 	}
+    Hash(Path _path)
+    {
+        m_Hash = fnv1a_path(_path.string().c_str());
+        m_Path = _path;
+    }
 
 	operator HashPrimitive()
 	{
 		return m_Hash;
 	}
+
+    operator Path()
+    {
+        return m_Path;
+    }
 
 	bool operator ==(const Hash& b) const
 	{
@@ -539,13 +554,13 @@ struct Hash
     }
 
 	// Return the hash value
-	const HashPrimitive GetHashValue() const
+	const HashPrimitive get_hash_value() const
 	{
 		return m_Hash;
 	}
 
 	// Return the path reference
-	const Path& GetPath()
+	const Path& path()
 	{
 		return m_Path;
 	}

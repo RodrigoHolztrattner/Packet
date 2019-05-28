@@ -59,7 +59,7 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file, SaveOperation 
         }
 
         // Go through all dependencies, for each one open the target file and register a link
-        m_ReferenceManager.RegisterDependenciesForFile(_file->GetFileReferences().GetFileDependencies(), _file->GetFileHeader().GetPath());
+        m_ReferenceManager.RegisterDependenciesForFile(_file->GetFileReferences().GetFileDependencies(), _file->GetFileHeader().path());
     }
     // We are copying a file, so we must set its dependencies and do not update its
     // links, also its link data must be empty, this is considered a new file but must
@@ -72,7 +72,7 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file, SaveOperation 
         }
 
         // Go through all dependencies, for each one open the target file and register a link
-        m_ReferenceManager.RegisterDependenciesForFile(_file->GetFileReferences().GetFileDependencies(), _file->GetFileHeader().GetPath());
+        m_ReferenceManager.RegisterDependenciesForFile(_file->GetFileReferences().GetFileDependencies(), _file->GetFileHeader().path());
     }
     // We are overwriting/editing the original file, so we must verify if its dependencies 
     // are different and update them (by doing this we must update their links), also for 
@@ -85,18 +85,18 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file, SaveOperation 
         // For each dependency that must be deleted
         for (auto& dependency : delete_dependencies)
         {
-            m_ReferenceManager.RemoveReferenceLink(dependency, _file->GetFileHeader().GetPath());
+            m_ReferenceManager.RemoveReferenceLink(dependency, _file->GetFileHeader().path());
         }
 
         // For each dependency that must be added
         for (auto& dependency : add_dependencies)
         {
-            m_ReferenceManager.AddReferenceLink(dependency, _file->GetFileHeader().GetPath());
+            m_ReferenceManager.AddReferenceLink(dependency, _file->GetFileHeader().path());
         }
 
         // For each file that depends on this, in other words, for each link that we have,
         // substitute all occurrences of the old path on this file by the new one
-        m_ReferenceManager.SubstituteDependencyReferences(_file->GetFileReferences().GetFileLinks(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
+        m_ReferenceManager.SubstituteDependencyReferences(_file->GetFileReferences().GetFileLinks(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().path());
     }
     // We are moving or renaming the original file, so no need to verify its dependencies
     // because they didn't change, but for each link we have we must update the target 
@@ -106,11 +106,11 @@ bool PacketFileSaver::SaveFile(std::unique_ptr<PacketFile> _file, SaveOperation 
         // Make all linked files point to another reference path, so if the file pointer to the 
         // _old_path variable changed its path to _new_path, it will alert all files that it
         // depends on to update their links, making them reference this new path
-        m_ReferenceManager.RedirectLinksFromDependencies(_file->GetFileReferences().GetFileDependencies(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
+        m_ReferenceManager.RedirectLinksFromDependencies(_file->GetFileReferences().GetFileDependencies(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().path());
 
         // For each file that depends on this, in other words, for each link that we have,
         // substitute all occurrences of the old path on this file by the new one
-        m_ReferenceManager.SubstituteDependencyReferences(_file->GetFileReferences().GetFileLinks(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().GetPath());
+        m_ReferenceManager.SubstituteDependencyReferences(_file->GetFileReferences().GetFileLinks(), _file->GetFileHeader().GetOriginalPath(), _file->GetFileHeader().path());
     }
     // If this is the result of modifying the reference we shouldn't need to do anything 
     // with them, it could cause a infinite loop or make us access a file that is being
@@ -137,7 +137,7 @@ bool PacketFileSaver::SaveFile(const PacketFileHeader& _file_header, FilePart _f
     }
 
     // Load the file
-    auto file = m_FileLoader.LoadFile(Hash(_file_header.GetPath()));
+    auto file = m_FileLoader.LoadFile(Hash(_file_header.path()));
     if (!file)
     {
         return false;
@@ -168,7 +168,7 @@ bool PacketFileSaver::SaveFileHelper(std::unique_ptr<PacketFile> _file) const
     }
 
     // Get the file path
-    auto file_path = _file->GetFileHeader().GetPath();
+    auto file_path = _file->GetFileHeader().path();
 
     /*
     // Get the current data sizes

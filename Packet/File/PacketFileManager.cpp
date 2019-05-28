@@ -510,7 +510,7 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
     {
         // For each file that used to depend on the source one, modify all references on it to point to
         // the target one
-        if (!m_FileReferenceManager->SubstituteDependencyReferences(source_file->GetFileReferences().GetFileLinks(), source_file->GetFileHeader().GetPath(), _target_file_path))
+        if (!m_FileReferenceManager->SubstituteDependencyReferences(source_file->GetFileReferences().GetFileLinks(), source_file->GetFileHeader().path(), _target_file_path))
         {
             SignalOperationError("RedirectFileDependencies", "Failed to substitute dependency references");
             return false;
@@ -601,7 +601,7 @@ bool PacketFileManager::DeleteFile(Path _target_file_path, bool _remove_dependen
         // Remove all dependency links that this file had on other files
         for (auto& dependency : file_references.GetFileDependencies())
         {
-            m_FileReferenceManager->RemoveReferenceLink(header.GetPath(), dependency);
+            m_FileReferenceManager->RemoveReferenceLink(header.path(), dependency);
         }
     }
 

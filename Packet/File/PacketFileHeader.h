@@ -73,7 +73,7 @@ public: //////////
 
     // Return this header info
     uint32_t GetVersion()      const;
-    Path GetPath()             const;
+    Path path()             const;
     Path GetOriginalPath()     const;
     HashPrimitive GetHash()    const;
     FileDataSize GetFileSize() const;
