@@ -600,6 +600,13 @@ static std::filesystem::path MergeSystemPathWithFilePath(std::filesystem::path _
     return _system_path.string() + std::string("/") + _file_path.string();
 }
 
+// Create a path using an external system path, local dir and optionally a target extension, 
+// this will result in a path like <local dir> + <external path filename> + <target extension>
+static Path CreateLocalPathFromExternal(std::filesystem::path _external_path, Path _local_dir, std::string _extension = "")
+{
+    return _local_dir.string() + _external_path.stem().string() + (_extension.length() > 0 ? _extension : _external_path.filename().string());
+}
+
 // Convert a filesystem path to an internal path using the system resource path
 static Path ConvertSystemPathIntoInternalPath(std::filesystem::path _system_path, std::filesystem::path _file_path)
 {

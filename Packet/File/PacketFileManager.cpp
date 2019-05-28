@@ -136,13 +136,10 @@ bool PacketFileManager::WriteFile(
         }
     }
 
-    // Duplicate the icon data for cache usage
-    auto duplicated_icon_data = _icon_data;
-
     // Generate the file
     auto file = PacketFile::GenerateFileFromData(
         _target_path,
-        std::move(_icon_data),
+        _icon_data,
         std::move(_properties_data),
         std::move(_original_data),
         std::move(_intermediate_data),
@@ -160,7 +157,7 @@ bool PacketFileManager::WriteFile(
     }
 
     // Insert a new entry or update an existing one on the file indexer
-    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RegisterFileCacheData(_target_path, {}, duplicated_icon_data, false);
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RegisterFileCacheData(_target_path, {}, _icon_data, false);
 
     return true;
 }

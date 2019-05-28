@@ -158,13 +158,13 @@ std::vector<uint8_t> PacketFile::CreateRawDataFromFile(std::unique_ptr<PacketFil
 }
 
 std::unique_ptr<PacketFile> PacketFile::GenerateFileFromData(
-    Path                   _file_path,
-    std::vector<uint8_t>&& _icon_data,
-    std::vector<uint8_t>&& _properties_data,
-    std::vector<uint8_t>&& _original_data, 
-    std::vector<uint8_t>&& _intermediate_data,
-    std::vector<uint8_t>&& _final_data,
-    std::set<Path>&&       _file_dependencies)
+    Path                 _file_path,
+    std::vector<uint8_t> _icon_data,
+    std::vector<uint8_t> _properties_data,
+    std::vector<uint8_t> _original_data, 
+    std::vector<uint8_t> _intermediate_data,
+    std::vector<uint8_t> _final_data,
+    std::set<Path>       _file_dependencies)
 {
     // Create an empty file header data object and set its initial values
     PacketFileHeader file_header;

@@ -56,18 +56,15 @@ std::optional<Path> PacketFileImporter::ImportExternalFile(std::filesystem::path
         return std::nullopt;
     }
 
-    // Determine the file original extension
-    std::string file_extension = _file_original_path.extension().string();
-
     // Check if we have a converter for this file extension
-    PacketFileConverter* converter = m_RetrieveConverterForTypeCallback(file_extension);
+    PacketFileConverter* converter = m_RetrieveConverterForTypeCallback(_file_original_path.extension().string());
     if (!converter)
     {
         return std::nullopt;
     }
 
     // Setup the target complete path
-    Path taget_path = _target_dir.string() + _file_original_path.stem().string() + converter->GetConversionFileExtension().string();
+    Path taget_path = CreateLocalPathFromExternal(_file_original_path, _target_dir, converter->GetConversionFileExtension().string());
 
     // Check if we already have this file imported, if true, check if we must overwrite it
     bool file_already_indexed = m_FileIndexer.IsFileIndexed(Hash(taget_path));
@@ -78,7 +75,7 @@ std::optional<Path> PacketFileImporter::ImportExternalFile(std::filesystem::path
     }
     else if (file_already_indexed)
     {
-        // Delete the old file
+        // Replace the old file
         // ...
         throw "Not implemented yet";
     }

@@ -74,13 +74,13 @@ public: //////////
     // Generate an internal file data from its separated data parts, all necessary links will be
     // added when attempting to save this file into disk
     static std::unique_ptr<PacketFile> GenerateFileFromData(
-        Path                   _file_path,
-        std::vector<uint8_t>&& _icon_data,
-        std::vector<uint8_t>&& _properties_data,
-        std::vector<uint8_t>&& _original_data,
-        std::vector<uint8_t>&& _intermediate_data,
-        std::vector<uint8_t>&& _final_data,
-        std::set<Path>&&       _file_dependencies);
+        Path                 _file_path,
+        std::vector<uint8_t> _icon_data,
+        std::vector<uint8_t> _properties_data,
+        std::vector<uint8_t> _original_data,
+        std::vector<uint8_t> _intermediate_data,
+        std::vector<uint8_t> _final_data,
+        std::set<Path>       _file_dependencies);
 
     // Retrieve the final data for a file, this will consume the file object returning only its final
     // data as a vector, really useful when loading the file on condensed mode
