@@ -31,7 +31,8 @@ PacketPlainFileIndexer::PacketPlainFileIndexer(std::filesystem::path _packet_pat
 PacketPlainFileIndexer::~PacketPlainFileIndexer()
 {
     // Save the cache file data
-    std::ofstream file(IndexerCacheData, std::ios::binary);
+    auto temp_path = std::filesystem::temp_directory_path();
+    std::ofstream file(temp_path.append(IndexerCacheData), std::ios::binary);
     if (file.is_open())
     {
         nlohmann::json j = nlohmann::json::array();
@@ -63,7 +64,8 @@ bool PacketPlainFileIndexer::Initialize()
     BuildFilesystemView(m_PacketPath);
 
     // Check if we have a cache file
-    std::ifstream file(IndexerCacheData, std::ios::binary);
+    auto temp_path = std::filesystem::temp_directory_path();
+    std::ifstream file(temp_path.append(IndexerCacheData), std::ios::binary);
     if (file.is_open())
     {
         // Get the cache data
