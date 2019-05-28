@@ -204,6 +204,18 @@ std::vector<Path> PacketPlainFileIndexer::QueryFilesFromType(std::vector<std::st
     return result;
 }
 
+std::vector<std::string> PacketPlainFileIndexer::QueryRegisteredFileExtensions() const
+{
+    std::vector<std::string> result;
+
+    for (auto& type_indexed_info : m_IndexedFilesByType)
+    {
+        result.push_back(type_indexed_info.first);
+    }
+
+    return result;
+}
+
 std::set<Path> PacketPlainFileIndexer::QueryAllIndexedFiles() const
 {
     std::shared_lock lock(m_Mutex);

@@ -101,6 +101,7 @@ public: //////////
 
     // Query multiple files
     std::vector<Path> QueryFilesFromType(std::vector<std::string> _file_types) const final;
+    std::vector<std::string> QueryRegisteredFileExtensions() const final;
     std::set<Path> QueryAllIndexedFiles() const final;
 
 protected:

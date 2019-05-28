@@ -95,6 +95,7 @@ public: // VIRTUAL METHODS //
 
     // Query multiple files
     virtual std::vector<Path> QueryFilesFromType(std::vector<std::string> _file_types) const = 0;
+    virtual std::vector<std::string> QueryRegisteredFileExtensions() const = 0;
     virtual std::set<Path> QueryAllIndexedFiles() const = 0;
 
 ///////////////
