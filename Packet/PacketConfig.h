@@ -413,7 +413,7 @@ struct FixedSizeString
 
     std::string extension() const
     {
-        return std::filesystem::path(m_PathString.data()).extension();
+        return std::filesystem::path(m_PathString.data()).extension().string();
     }
 
     std::string string() const
