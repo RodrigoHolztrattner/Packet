@@ -92,7 +92,7 @@ std::unique_ptr<PacketResource> PacketResourceStorage::ReplaceObject(std::unique
         assert(m_HashLinkedResourcesMap.find(_hash) != m_HashLinkedResourcesMap.end());
 
         // Find the set the old object is stored at
-        auto hash_set = m_HashLinkedResourcesMap.find(_hash)->second;
+        auto& hash_set = m_HashLinkedResourcesMap.find(_hash)->second;
 
         // Remove the old object and insert the new one
         hash_set.erase(iterator->second.get());
