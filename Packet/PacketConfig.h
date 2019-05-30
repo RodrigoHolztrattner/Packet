@@ -572,6 +572,25 @@ private:
 	HashPrimitive m_Hash;
 };
 
+class PacketFileWatcher
+{
+public:
+
+    PacketFileWatcher(HashPrimitive _file_hash) :
+        m_file_hash(_file_hash) {}
+
+    virtual void OnFileChange() = 0;
+
+    HashPrimitive file_hash() const
+    {
+        return m_file_hash;
+    }
+
+private:
+
+    HashPrimitive m_file_hash;
+};
+
 // The condensed header info
 struct CondensedHeaderInfo
 {

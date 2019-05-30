@@ -140,9 +140,6 @@ private: //////
     // The file watcher manager, used to detect changes when an external
     // resource is modified
     std::unique_ptr<FileWatcherManager> m_FileWatcherManager;
-
-    // The mutex used to synchronize all operations here
-    mutable std::shared_mutex m_Mutex;
 };
 
 // Packet data explorer

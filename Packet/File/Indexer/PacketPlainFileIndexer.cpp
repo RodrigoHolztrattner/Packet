@@ -19,12 +19,8 @@ PacketPlainFileIndexer::PacketPlainFileIndexer(std::filesystem::path _packet_pat
     // Register the file watcher callback
     m_FileWatcherManager->RegisterOnFileDataChangedMethod(
         [&](Path _file_path) {
-
-            // Call all registered callbacks since this file was modified/added
-            for (auto& callback : m_FileModificationCallbacks)
-            {
-                callback(_file_path);
-            }
+            std::lock_guard lock(m_Mutex);
+            PropagateFileModificationToWatchers(_file_path);
         });
 }
 
@@ -316,6 +312,9 @@ void PacketPlainFileIndexer::RegisterFileCacheData(Path _file_path, nlohmann::js
         // Register a watcher for this file
         m_FileWatcherManager->RequestWatcher(system_filepath, _file_path);
     }
+
+    // Call all registered callbacks since this file was modified/added
+    PropagateFileModificationToWatchers(_file_path);
 }
 
 void PacketPlainFileIndexer::LoadAndCacheFile(Path _file_path) const
@@ -355,6 +354,9 @@ void PacketPlainFileIndexer::LoadAndCacheFile(Path _file_path) const
         // Register a watcher for this file
         m_FileWatcherManager->RequestWatcher(system_filepath, _file_path);
     }
+
+    // Call all registered callbacks since this file was modified/added
+    PropagateFileModificationToWatchers(_file_path);
 }
 
 void PacketPlainFileIndexer::IndexFileFromPath(Path _file_path)
@@ -382,12 +384,6 @@ void PacketPlainFileIndexer::IndexFileFromPath(Path _file_path)
     // Extract the file type and update the correct entry on the type map
     std::string file_type = _file_path.path().extension().string();
     m_IndexedFilesByType[file_type].insert(_file_path);
-
-    // Call all registered callbacks since this file was modified/added
-    for (auto& callback : m_FileModificationCallbacks)
-    {
-        callback(_file_path);
-    }
 }
 
 void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
