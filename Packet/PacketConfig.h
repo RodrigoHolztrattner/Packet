@@ -66,7 +66,7 @@ static const std::string CondensedInfoName          = "Data";
 static const std::string CondensedInfoExtension     = ".manifest";
 static const std::string TemporaryFileExtension     = ".temp";
 static const std::string IndexerCacheData           = "IndexCache.tmp";
-static const std::string DefaultConverterExtension  = ".pckdefault";
+static const std::string DefaultConverterExtension  = ".pktdefault";
 
 // The current condensed file minor and major versions
 static const uint16_t CondensedMinorVersion         = 1;
