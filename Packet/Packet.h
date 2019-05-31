@@ -56,6 +56,7 @@ typedef __development__Packet::PacketFileImporter                FileImporter;
 typedef __development__Packet::PacketFileIndexer                 FileIndexer;
 typedef __development__Packet::PacketFileLoader                  FileLoader;
 typedef __development__Packet::PacketFileWatcher                 FileWatcher;
+typedef __development__Packet::PacketFileConverter               FileConverter;
 
 typedef __development__Packet::PacketResource                    Resource;
 typedef __development__Packet::PacketResourceFactory             ResourceFactory;
