@@ -13,6 +13,7 @@
 #include "File/Importer/PacketFileImporter.h"
 #include "File/Indexer/PacketFileIndexer.h"
 #include "File/Loader/PacketFileLoader.h"
+#include "File/Converter/PacketFileConverter.h"
 #include "Resource/PacketResource.h"
 #include "Resource/Factory/PacketResourceFactory.h"
 #include "Resource/PacketResourceManager.h"
