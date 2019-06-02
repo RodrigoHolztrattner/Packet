@@ -88,15 +88,8 @@ std::optional<Path> PacketFileImporter::ImportExternalFile(std::filesystem::path
         return std::nullopt;
     }
 
-    // Reserve space for the entire file
-    std::vector<uint8_t> entire_file_data;
-    entire_file_data.reserve(std::filesystem::file_size(_file_original_path));
-
     // Read the entire file data
-    entire_file_data.insert(
-        entire_file_data.begin(),
-        std::istream_iterator<uint8_t>(file),
-        std::istream_iterator<uint8_t>());
+    std::vector<uint8_t> entire_file_data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
     // Close the file
     file.close();

@@ -61,15 +61,8 @@ std::vector<uint8_t> PacketPlainFileLoader::LoadFileRawData(HashPrimitive _file_
         return {};
     }
 
-    // Reserve space for the entire file
-    std::vector<uint8_t> entire_file_data;
-    entire_file_data.reserve(std::filesystem::file_size(file_path));
-
     // Read the entire file data
-    file.unsetf(std::ios::skipws);
-    std::copy(std::istream_iterator<uint8_t>(file),
-              std::istream_iterator<uint8_t>(),
-              std::back_inserter(entire_file_data));
+    std::vector<uint8_t> entire_file_data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
     // Close the file
     file.close();
