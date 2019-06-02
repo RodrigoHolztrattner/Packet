@@ -254,6 +254,7 @@ std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>> Pac
     // processed after we check if the queues are empty (below)
     std::lock_guard modification_lock(m_ModificationMutex);
 
+    /*
     // To proper reach an idle status now we need to wait until all pending 
     // resources and resource requests are fulfilled
     auto IsIdle = [&]()
@@ -270,6 +271,7 @@ std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>> Pac
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+    */
 
     // No more resources or resource requests are going to be added, lock
     // the process mutex now
