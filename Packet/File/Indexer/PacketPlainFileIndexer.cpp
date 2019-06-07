@@ -312,9 +312,6 @@ void PacketPlainFileIndexer::RegisterFileCacheData(Path _file_path, nlohmann::js
         // Register a watcher for this file
         m_FileWatcherManager->RequestWatcher(system_filepath, _file_path);
     }
-
-    // Call all registered callbacks since this file was modified/added
-    PropagateFileModificationToWatchers(_file_path);
 }
 
 void PacketPlainFileIndexer::LoadAndCacheFile(Path _file_path) const
@@ -354,9 +351,6 @@ void PacketPlainFileIndexer::LoadAndCacheFile(Path _file_path) const
         // Register a watcher for this file
         m_FileWatcherManager->RequestWatcher(system_filepath, _file_path);
     }
-
-    // Call all registered callbacks since this file was modified/added
-    PropagateFileModificationToWatchers(_file_path);
 }
 
 void PacketPlainFileIndexer::IndexFileFromPath(Path _file_path)
@@ -408,4 +402,10 @@ void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
     // Remove the path watcher that potentially was added to watch this file if
     // it was an external one
     m_FileWatcherManager->ReleaseWatcher(MergeSystemPathWithFilePath(m_PacketPath, _file_path));
+}
+
+void PacketPlainFileIndexer::SignalFileWritten(Path _file_path) const
+{
+    // Call all registered callbacks since this file was modified
+    PropagateFileModificationToWatchers(_file_path);
 }

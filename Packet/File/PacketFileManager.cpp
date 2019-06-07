@@ -159,6 +159,9 @@ bool PacketFileManager::WriteFile(
     // Insert a new entry or update an existing one on the file indexer
     static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->RegisterFileCacheData(_target_path, {}, _icon_data, false);
 
+    // Signal a file modification
+    static_cast<PacketPlainFileIndexer*>(m_FileIndexer.get())->SignalFileWritten(_target_path);
+
     return true;
 }
 

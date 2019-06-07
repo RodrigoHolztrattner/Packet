@@ -113,6 +113,9 @@ protected:
     // Remove a resource index info from our map
     void RemoveFileIndexData(Path _file_path);
 
+    // Signal that a file was written
+    void SignalFileWritten(Path _file_path) const;
+
 private:
 
     // Load and cache a file data from the given file path
