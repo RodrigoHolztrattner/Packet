@@ -54,6 +54,7 @@ class PacketReferenceManager;
 class PacketResourceExternalConstructor;
 class PacketResourceCreationProxy;
 class PacketResourceCreationProxyInterface;
+class PacketResourceKeepAlive;
 
 template <typename ResourceClass>
 class PacketResourceReference;
@@ -101,6 +102,7 @@ public:
     friend PacketResourceExternalConstructor;
     friend PacketResourceCreationProxy;
     friend PacketResourceCreationProxyInterface;
+    friend PacketResourceKeepAlive;
 
 	template <typename ResourceClass>
 	friend class PacketResourceReference;
@@ -288,6 +290,115 @@ private:
     mutable std::mutex m_Mutex;
 };
 
+class PacketResourceKeepAlive
+{
+    template <typename ResourceClass>
+    friend class PacketResourceReference;
+
+protected:
+
+    // Reference only constructor
+    PacketResourceKeepAlive(PacketResource* _resource) :
+        m_ResourceObject(_resource)
+    {
+        m_ResourceObject->IncrementNumberReferences();
+    }
+
+public:
+
+    // Default constructor
+    PacketResourceKeepAlive() :
+        m_ResourceObject(nullptr)
+    {
+    }
+
+    // Copy constructor
+    PacketResourceKeepAlive(const PacketResourceKeepAlive& _other)
+    {
+        // Reset this reference
+        Reset();
+
+        m_ResourceObject = _other.m_ResourceObject;
+        if (m_ResourceObject != nullptr)
+        {
+            m_ResourceObject->IncrementNumberReferences();
+        }
+    };
+
+    // Assignment operator
+    PacketResourceKeepAlive& operator=(const PacketResourceKeepAlive& _other)
+    {
+        // Reset this reference
+        Reset();
+
+        m_ResourceObject = _other.m_ResourceObject;
+        if (m_ResourceObject != nullptr)
+        {
+            m_ResourceObject->IncrementNumberReferences();
+        }
+
+        return *this;
+    };
+
+    // Move assignment operator
+    PacketResourceKeepAlive& operator=(PacketResourceKeepAlive&& _other)
+    {
+        // Reset this reference
+        Reset();
+
+        m_ResourceObject = std::move(_other.m_ResourceObject);
+        _other.m_ResourceObject = nullptr;
+
+        return *this;
+    }
+
+    // Our move copy operator
+    PacketResourceKeepAlive(PacketResourceKeepAlive&& _other)
+    {
+        // Reset this reference
+        Reset();
+
+        m_ResourceObject = std::move(_other.m_ResourceObject);
+        _other.m_ResourceObject = nullptr;
+    }
+
+    // Reset this pointer, unlinking it
+    virtual void Reset()
+    {
+        // If the resource object is valid
+        if (m_ResourceObject != nullptr)
+        {
+            m_ResourceObject->DecrementNumberReferences();
+            m_ResourceObject = nullptr;
+        }
+    }
+
+    operator bool() const
+    {
+        return IsValid();
+    }
+
+    // Return if this is valid
+    bool IsValid() const
+    {
+        return m_ResourceObject != nullptr;
+    }
+
+    // Destructor
+    virtual ~PacketResourceKeepAlive()
+    {
+        // If the resource object is valid
+        if (m_ResourceObject != nullptr)
+        {
+            m_ResourceObject->DecrementNumberReferences();
+        }
+    }
+
+private:
+
+    PacketResource* m_ResourceObject = nullptr;
+};
+
 // The temporary resource reference type
 template <typename ResourceClass>
 class PacketResourceReference
@@ -416,6 +527,11 @@ public:
         }
 
         return reinterpret_cast<ResourceClass*>(m_ResourceObject);
+    }
+
+    PacketResourceKeepAlive GetKeepAlive() const
+    {
+        return PacketResourceKeepAlive(m_ResourceObject);
     }
 
     operator bool() const

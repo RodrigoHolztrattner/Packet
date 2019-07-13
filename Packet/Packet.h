@@ -60,6 +60,7 @@ typedef __development__Packet::PacketFileWatcher                 FileWatcher;
 typedef __development__Packet::PacketFileConverter               FileConverter;
 
 typedef __development__Packet::PacketResource                    Resource;
+typedef __development__Packet::PacketResourceKeepAlive           ResourceKeepAlive;
 typedef __development__Packet::PacketResourceFactory             ResourceFactory;
 typedef __development__Packet::PacketResourceExternalConstructor ResourceExternalConstructor;
 
