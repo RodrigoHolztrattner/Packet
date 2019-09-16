@@ -81,7 +81,7 @@ endif()
 # CONFIG #
 ##########
 
-set(TEST_PROJECT_NAME "Tests")
+set(TEST_PROJECT_NAME "Packet_Tests")
 project(${TEST_PROJECT_NAME} VERSION 1.0.0 DESCRIPTION "blob")
 
 set(PROJECT_NAME "Packet")
