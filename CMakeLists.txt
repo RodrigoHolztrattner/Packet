@@ -5,22 +5,6 @@
 ############
 include(FetchContent)
 
-#######
-# GIT #
-#######
-
-# Git config
-find_package(Git)
-if(EXISTS "${CMAKE_SOURCE_DIR}/.git" AND Git_FOUND)
-	execute_process(
-		COMMAND "${GIT_EXECUTABLE}" rev-list --count --topo-order v${VERSION_FULL}..HEAD
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-		ERROR_STRIP_TRAILING_WHITESPACE
-		ERROR_QUIET
-	)
-endif()
-
 if(WIN32)
 	# Resource VersionInfo
 	set(PROJECT_PRODUCT_NAME "Packet Library")
