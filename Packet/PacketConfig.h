@@ -68,6 +68,11 @@ static const std::string TemporaryFileExtension     = ".temp";
 static const std::string IndexerCacheData           = "IndexCache.tmp";
 static const std::string DefaultConverterExtension  = ".pktdefault";
 
+// Default separator
+static const char ForwardSlashSeparator             = '/';
+static const char BackSlashSeparator                = '\\';
+static const char DefaultSeparator                  = ForwardSlashSeparator;
+
 // The current condensed file minor and major versions
 static const uint16_t CondensedMinorVersion         = 1;
 static const uint16_t CondensedMajorVersion         = 0;
@@ -192,7 +197,7 @@ public:
 		for (auto i = std::size_t{}; i < size; ++i)
 		{
             // Ignore forward and backward slashes
-            if (data[i] == '/' || data[i] == '\\')
+            if (data[i] == ForwardSlashSeparator || data[i] == BackSlashSeparator)
             {
                 continue;
             }
@@ -210,7 +215,7 @@ public:
         for (auto i = std::size_t{}; i < size; ++i)
         {
             // Ignore forward and backward slashes
-            if (data[i] == '/' || data[i] == '\\')
+            if (data[i] == ForwardSlashSeparator || data[i] == BackSlashSeparator)
             {
                 continue;
             }
@@ -240,7 +245,7 @@ public:
         for (auto i = std::size_t{}; data[i] != 0; ++i)
         {
             // Ignore forward and backward slashes
-            if (data[i] == '/' || data[i] == '\\')
+            if (data[i] == ForwardSlashSeparator || data[i] == BackSlashSeparator)
             {
                 continue;
             }
@@ -356,36 +361,43 @@ struct PacketResourceBuildInfo
 
 // The path type
 template <uint32_t TotalSize>
-struct FixedSizeString
+struct FixedSizePath
 {
-    FixedSizeString() 
+    static char GetDefaultSeparator()
+    {
+        return DefaultSeparator;
+    }
+
+    FixedSizePath() 
     {
         m_PathString.fill(0);
     }
-    FixedSizeString(const char* _str)
+    FixedSizePath(const char* _str)
 	{
         m_PathString.fill(0);
         std::string temp(_str);
         std::copy(temp.begin(), temp.end(), m_PathString.data());
     }
-    FixedSizeString(const std::string& _str)
+    FixedSizePath(const std::string& _str)
 	{
         m_PathString.fill(0);
         std::copy(_str.begin(), _str.end(), m_PathString.data());
     }
-    FixedSizeString(const std::filesystem::path& _path)
+    FixedSizePath(const std::filesystem::path& _path)
     {
         m_PathString.fill(0);
-        std::copy(_path.string().begin(), _path.string().end(), m_PathString.data());
+        auto temp_string = _path.string();
+        std::replace(temp_string.begin(), temp_string.end(), BackSlashSeparator, DefaultSeparator);
+        std::copy(temp_string.begin(), temp_string.end(), m_PathString.data());
     }
 
-    FixedSizeString& operator =(const char* _str)
+    FixedSizePath& operator =(const char* _str)
 	{
         std::string temp(_str);
         std::copy(temp.begin(), temp.end(), m_PathString.data());
         return *this;
 	}
-    FixedSizeString& operator =(const std::string _str)
+    FixedSizePath& operator =(const std::string _str)
 	{
         std::copy(_str.begin(), _str.end(), m_PathString.data());
 		return *this;
@@ -411,6 +423,11 @@ struct FixedSizeString
         return std::string(m_PathString.data());
     }
 
+    std::string filename() const
+    {
+        return std::filesystem::path(m_PathString.data()).filename().string();
+    }
+
     std::string extension() const
     {
         return std::filesystem::path(m_PathString.data()).extension().string();
@@ -426,6 +443,17 @@ struct FixedSizeString
         return std::string(m_PathString.data(), m_PathString.size());
     }
 
+    template <uint32_t OtherSize>
+    void concat(const FixedSizePath<OtherSize>& _other)
+    {
+        std::copy(_other.begin(), _other.begin() + _other.used_size(), m_PathString.data() + used_size());
+    }
+
+    void erase(std::size_t _begin, std::size_t _end)
+    {
+        std::memcpy(&m_PathString[_begin], &m_PathString[_end] + TotalSize);
+    }
+
     static size_t available_size()
     {
         return TotalSize;
@@ -436,12 +464,12 @@ struct FixedSizeString
         return string().size();
     }
 
-    bool operator ==(const FixedSizeString& _other) const
+    bool operator ==(const FixedSizePath& _other) const
     {
         return m_PathString == _other.m_PathString;
     }
 
-    bool operator !=(const FixedSizeString& _other) const
+    bool operator !=(const FixedSizePath& _other) const
     {
         return m_PathString != _other.m_PathString;
     }
@@ -461,12 +489,12 @@ struct FixedSizeString
         return m_PathString;
     }
 
-    bool operator<(const FixedSizeString& other) const
+    bool operator<(const FixedSizePath& other) const
     {
         return m_PathString > other.m_PathString;
     }
 
-    bool operator()(const FixedSizeString& a, const FixedSizeString& b)
+    bool operator()(const FixedSizePath& a, const FixedSizePath& b)
     {
         return a.m_PathString < b.m_PathString;
     }
@@ -478,18 +506,18 @@ private:
 
 namespace ns {
     template <uint32_t TotalSize>
-    void to_json(nlohmann::json& j, const FixedSizeString<TotalSize>& s) {
+    void to_json(nlohmann::json& j, const FixedSizePath<TotalSize>& s) {
         
         j = nlohmann::json{ {"Path", s.GetRaw()}};
     }
 
     template <uint32_t TotalSize>
-    void from_json(const nlohmann::json& j, FixedSizeString<TotalSize>& s) {
+    void from_json(const nlohmann::json& j, FixedSizePath<TotalSize>& s) {
         j.at("Path").get_to(s.GetRaw());
     }
 } // namespace ns
 
-typedef FixedSizeString<FilePathSize> Path;
+typedef FixedSizePath<FilePathSize> Path;
 typedef uint64_t FileDataPosition;
 typedef uint64_t FileDataSize;
 
