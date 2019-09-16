@@ -67,7 +67,7 @@ public: //////////
     bool Initialize();
 
     // Import an external file
-    std::optional<Path> ImportExternalFile(std::filesystem::path _file_original_path, Path _target_dir, FileImportFlags _import_flags = 0) const;
+    std::optional<Path> ImportExternalFile(std::filesystem::path _file_original_path, Path _target_dir, FileImportFlags _import_flags = FileImportFlagBits::None) const;
 
 protected:
 

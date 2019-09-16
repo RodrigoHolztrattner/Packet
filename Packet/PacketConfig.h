@@ -77,6 +77,161 @@ static const char DefaultSeparator                  = ForwardSlashSeparator;
 static const uint16_t CondensedMinorVersion         = 1;
 static const uint16_t CondensedMajorVersion         = 0;
 
+// Bitfield, modified version from https://github.com/GPUOpen-LibrariesAndSDKs/Anvil/blob/master/include/misc/types_enums.h
+template<typename IndividualBitEnumType, typename FlagsType = uint32_t>
+class Bitfield
+{
+public:
+    Bitfield()
+        :m_value(static_cast<FlagsType>(0))
+    {
+    }
+
+    Bitfield(const IndividualBitEnumType& in_bit)
+        :m_value(static_cast<FlagsType>(in_bit))
+    {
+    }
+
+    Bitfield(const Bitfield<IndividualBitEnumType, FlagsType>& in_bits)
+        :m_value(in_bits.m_value)
+    {
+    }
+
+    inline Bitfield<IndividualBitEnumType, FlagsType> operator&(const IndividualBitEnumType& in_bit) const
+    {
+        auto result = Bitfield<IndividualBitEnumType, FlagsType>(static_cast<IndividualBitEnumType>(m_value & static_cast<FlagsType>(in_bit)));
+
+        return result;
+    }
+
+    inline Bitfield<IndividualBitEnumType, FlagsType> operator&(const IndividualBitEnumType& in_bit)
+    {
+        auto result = Bitfield<IndividualBitEnumType, FlagsType>(static_cast<IndividualBitEnumType>(m_value & static_cast<FlagsType>(in_bit)));
+
+        return result;
+    }
+
+    inline Bitfield<IndividualBitEnumType, FlagsType>& operator|=(const IndividualBitEnumType& in_bit)
+    {
+        m_value |= static_cast<FlagsType>(in_bit);
+
+        return *this;
+    }
+
+    inline Bitfield<IndividualBitEnumType, FlagsType>& operator|=(const Bitfield<IndividualBitEnumType, FlagsType>& in_bits)
+    {
+        m_value |= static_cast<FlagsType>(in_bits.m_value);
+
+        return *this;
+    }
+
+    inline Bitfield<IndividualBitEnumType, FlagsType>& operator&=(const IndividualBitEnumType& in_bit)
+    {
+        m_value &= static_cast<FlagsType>(in_bit);
+
+        return *this;
+    }
+
+    inline Bitfield<IndividualBitEnumType, FlagsType>& operator&=(const Bitfield<IndividualBitEnumType, FlagsType>& in_bits)
+    {
+        m_value &= static_cast<FlagsType>(in_bits.m_value);
+
+        return *this;
+    }
+
+    inline Bitfield<IndividualBitEnumType, FlagsType>& operator=(const IndividualBitEnumType& in_bit)
+    {
+        m_value = static_cast<FlagsType>(in_bit);
+
+        return *this;
+    }
+
+    inline Bitfield<IndividualBitEnumType, FlagsType>& operator=(const Bitfield<IndividualBitEnumType, FlagsType>& in_bits)
+    {
+        m_value = static_cast<FlagsType>(in_bits.m_value);
+
+        return *this;
+    }
+
+    inline operator bool() const
+    {
+        return m_value != 0;
+    }
+
+    inline bool operator!=(const int& in_value) const
+    {
+        return m_value != static_cast<FlagsType>(in_value);
+    }
+
+    inline bool operator!=(const Bitfield<IndividualBitEnumType, FlagsType>& in_bitfield) const
+    {
+        return (m_value != in_bitfield.m_value);
+    }
+
+    inline bool operator!=(const IndividualBitEnumType& in_bit) const
+    {
+        return (m_value != static_cast<FlagsType>(in_bit));
+    }
+
+    inline bool operator==(const int& in_value) const
+    {
+        return m_value == static_cast<FlagsType>(in_value);
+    }
+
+    inline bool operator==(const Bitfield<IndividualBitEnumType, FlagsType>& in_bitfield) const
+    {
+        return (m_value == in_bitfield.m_value);
+    }
+
+    inline bool operator==(const IndividualBitEnumType& in_bit) const
+    {
+        return (m_value == static_cast<FlagsType>(in_bit));
+    }
+
+    inline bool operator<(const Bitfield<IndividualBitEnumType, FlagsType>& in_bitfield) const
+    {
+        return (m_value < in_bitfield.m_value);
+    }
+
+    inline bool operator<(const IndividualBitEnumType& in_bit) const
+    {
+        return (m_value < static_cast<FlagsType>(in_bit));
+    }
+
+    inline bool operator<=(const Bitfield<IndividualBitEnumType, FlagsType>& in_bitfield) const
+    {
+        return (m_value <= in_bitfield.m_value);
+    }
+
+    inline bool operator<=(const IndividualBitEnumType& in_bit) const
+    {
+        return (m_value <= static_cast<FlagsType>(in_bit));
+    }
+
+    inline bool operator>=(const Bitfield<IndividualBitEnumType, FlagsType>& in_bitfield) const
+    {
+        return (m_value >= in_bitfield.m_value);
+    }
+
+    inline bool operator>=(const IndividualBitEnumType& in_bit) const
+    {
+        return (m_value >= static_cast<FlagsType>(in_bit));
+    }
+
+    inline const FlagsType& get_raw() const
+    {
+        return m_value;
+    }
+
+    inline const FlagsType* get_raw_ptr() const
+    {
+        return &m_value;
+    }
+
+private:
+    FlagsType m_value;
+};
+
 // The operation modes
 enum class OperationMode
 {
@@ -131,8 +286,8 @@ enum BackupFlags
     AutomaticallyRestoreOnOperationFailure = 1 << 2
 };
 
-typedef uint32_t FileImportFlags;
-typedef uint32_t FileWriteFlags;
+typedef Bitfield<FileImportFlagBits> FileImportFlags;
+typedef Bitfield<FileWriteFlagBits>  FileWriteFlags;
 
 /////////////
 // METHODS //
@@ -451,7 +606,7 @@ struct FixedSizePath
 
     void erase(std::size_t _begin, std::size_t _end)
     {
-        std::memcpy(&m_PathString[_begin], &m_PathString[_end] + TotalSize);
+        std::memcpy(&m_PathString[_begin], &m_PathString[_end] + TotalSize, _end - _begin);
     }
 
     static size_t available_size()

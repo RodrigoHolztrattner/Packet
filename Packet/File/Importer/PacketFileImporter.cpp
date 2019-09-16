@@ -68,7 +68,7 @@ std::optional<Path> PacketFileImporter::ImportExternalFile(std::filesystem::path
 
     // Check if we already have this file imported, if true, check if we must overwrite it
     bool file_already_indexed = m_FileIndexer.IsFileIndexed(Hash(taget_path));
-    if (file_already_indexed && !(_import_flags & static_cast<FileImportFlags>(FileImportFlagBits::Overwrite)))
+    if (file_already_indexed && !(_import_flags & FileImportFlagBits::Overwrite))
     {
         // The file already exist and we are not overwriting it
         return std::nullopt;
@@ -119,7 +119,7 @@ std::optional<Path> PacketFileImporter::ImportExternalFile(std::filesystem::path
         std::move(intermediate_data),
         std::move(final_data),
         {},
-        static_cast<FileWriteFlags>(FileWriteFlagBits::Overwrite)))
+        FileWriteFlagBits::Overwrite))
     {
         return std::nullopt;
     }

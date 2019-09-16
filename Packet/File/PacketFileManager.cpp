@@ -113,13 +113,13 @@ bool PacketFileManager::WriteFile(
 
     // Check if we already have this file imported
     bool file_already_indexed = m_FileIndexer->IsFileIndexed(Hash(_target_path));
-    if (file_already_indexed && !(_write_flags & static_cast<FileWriteFlags>(FileWriteFlagBits::Overwrite)))
+    if (file_already_indexed && !(_write_flags & FileWriteFlagBits::Overwrite))
     {
         return false;
     }
 
     // Check if we should ignore missing dependencies
-    if (!(_write_flags & static_cast<FileWriteFlags>(FileWriteFlagBits::IgnoreMissingDependencies)))
+    if (!(_write_flags & FileWriteFlagBits::IgnoreMissingDependencies))
     {
         // Check if all dependencies are valid
         for (auto& file_dependency : _file_dependencies)

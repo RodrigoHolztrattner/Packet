@@ -74,7 +74,7 @@ public: // FILE OPERATIONS //
         std::vector<uint8_t>&& _intermediate_data,
         std::vector<uint8_t>&& _final_data,
         std::set<Path>&&       _file_dependencies,
-        FileWriteFlags         _write_flags = 0) const;
+        FileWriteFlags         _write_flags = FileWriteFlagBits::None) const;
 
     // Copy a file to another location, return the new file path
     std::optional<Path> CopyFile(Path _source_file_path, Path _target_file_dir) const;
