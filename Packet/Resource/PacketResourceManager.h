@@ -121,7 +121,7 @@ public: //////////
             // The file doesn't exist
             m_LoggerPtr->LogError(
                 std::string("Trying to load file at path: \"")
-                .append(_hash.path())
+                .append(_hash.path().string())
                 .append("\" and hash: ")
                 .append(std::to_string(_hash.get_hash_value()))
                 .append(" but it doesn't exist on our database!")
@@ -170,7 +170,7 @@ public: //////////
             // The file doesn't exist
             m_LoggerPtr->LogError(
                 std::string("Trying to load file at path: \"")
-                .append(_hash.path())
+                .append(_hash.path().string())
                 .append("\" and hash: ")
                 .append(std::to_string(_hash.get_hash_value()))
                 .append(" but it doesn't exist on our database!")

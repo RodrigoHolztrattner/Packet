@@ -379,13 +379,13 @@ std::optional<Path> PacketFileManager::RenameFile(Path _source_file_path, Path _
     }
 
     // Check if the filename is the same
-    if (_source_file_path.path().stem() == _new_file_name.path())
+    if (_source_file_path.stem() == _new_file_name.string())
     {
         return _source_file_path;
     }
 
     // Determine the new path for this file
-    auto new_file_path = _source_file_path.path().parent_path().string() + "/" + _new_file_name.string() + _source_file_path.path().extension().string();
+    auto new_file_path = _source_file_path.filesystem_path().parent_path().string() + "/" + _new_file_name.string() + _source_file_path.extension();
 
     // Confirm that the requested name is available
     if (m_FileIndexer->IsFileIndexed(Hash(new_file_path)))
@@ -500,7 +500,7 @@ bool PacketFileManager::RedirectFileDependencies(Path _source_file_path, Path _t
     }
 
     // Check if both files are compatible
-    if (_source_file_path.path().extension() != _target_file_path.path().extension())
+    if (_source_file_path.extension() != _target_file_path.extension())
     {
         SignalOperationError("RedirectFileDependencies", "Source and target files are incompatible");
         return false;

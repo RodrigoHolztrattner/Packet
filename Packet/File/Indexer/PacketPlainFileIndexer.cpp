@@ -118,7 +118,7 @@ bool PacketPlainFileIndexer::IsFileIndexed(HashPrimitive _file_hash) const
 Path PacketPlainFileIndexer::GetValidPathForName(const Path& _current_path, std::string _name, std::string _extension) const
 {
     // Find a valid name that can be used to create the new file
-    auto base_path = _current_path + Path::GetDefaultSeparator() + _name;
+    Path base_path = _current_path + Path::GetDefaultSeparator() + _name;
 
     int counter = 0;
     while (IsFileIndexed(Hash(base_path + std::to_string(counter) + _extension)))
@@ -390,7 +390,7 @@ void PacketPlainFileIndexer::IndexFileFromPath(Path _file_path)
     m_IndexDatas[Hash(_file_path)] = (index_data);
 
     // Extract the file type and update the correct entry on the type map
-    std::string file_type = _file_path.path().extension().string();
+    std::string file_type = _file_path.extension();
     m_IndexedFilesByType[file_type].insert(_file_path);
 }
 
@@ -406,7 +406,7 @@ void PacketPlainFileIndexer::RemoveFileIndexData(Path _file_path)
     }
 
     // Extract the file type and remove the entry on the type map
-    std::string file_type = _file_path.path().extension().string();
+    std::string file_type = _file_path.extension();
     auto type_iter = m_IndexedFilesByType.find(file_type);
     if (type_iter != m_IndexedFilesByType.end())
     {

@@ -523,10 +523,17 @@ struct FixedSizePath
         return DefaultSeparator;
     }
 
+    //////////////////
+    // CONSTRUCTORS //
+    //////////////////
+
+    // Default
     FixedSizePath() 
     {
         m_PathString.fill(0);
     }
+    
+    // c string
     FixedSizePath(const char* _str)
 	{
         m_PathString.fill(0);
@@ -534,12 +541,23 @@ struct FixedSizePath
         assert(temp.size() < TotalSize);
         std::copy(temp.begin(), temp.end(), m_PathString.data());
     }
+
+    // char
+    FixedSizePath(char _char)
+    {
+        m_PathString.fill(0);
+        std::copy(&_char, &_char + sizeof(char), m_PathString.data());
+    }
+
+    // std::string
     FixedSizePath(const std::string& _str)
 	{
         m_PathString.fill(0);
         assert(_str.size() < TotalSize);
         std::copy(_str.begin(), _str.end(), m_PathString.data());
     }
+
+    // std::filesystem::path
     FixedSizePath(const std::filesystem::path& _path)
     {
         m_PathString.fill(0);
@@ -549,51 +567,54 @@ struct FixedSizePath
         std::copy(temp_string.begin(), temp_string.end(), m_PathString.data());
     }
 
-    FixedSizePath& operator =(const char* _str)
-	{
-        std::string temp(_str);
-        std::copy(temp.begin(), temp.end(), m_PathString.data());
-        return *this;
-	}
-    FixedSizePath& operator =(const std::string _str)
-	{
-        std::copy(_str.begin(), _str.end(), m_PathString.data());
-		return *this;
-	}
+    ////////////////////////////
+    // OPERATIONS/CONVERSIONS //
+    ////////////////////////////
 
-	operator const char*() const
-	{
-		return m_PathString.data();
-	}
-
+    // c string conversion
 	const char* c_str() const
 	{
 		return m_PathString.data();
 	}
 
-    operator std::filesystem::path() const
+    // c++ string conversion
+    std::string string() const
     {
         return std::string(m_PathString.data());
     }
 
-    std::filesystem::path path() const
+    // c++ filesystem path conversion
+    std::filesystem::path filesystem_path() const
     {
         return std::string(m_PathString.data());
     }
 
+    // filename from path -> std::string
     std::string filename() const
     {
         return std::filesystem::path(m_PathString.data()).filename().string();
     }
 
+    // stem from path -> std::string
+    std::string stem() const
+    {
+        return std::filesystem::path(m_PathString.data()).stem().string();
+    }
+
+    // extension from path -> std::string
     std::string extension() const
     {
         return std::filesystem::path(m_PathString.data()).extension().string();
     }
 
-    std::string string() const
+    const std::array<char, TotalSize>& get_raw() const
     {
-        return std::string(m_PathString.data());
+        return m_PathString;
+    }
+
+    std::array<char, TotalSize>& get_raw()
+    {
+        return m_PathString;
     }
 
     std::string to_raw_data_string() const
@@ -601,14 +622,32 @@ struct FixedSizePath
         return std::string(m_PathString.data(), m_PathString.size());
     }
 
+    //
+
+    // compare with a c string (fast comparison without casting)
+    bool compare(const char* _str) const
+    {
+        return std::strcmp(_str, m_PathString.data()) == 0;
+    }
+
+    // concatenation with another fixed size path
     template <uint32_t OtherSize>
     FixedSizePath& concat(const FixedSizePath<OtherSize>& _other)
     {
         assert(used_size() + _other.used_size() < TotalSize);
-        std::copy(_other.begin(), _other.begin() + _other.used_size(), m_PathString.data() + used_size());
+        std::copy(_other.m_PathString.begin(), _other.m_PathString.begin() + _other.used_size(), m_PathString.data() + used_size());
         return *this;
     }
 
+    // concatenation with a char
+    FixedSizePath& concat(char _other)
+    {
+        assert(used_size() + 1 < TotalSize);
+        std::copy(&_other, &_other + sizeof(char), m_PathString.data() + used_size());
+        return *this;
+    }
+
+    // concatenation with a c++ string
     FixedSizePath& concat(const std::string& _other)
     {
         assert(used_size() + _other.size() < TotalSize);
@@ -616,11 +655,16 @@ struct FixedSizePath
         return *this;
     }
 
+    // erase from range
     void erase(std::size_t _begin, std::size_t _end)
     {
         assert(_begin >= 0 && _end < TotalSize);
         std::memcpy(&m_PathString[_begin], &m_PathString[_end], TotalSize - _end);
     }
+
+    ///////////
+    // QUERY //
+    ///////////
 
     static size_t available_size()
     {
@@ -631,11 +675,33 @@ struct FixedSizePath
     {
         return string().size();
     }
+    ///////////////
+    // OPERATORS //
+    ///////////////
+
+    // Assignment operators
+    FixedSizePath& operator =(const char* _str)
+    {
+        std::string temp(_str);
+        std::copy(temp.begin(), temp.end(), m_PathString.data());
+        return *this;
+    }
+    FixedSizePath& operator =(const std::string _str)
+    {
+        std::copy(_str.begin(), _str.end(), m_PathString.data());
+        return *this;
+    }
 
     template <typename PathType>
     FixedSizePath& operator +(const PathType& _other)
     {
         return concat(_other);
+    }
+
+    // fast comparison with a c string (without cast)
+    bool operator ==(const char* _other) const
+    {
+        return compare(_other);
     }
 
     bool operator ==(const FixedSizePath& _other) const
@@ -646,21 +712,6 @@ struct FixedSizePath
     bool operator !=(const FixedSizePath& _other) const
     {
         return m_PathString != _other.m_PathString;
-    }
-
-	bool compare(const char* _str) const
-	{
-		return std::strcmp(_str, m_PathString.data()) == 0;
-	}
-
-    const std::array<char, TotalSize>& get_raw() const
-    {
-        return m_PathString;
-    }
-
-    std::array<char, TotalSize>& get_raw()
-    {
-        return m_PathString;
     }
 
     bool operator<(const FixedSizePath& other) const
@@ -677,6 +728,20 @@ private:
 
 	std::array<char, TotalSize> m_PathString;
 };
+
+template <uint32_t FirstPathSize, uint32_t SecondPathSize>
+FixedSizePath<FirstPathSize> operator +(const FixedSizePath<FirstPathSize>& _first, const FixedSizePath<SecondPathSize>& _second)
+{
+    FixedSizePath<FirstPathSize> result = _first;
+    return result.concat(_second);
+}
+
+template <uint32_t FirstPathSize>
+FixedSizePath<FirstPathSize> operator +(const FixedSizePath<FirstPathSize>& _first, char _second)
+{
+    FixedSizePath<FirstPathSize> result = _first;
+    return result.concat(_second);
+}
 
 namespace ns {
     template <uint32_t TotalSize>
