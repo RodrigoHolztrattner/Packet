@@ -679,6 +679,11 @@ struct FixedSizePath
     // OPERATORS //
     ///////////////
 
+    operator const char* () const
+    {
+        return m_PathString.data();
+    }
+
     // Assignment operators
     FixedSizePath& operator =(const char* _str)
     {
@@ -693,9 +698,10 @@ struct FixedSizePath
     }
 
     template <typename PathType>
-    FixedSizePath& operator +(const PathType& _other)
+    FixedSizePath operator +(const PathType& _other)
     {
-        return concat(_other);
+        FixedSizePath result = *this;
+        return result.concat(_other);
     }
 
     // fast comparison with a c string (without cast)
