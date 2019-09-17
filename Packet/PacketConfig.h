@@ -531,17 +531,20 @@ struct FixedSizePath
 	{
         m_PathString.fill(0);
         std::string temp(_str);
+        assert(temp.size() < TotalSize);
         std::copy(temp.begin(), temp.end(), m_PathString.data());
     }
     FixedSizePath(const std::string& _str)
 	{
         m_PathString.fill(0);
+        assert(_str.size() < TotalSize);
         std::copy(_str.begin(), _str.end(), m_PathString.data());
     }
     FixedSizePath(const std::filesystem::path& _path)
     {
         m_PathString.fill(0);
         auto temp_string = _path.string();
+        assert(temp_string.size() < TotalSize);
         std::replace(temp_string.begin(), temp_string.end(), BackSlashSeparator, DefaultSeparator);
         std::copy(temp_string.begin(), temp_string.end(), m_PathString.data());
     }
@@ -599,14 +602,24 @@ struct FixedSizePath
     }
 
     template <uint32_t OtherSize>
-    void concat(const FixedSizePath<OtherSize>& _other)
+    FixedSizePath& concat(const FixedSizePath<OtherSize>& _other)
     {
+        assert(used_size() + _other.used_size() < TotalSize);
         std::copy(_other.begin(), _other.begin() + _other.used_size(), m_PathString.data() + used_size());
+        return *this;
+    }
+
+    FixedSizePath& concat(const std::string& _other)
+    {
+        assert(used_size() + _other.size() < TotalSize);
+        std::copy(_other.begin(), _other.end(), m_PathString.data() + used_size());
+        return *this;
     }
 
     void erase(std::size_t _begin, std::size_t _end)
     {
-        std::memcpy(&m_PathString[_begin], &m_PathString[_end] + TotalSize, _end - _begin);
+        assert(_begin >= 0 && _end < TotalSize);
+        std::memcpy(&m_PathString[_begin], &m_PathString[_end], TotalSize - _end);
     }
 
     static size_t available_size()
@@ -617,6 +630,12 @@ struct FixedSizePath
     size_t used_size() const
     {
         return string().size();
+    }
+
+    template <typename PathType>
+    FixedSizePath& operator +(const PathType& _other)
+    {
+        return concat(_other);
     }
 
     bool operator ==(const FixedSizePath& _other) const
@@ -631,7 +650,7 @@ struct FixedSizePath
 
 	bool compare(const char* _str) const
 	{
-		return strcmp(_str, m_PathString) == 0;
+		return std::strcmp(_str, m_PathString.data()) == 0;
 	}
 
     const std::array<char, TotalSize>& get_raw() const
