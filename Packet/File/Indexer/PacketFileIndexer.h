@@ -122,6 +122,9 @@ public: // VIRTUAL METHODS //
     virtual bool IsFileExternal(HashPrimitive _file_hash) const = 0;
     virtual bool IsFileIndexed(HashPrimitive _file_hash)  const = 0;
 
+    // Return a valid path for the given path, name and extension
+    virtual Path GetValidPathForName(const Path& _current_path, std::string _name, std::string _extension) const = 0;
+
     // Query multiple files
     virtual std::vector<Path> QueryFilesFromType(std::vector<std::string> _file_types) const = 0;
     virtual std::vector<std::string> QueryRegisteredFileExtensions()                   const = 0;
