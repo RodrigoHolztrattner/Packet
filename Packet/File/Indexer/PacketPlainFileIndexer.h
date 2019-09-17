@@ -99,6 +99,9 @@ public: //////////
     bool IsFileExternal(HashPrimitive _file_hash) const final;
     bool IsFileIndexed(HashPrimitive _file_hash) const final;
 
+    // Return a valid path for the given path, name and extension
+    Path GetValidPathForName(const Path& _current_path, std::string _name, std::string _extension) const;
+
     // Query multiple files
     std::vector<Path> QueryFilesFromType(std::vector<std::string> _file_types) const final;
     std::vector<std::string> QueryRegisteredFileExtensions() const final;

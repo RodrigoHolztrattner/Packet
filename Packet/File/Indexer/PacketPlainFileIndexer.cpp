@@ -115,6 +115,20 @@ bool PacketPlainFileIndexer::IsFileIndexed(HashPrimitive _file_hash) const
     return false;
 }
 
+Path PacketPlainFileIndexer::GetValidPathForName(const Path& _current_path, std::string _name, std::string _extension) const
+{
+    // Find a valid name that can be used to create the new file
+    auto base_path = _current_path + Path::GetDefaultSeparator() + _name;
+
+    int counter = 0;
+    while (IsFileIndexed(Hash(base_path + std::to_string(counter) + _extension)))
+    {
+        counter++;
+    }
+
+    return base_path + std::to_string(counter) + _extension;
+}
+
 std::optional<PacketFileIndexer::FileLoadInformation> PacketPlainFileIndexer::RetrieveFileLoadInformation(HashPrimitive _file_hash) const
 {
     std::shared_lock lock(m_Mutex);
