@@ -36,28 +36,26 @@ std::unique_ptr<PacketResource> PacketResourceLoader::LoadObject(PacketResourceF
                                                                  bool _isPermanent, 
                                                                  std::vector<uint8_t> _resourceData) const
 {
-    // Allocate the object using the factory
-    std::unique_ptr<PacketResource> resource = _resourceFactory->RequestObject();
-
-    // Set the object hash
-    resource->SetHash(_hash);
-
-    // Set the helper pointers and the current operation mode
-    resource->SetHelperObjects(
-        _resourceFactory,
-        &m_ResourceManager,
-        m_LoggerPtr,
-        m_OperationMode);
-
-    // Set the build info
-    resource->SetBuildInfo(_buildInfo);
-
     // Load the file
     auto resource_file = m_FileLoader.LoadFile(_hash);
     assert(resource_file);
 
     // Retrieve the file final data
     std::vector<uint8_t> file_final_data = PacketFile::RetrieveFileFinalData(std::move(resource_file));
+
+    // Allocate the object using the factory
+    std::unique_ptr<PacketResource> resource = _resourceFactory->RequestObject(file_final_data);
+
+    // Set the object hash
+    // Set the build info
+    // Set the helper pointers and the current operation mode
+    resource->SetHash(_hash);
+    resource->SetBuildInfo(_buildInfo);
+    resource->SetHelperObjects(
+        _resourceFactory,
+        &m_ResourceManager,
+        m_LoggerPtr,
+        m_OperationMode);
 
     // Get a reference to the object data vector directly
     auto& data_vector = resource->GetDataRef();

@@ -65,7 +65,7 @@ public: //////////
 public: //////////
 
 	// Request a new object
-	virtual std::unique_ptr<PacketResource> RequestObject() = 0;
+	virtual std::unique_ptr<PacketResource> RequestObject(const std::vector<uint8_t>& _resource_data) = 0;
 	
 	// Release an object
 	virtual void ReleaseObject(std::unique_ptr<PacketResource> _object) = 0;

@@ -12,6 +12,6 @@ public:
     MyFactory();
     ~MyFactory();
 
-    std::unique_ptr<Packet::Resource> RequestObject() final;
+    std::unique_ptr<Packet::Resource> RequestObject(const std::vector<uint8_t>& _resource_data) final;
     void ReleaseObject(std::unique_ptr<Packet::Resource> _object) final;
 };
