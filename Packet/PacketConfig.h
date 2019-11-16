@@ -783,18 +783,18 @@ typedef uint64_t HashPrimitive;
 // The hash type
 struct Hash
 {
-	Hash() {}
-	Hash(const std::string _str)
+	Hash() : m_is_empty(true) {}
+	Hash(const std::string _str) : m_is_empty(false)
 	{
 		m_Hash = fnv1a_path(_str.c_str());
 		m_Path = _str;
 	}
-	Hash(const char* _str)
+	Hash(const char* _str) : m_is_empty(false)
 	{
 		m_Hash = fnv1a_path(_str);
 		m_Path = _str;
 	}
-    Hash(Path _path)
+    Hash(Path _path) : m_is_empty(false)
     {
         m_Hash = fnv1a_path(_path.string().c_str());
         m_Path = _path;
@@ -826,6 +826,11 @@ struct Hash
         return a.m_Hash < this->m_Hash;
     }
 
+    operator bool() const
+    {
+        return !m_is_empty;
+    }
+
 	// Return the hash value
 	const HashPrimitive get_hash_value() const
 	{
@@ -838,11 +843,17 @@ struct Hash
 		return m_Path;
 	}
 
+    bool empty()
+    {
+        return m_is_empty;
+    }
+
 private:
 
 	// The hash properties
     Path m_Path;
 	HashPrimitive m_Hash;
+    bool m_is_empty = true;
 };
 
 class PacketFileWatcher
