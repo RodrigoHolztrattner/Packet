@@ -800,12 +800,12 @@ struct Hash
         m_Path = _path;
     }
 
-	operator HashPrimitive()
+	operator HashPrimitive() const
 	{
 		return m_Hash;
 	}
 
-    operator Path()
+    operator Path() const
     {
         return m_Path;
     }
@@ -838,12 +838,12 @@ struct Hash
 	}
 
 	// Return the path reference
-	const Path& path()
+	const Path& path() const
 	{
 		return m_Path;
 	}
 
-    bool empty()
+    bool empty() const
     {
         return m_is_empty;
     }
