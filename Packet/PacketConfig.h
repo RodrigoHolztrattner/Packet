@@ -675,9 +675,20 @@ struct FixedSizePath
     {
         return string().size();
     }
+
+    bool empty() const
+    {
+        return m_PathString[0] == 0;
+    }
+
     ///////////////
     // OPERATORS //
     ///////////////
+
+    operator bool() const
+    {
+        return !empty();
+    }
 
     operator const char* () const
     {
