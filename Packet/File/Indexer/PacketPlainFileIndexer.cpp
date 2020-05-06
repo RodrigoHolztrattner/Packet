@@ -118,7 +118,7 @@ bool PacketPlainFileIndexer::IsFileIndexed(HashPrimitive _file_hash) const
 Path PacketPlainFileIndexer::GetValidPathForName(const Path& _current_path, std::string _name, std::string _extension) const
 {
     // Find a valid name that can be used to create the new file
-    Path base_path = _current_path + Path::GetDefaultSeparator() + _name;
+    Path base_path = _current_path.empty() ? _name : _current_path + Path::GetDefaultSeparator() + _name;
 
     int counter = 0;
     while (IsFileIndexed(Hash(base_path + std::to_string(counter) + _extension)))
