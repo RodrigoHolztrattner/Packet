@@ -460,10 +460,11 @@ public:
         // Reset this reference
         Reset();
 
+        m_CreationProxy = _other.m_CreationProxy;
+
         // Make the other proxy target our resource variable
         _other.UpdateCreationProxy(&m_ResourceObject);
 
-        m_CreationProxy = std::move(_other.m_CreationProxy);
         m_ResourceObject = std::move(_other.m_ResourceObject);
         _other.m_ResourceObject = nullptr;
         _other.m_CreationProxy = nullptr;
@@ -590,7 +591,7 @@ private:
                 return false;
             }
 
-            if (_resourceVariable = nullptr)
+            if (_resourceVariable == nullptr)
             {
                 m_CreationProxy = nullptr;
             }
