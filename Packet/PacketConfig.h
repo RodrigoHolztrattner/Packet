@@ -1014,3 +1014,15 @@ private:
 };
 
 PacketDevelopmentNamespaceEnd(Packet)
+
+namespace std 
+{
+    template <>
+    struct hash<Packet::Hash>
+    {
+        std::size_t operator()(const Packet::Hash& k) const
+        {
+            return static_cast<std::size_t>(k.get_hash_value());
+        }
+    };
+}
