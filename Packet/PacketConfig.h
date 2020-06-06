@@ -859,7 +859,7 @@ struct Hash
         return m_is_empty;
     }
 
-private:
+protected:
 
 	// The hash properties
     Path m_Path;
