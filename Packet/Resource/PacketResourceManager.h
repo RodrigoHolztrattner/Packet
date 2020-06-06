@@ -134,8 +134,8 @@ public: //////////
         // Get a proxy for this resource reference
         auto resourceCreationProxy = GetResourceCreationProxy();
 
-        // Register the creation proxy
         _resourceReference.RegisterCreationProxy(resourceCreationProxy.get());
+        _resourceReference.RegisterResourceHash(_hash);
 
         // Add this new creation data into our processing queue
         m_ResourceCreateProxyQueue.enqueue({ std::move(resourceCreationProxy),
@@ -183,8 +183,8 @@ public: //////////
         // Get a proxy for this resource reference
         auto resourceCreationProxy = GetResourceCreationProxy();
 
-        // Register the creation proxy
         _resourceReference.RegisterCreationProxy(resourceCreationProxy.get());
+        _resourceReference.RegisterResourceHash(_hash);
 
         // Add this new creation data into our processing queue
         m_ResourceCreateProxyQueue.enqueue({ std::move(resourceCreationProxy),

@@ -418,6 +418,11 @@ protected:
         UpdateCreationProxy(&m_ResourceObject);
     }
 
+    void RegisterResourceHash(Hash _resource_hash)
+    {
+        m_resource_hash = _resource_hash;
+    }
+
 public:
 
     // Default constructor
@@ -478,10 +483,11 @@ public:
         // Reset this reference
         Reset();
 
+        m_CreationProxy = _other.m_CreationProxy;
+
         // Make the other proxy target our resource variable
         _other.UpdateCreationProxy(&m_ResourceObject);
 
-        m_CreationProxy = std::move(_other.m_CreationProxy);
         m_ResourceObject = std::move(_other.m_ResourceObject);
         _other.m_ResourceObject = nullptr;
         _other.m_CreationProxy = nullptr;
@@ -528,6 +534,11 @@ public:
         }
 
         return reinterpret_cast<ResourceClass*>(m_ResourceObject);
+    }
+
+    const Hash& GetHash() const
+    {
+        return m_resource_hash;
     }
 
     PacketResourceKeepAlive GetKeepAlive() const
@@ -609,6 +620,8 @@ protected:
 
     // The creation proxy linked
     PacketResourceCreationProxy* m_CreationProxy = nullptr;
+
+    Hash m_resource_hash;
 };
 
 // A temporary object that should be used to call the resource OnExternalConstruct method, this
