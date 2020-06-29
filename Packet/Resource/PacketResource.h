@@ -263,6 +263,8 @@ class PacketResourceCreationProxy
 
 public:
 
+    using OnLoadCallback = std::function<void(PacketResource& _resource)>;
+
     // Forward a resource linkage, will be called asynchronously by the resource manager
     void ForwardResourceLink(PacketResource* _resource);
 
@@ -275,9 +277,14 @@ public:
     // This method will update the internal resource variable, it must be called only
     // by the resource manager or by a resource reference, this method doesn't do any
     // synchronization by itself
-    void UpdateLinkedResourceVariable(PacketResource** _variablePtr)
+    void UpdateLinkedResourceVariable(PacketResource** _variablePtr, std::optional<OnLoadCallback> _callback = std::nullopt)
     {
         m_ResourceReferenceVariable = _variablePtr;
+
+        if (_callback.has_value())
+        {
+            m_on_load_callback = std::move(_callback.value());
+        }
     }
 
 private:
@@ -288,6 +295,8 @@ private:
     // The mutex that will prevent concurrent access between the referenced reference and the resource
     // registration
     mutable std::mutex m_Mutex;
+
+    OnLoadCallback m_on_load_callback;
 };
 
 class PacketResourceKeepAlive
@@ -571,6 +580,10 @@ public:
         }
     }
 
+    virtual void OnResourceLoaded(PacketResource& _resource)
+    {
+    }
+
 private:
 
     // This method will update our creation proxy, if necessary, to point to
@@ -592,8 +605,13 @@ private:
             // Check if the proxy already updated our resource
             if ((_resourceVariable == nullptr || *_resourceVariable == nullptr) && (_movingResourceVariable == nullptr || *_movingResourceVariable == nullptr))
             {
+                std::optional<PacketResourceCreationProxy::OnLoadCallback> load_callback;
+                if (_resourceVariable != nullptr)
+                {
+                    load_callback = [this](PacketResource& _resource) -> void {OnResourceLoaded(_resource); };
+                }
                 // Unlink the proxy by setting the target resource variable to nullptr
-                m_CreationProxy->UpdateLinkedResourceVariable(_resourceVariable);
+                m_CreationProxy->UpdateLinkedResourceVariable(_resourceVariable, std::move(load_callback));
             }
             else
             {

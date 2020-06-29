@@ -286,6 +286,7 @@ void PacketResourceCreationProxy::ForwardResourceLink(PacketResource* _resource)
     if (m_ResourceReferenceVariable != nullptr)
     {
         *m_ResourceReferenceVariable = _resource;
+        m_on_load_callback(**m_ResourceReferenceVariable);
         m_ResourceReferenceVariable = nullptr;
     }
     else
