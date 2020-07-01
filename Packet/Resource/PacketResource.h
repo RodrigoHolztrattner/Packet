@@ -477,7 +477,7 @@ public:
         m_CreationProxy = _other.m_CreationProxy;
 
         // Make the other proxy target our resource variable
-        _other.UpdateCreationProxy(&m_ResourceObject);
+        UpdateCreationProxy(&m_ResourceObject);
 
         m_ResourceObject = std::move(_other.m_ResourceObject);
         _other.m_ResourceObject = nullptr;
@@ -495,7 +495,7 @@ public:
         m_CreationProxy = _other.m_CreationProxy;
 
         // Make the other proxy target our resource variable
-        _other.UpdateCreationProxy(&m_ResourceObject);
+        UpdateCreationProxy(&m_ResourceObject);
 
         m_ResourceObject = std::move(_other.m_ResourceObject);
         _other.m_ResourceObject = nullptr;
@@ -610,6 +610,7 @@ private:
                 {
                     load_callback = [this](PacketResource& _resource) -> void {OnResourceLoaded(_resource); };
                 }
+
                 // Unlink the proxy by setting the target resource variable to nullptr
                 m_CreationProxy->UpdateLinkedResourceVariable(_resourceVariable, std::move(load_callback));
             }
