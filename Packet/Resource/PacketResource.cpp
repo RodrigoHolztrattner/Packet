@@ -121,9 +121,15 @@ void PacketResource::BeginModifications()
 
 bool PacketResource::IsValid() const
 {
+    if (m_IsWaitingOnDependencies)
+    {
+        m_IsWaitingOnDependencies = IsWaitingOnDependencies();
+    }
+
 	return m_WasLoaded
         && m_WasConstructed
         && m_WasExternallyConstructed
+        && !m_IsWaitingOnDependencies
         && !m_IsPendingDeletion
         && !m_ConstructFailed;
 }
@@ -131,6 +137,11 @@ bool PacketResource::IsValid() const
 bool PacketResource::IsPendingDeletion() const
 {
 	return m_IsPendingDeletion;
+}
+
+bool PacketResource::IsWaitingOnDependencies() const
+{
+    return false;
 }
 
 bool PacketResource::IsReferenced() const
@@ -179,9 +190,9 @@ void PacketResource::SetHelperObjects(
     PacketLogger*           _logger,
     OperationMode           _operationMode)
 {
-	m_FactoryPtr = _factoryReference;
-    m_ResourceManagerPtr = _resourceManager;
-	m_LoggerPtr = _logger;
+	m_FactoryPtr           = _factoryReference;
+    m_ResourceManagerPtr   = _resourceManager;
+	m_LoggerPtr            = _logger;
 	m_CurrentOperationMode = _operationMode;
 }
 
@@ -200,9 +211,24 @@ void PacketResource::SetPendingDeletion()
 	m_IsPendingDeletion = true;
 }
 
-bool PacketResource::ConstructionFailed() const
+PacketResource::ConstructionStatus PacketResource::GetConstructionStatus() const
 {
-    return m_ConstructFailed;
+    if (m_ConstructFailed)
+    {
+        return ConstructionStatus::ConstructionFailed;
+    }
+    else if (m_WasConstructed && !m_ConstructFailed && !RequiresExternalConstructPhase())
+    {
+        return ConstructionStatus::Constructed;
+    }
+    else if (m_WasConstructed && !m_ConstructFailed && RequiresExternalConstructPhase())
+    {
+        return ConstructionStatus::WaitingExternalConstruction;
+    }
+    else
+    {
+        return ConstructionStatus::NotConstructed;
+    }
 }
 
 void PacketResource::IncrementNumberReferences()
@@ -286,7 +312,7 @@ void PacketResourceCreationProxy::ForwardResourceLink(PacketResource* _resource)
     if (m_ResourceReferenceVariable != nullptr)
     {
         *m_ResourceReferenceVariable = _resource;
-        m_on_load_callback(**m_ResourceReferenceVariable);
+        m_on_load_callback(**m_ResourceReferenceVariable, (*m_ResourceReferenceVariable)->GetConstructionStatus() == PacketResource::ConstructionStatus::ConstructionFailed);
         m_ResourceReferenceVariable = nullptr;
     }
     else

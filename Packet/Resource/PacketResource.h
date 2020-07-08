@@ -107,6 +107,14 @@ public:
 	template <typename ResourceClass>
 	friend class PacketResourceReference;
 
+    enum class ConstructionStatus
+    {
+        NotConstructed, 
+        WaitingExternalConstruction, 
+        Constructed,
+        ConstructionFailed
+    };
+
 //////////////////
 // CONSTRUCTORS //
 public: //////////
@@ -176,11 +184,26 @@ public: // STATUS //
 ////////////////////
 
 	// Return the status of this resource
-	virtual bool IsValid()           const;
-	bool IsPendingDeletion()         const;
-	bool IsReferenced()              const;
-	bool IsPermanent()               const;
-    bool ConstructionFailed()        const;
+	virtual bool IsValid()              const;
+	bool IsPendingDeletion()            const;
+	bool IsReferenced()                 const;
+	bool IsPermanent()                  const;
+
+    /*
+    * Return the construction status for this resource
+    */
+    ConstructionStatus GetConstructionStatus() const;
+
+    /*
+    * Returns if the the current resource is waiting on dependencies
+    * It's important to noticed that, if a resource is a dependency of another resource and it fails to be
+    * constructed, it should not be considered as a dependency anymore, IsValid() for this resource should
+    * return false because of this but you should NOT wait on it anymore, query the construction status for
+    * resource dependencies via GetConstructionStatus()
+    * This function will be called until it returns false, afterwards it will never again be considered, 
+    * not causing a major impact on performance
+    */
+    virtual bool IsWaitingOnDependencies() const;
 
 /////////////////////////
 protected: // INTERNAL //
@@ -224,12 +247,13 @@ protected: // INTERNAL //
 private: //////
 
 	// Status
-	bool m_IsPermanentResource       = false;
-	bool m_IsPendingDeletion         = false;
-    bool m_WasLoaded                 = false;
-    bool m_WasConstructed            = false;
-    bool m_WasExternallyConstructed  = false;
-    bool m_ConstructFailed           = false;
+	bool m_IsPermanentResource             = false;
+	bool m_IsPendingDeletion               = false;
+    mutable bool m_IsWaitingOnDependencies = false;
+    bool m_WasLoaded                       = false;
+    bool m_WasConstructed                  = false;
+    bool m_WasExternallyConstructed        = false;
+    bool m_ConstructFailed                 = false;
 
     // This is the index of the current construct phase
     uint32_t m_CurrentConstructPhaseIndex = 0;
@@ -263,7 +287,7 @@ class PacketResourceCreationProxy
 
 public:
 
-    using OnLoadCallback = std::function<void(PacketResource& _resource)>;
+    using OnLoadCallback = std::function<void(PacketResource& _resource, bool _failed)>;
 
     // Forward a resource linkage, will be called asynchronously by the resource manager
     void ForwardResourceLink(PacketResource* _resource);
@@ -280,7 +304,7 @@ public:
     void UpdateLinkedResourceVariable(PacketResource** _variablePtr, std::optional<OnLoadCallback> _callback = std::nullopt)
     {
         m_ResourceReferenceVariable = _variablePtr;
-
+        
         if (_callback.has_value())
         {
             m_on_load_callback = std::move(_callback.value());
@@ -545,6 +569,15 @@ public:
         return reinterpret_cast<ResourceClass*>(m_ResourceObject);
     }
 
+    /*
+    * This function will only update the internal resource hash without afecting
+    * the underlying resource, if any
+    */
+    void SetHashWithoutLoading(Hash _resource_hash)
+    {
+        RegisterResourceHash(_resource_hash);
+    }
+
     const Hash& GetHash() const
     {
         return m_resource_hash;
@@ -580,7 +613,7 @@ public:
         }
     }
 
-    virtual void OnResourceLoaded(PacketResource& _resource)
+    virtual void OnResourceLoaded(PacketResource& _resource, bool _failed)
     {
     }
 
@@ -608,7 +641,7 @@ private:
                 std::optional<PacketResourceCreationProxy::OnLoadCallback> load_callback;
                 if (_resourceVariable != nullptr)
                 {
-                    load_callback = [this](PacketResource& _resource) -> void {OnResourceLoaded(_resource); };
+                    load_callback = [this](PacketResource& _resource, bool _failed) -> void {OnResourceLoaded(_resource, _failed); };
                 }
 
                 // Unlink the proxy by setting the target resource variable to nullptr

@@ -265,6 +265,12 @@ protected:
     // picked for construction again
     void RegisterResourceForExternalConstruction(PacketResource* _resource);
 
+    /*
+    * Attempt to apply a creation proxy to a resource
+    * Returns true if the operation succeeds, if that happens the proxy unique_ptr ownership will be taken
+    */
+    bool TryApplyCreationProxyToResource(std::unique_ptr<PacketResourceCreationProxy>& _creation_proxy, PacketResource* _resource);
+
 ///////////////
 // VARIABLES //
 private: //////
@@ -282,9 +288,10 @@ private: //////
         ResourceCreationData;
 
     // Proxy queues
-    moodycamel::ConcurrentQueue<ResourceCreationData>                         m_ResourceCreateProxyQueue;
-    moodycamel::ConcurrentQueue<std::unique_ptr<PacketResourceCreationProxy>> m_ResourceCreateProxyFreeQueue;
-   
+    moodycamel::ConcurrentQueue<ResourceCreationData>                                     m_ResourceCreateProxyQueue;
+    moodycamel::ConcurrentQueue<std::unique_ptr<PacketResourceCreationProxy>>             m_ResourceCreateProxyFreeQueue;
+    std::vector<std::pair<std::unique_ptr<PacketResourceCreationProxy>, PacketResource*>> m_resource_proxies_waiting_evaluation;
+
     // Resource queues/vector
     moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingExternalConstruction;
     moodycamel::ConcurrentQueue<PacketResource*>                             m_ResourcesPendingDeletionEvaluation;

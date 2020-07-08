@@ -360,17 +360,25 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             m_ResourceStorage.InsertObject(std::move(resourceUniquePtr), hash, buildInfo.buildFlags);
 
             // If this resource requires external construct, enqueue it on the correspondent queue
-            if (resource->RequiresExternalConstructPhase() && !resource->ConstructionFailed())
+            if (resource->GetConstructionStatus() == PacketResource::ConstructionStatus::WaitingExternalConstruction)
             {
                 m_ResourcesPendingExternalConstruction.enqueue(resource);
             }
         }
 
-        // Link the reference
-        creationProxy->ForwardResourceLink(resource);
+        m_resource_proxies_waiting_evaluation.push_back({ std::move(creationProxy) , resource });
+    }
 
-        // Insert the proxy into the free queue to be reused
-        m_ResourceCreateProxyFreeQueue.enqueue(std::move(creationProxy));
+    ////////////////////////////////
+    // PROXIES PENDING EVALUATION //
+    ////////////////////////////////
+    for (int i = m_resource_proxies_waiting_evaluation.size() - 1; i >= 0; i--)
+    {
+        auto& [creation_proxy, resource] = m_resource_proxies_waiting_evaluation[i];
+        if (TryApplyCreationProxyToResource(creation_proxy, resource))
+        {
+            m_resource_proxies_waiting_evaluation.erase(m_resource_proxies_waiting_evaluation.begin() + i);
+        }
     }
 
     ///////////////////////////////////
@@ -405,7 +413,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             m_ResourcesPendingReplacement.erase(m_ResourcesPendingReplacement.begin() + i);
         }
         // Check if the new resource failed to be constructed
-        else if (newResource->ConstructionFailed())
+        else if (newResource->GetConstructionStatus() == PacketResource::ConstructionStatus::ConstructionFailed)
         {
             // Remove the reference used to prevent the deletion of the original and the new resources
             originalResource->DecrementNumberReferences();
@@ -461,8 +469,13 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         // Get the resource ptr
         std::unique_ptr<PacketResource>& resourceUniquePtr = m_ResourcesPendingDeletion[i];
 
-        // Verify is this resource is ready, if not we need to wait until it is totally evaluated
-        if (!resourceUniquePtr->IsValid())
+        /*
+        * In order to be able to destroy this resource, it must have been constructed (failling or not) and it should
+        * not be waiting on dependencies
+        */
+        if ((resourceUniquePtr->GetConstructionStatus() != PacketResource::ConstructionStatus::Constructed
+            && resourceUniquePtr->GetConstructionStatus() != PacketResource::ConstructionStatus::ConstructionFailed)
+            || resourceUniquePtr->IsWaitingOnDependencies())
         {
             continue;
         }
@@ -502,6 +515,21 @@ void PacketResourceManager::RegisterResourceForExternalConstruction(PacketResour
 {
     m_ResourcesPendingExternalConstruction.enqueue(_resource);
 }
+
+bool PacketResourceManager::TryApplyCreationProxyToResource(std::unique_ptr<PacketResourceCreationProxy>& _creation_proxy, PacketResource* _resource)
+{
+    if ((_resource->GetConstructionStatus() == PacketResource::ConstructionStatus::Constructed
+        || _resource->GetConstructionStatus() == PacketResource::ConstructionStatus::ConstructionFailed)
+        && !_resource->IsWaitingOnDependencies())
+    {
+        _creation_proxy->ForwardResourceLink(_resource);
+        m_ResourceCreateProxyFreeQueue.enqueue(std::move(_creation_proxy));
+
+        return true;
+    }
+
+    return false;
+};
 
 void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
 {
@@ -588,11 +616,11 @@ void PacketResourceManager::OnResourceDataChanged(PacketResource* _resource)
     resourceUniquePtr->IncrementNumberReferences();
 
     // If this resource requires external construct, enqueue it on the correspondent queue
-    if (resourceUniquePtr->RequiresExternalConstructPhase() && !resourceUniquePtr->ConstructionFailed())
+    if (resourceUniquePtr->GetConstructionStatus() == PacketResource::ConstructionStatus::WaitingExternalConstruction)
     {
         m_ResourcesPendingExternalConstruction.enqueue(resourceUniquePtr.get());
     }
-    else if (!resourceUniquePtr->ConstructionFailed())
+    else if (resourceUniquePtr->GetConstructionStatus() != PacketResource::ConstructionStatus::ConstructionFailed)
     {
         // If this resource doesn't need external construct, call it here to set the internal flags
         resourceUniquePtr->BeginExternalConstruct(nullptr);
