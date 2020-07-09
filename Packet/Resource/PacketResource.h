@@ -471,6 +471,7 @@ public:
         Reset();
 
         m_ResourceObject = _other.m_ResourceObject;
+        m_resource_hash  = _other.m_resource_hash;
         if (m_ResourceObject != nullptr)
         {
             m_ResourceObject->IncrementNumberReferences();
@@ -484,6 +485,7 @@ public:
         Reset();
 
         m_ResourceObject = _other.m_ResourceObject;
+        m_resource_hash  = _other.m_resource_hash;
         if (m_ResourceObject != nullptr)
         {
             m_ResourceObject->IncrementNumberReferences();
@@ -499,6 +501,7 @@ public:
         Reset();
 
         m_CreationProxy = _other.m_CreationProxy;
+        m_resource_hash = _other.m_resource_hash;
 
         // Make the other proxy target our resource variable
         UpdateCreationProxy(&m_ResourceObject);
@@ -506,6 +509,7 @@ public:
         m_ResourceObject = std::move(_other.m_ResourceObject);
         _other.m_ResourceObject = nullptr;
         _other.m_CreationProxy = nullptr;
+        _other.m_resource_hash = Hash();
 
         return *this;
     }
@@ -517,6 +521,7 @@ public:
         Reset();
 
         m_CreationProxy = _other.m_CreationProxy;
+        m_resource_hash = _other.m_resource_hash;
 
         // Make the other proxy target our resource variable
         UpdateCreationProxy(&m_ResourceObject);
@@ -524,6 +529,7 @@ public:
         m_ResourceObject = std::move(_other.m_ResourceObject);
         _other.m_ResourceObject = nullptr;
         _other.m_CreationProxy = nullptr;
+        _other.m_resource_hash = Hash();
     }
 
     // Reset this pointer, unlinking it
@@ -538,6 +544,8 @@ public:
             m_ResourceObject->DecrementNumberReferences();
             m_ResourceObject = nullptr;
         }
+
+        m_resource_hash = Hash();
     }
 
     // Operator to use this as a pointer to the resource object
