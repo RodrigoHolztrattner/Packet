@@ -608,6 +608,11 @@ public:
         return resource != nullptr && reinterpret_cast<const PacketResource*>(resource)->IsValid();
     }
 
+    bool HasValidCreationProxy() const
+    {
+        return m_CreationProxy != nullptr;
+    }
+
     // Destructor
     virtual ~PacketResourceReference()
     {
