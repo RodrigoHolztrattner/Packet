@@ -537,9 +537,13 @@ struct FixedSizePath
     FixedSizePath(const char* _str)
 	{
         m_PathString.fill(0);
-        std::string temp(_str);
-        assert(temp.size() < TotalSize);
-        std::copy(temp.begin(), temp.end(), m_PathString.data());
+
+        if (_str != nullptr)
+        {
+            std::string temp(_str);
+            assert(temp.size() < TotalSize);
+            std::copy(temp.begin(), temp.end(), m_PathString.data());
+        }
     }
 
     // char
