@@ -244,6 +244,10 @@ std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>> Pac
         throw "Cannot lock all operations while not on Plain mode";
     }
 
+    // No more resources or resource requests are going to be added, lock
+    // the process mutex now
+    std::unique_lock process_lock(m_ProcessMutex);
+
     // Lock the main mutex, preventing any future operation until this lock is
     // released
     std::unique_lock request_lock(m_RequestMutex);
@@ -272,10 +276,6 @@ std::pair<std::unique_lock<std::shared_mutex>, std::unique_lock<std::mutex>> Pac
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     */
-
-    // No more resources or resource requests are going to be added, lock
-    // the process mutex now
-    std::unique_lock process_lock(m_ProcessMutex);
 
     return { std::move(request_lock), std::move(process_lock) };
 }
