@@ -14,6 +14,11 @@
 #include <mutex>
 #include <shared_mutex>
 
+// TODO: This should not be necessary after we ensure windows headers are not included
+#undef CopyFile
+#undef MoveFile
+#undef DeleteFile
+
 ///////////////
 // NAMESPACE //
 ///////////////
