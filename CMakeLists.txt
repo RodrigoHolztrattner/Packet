@@ -140,6 +140,7 @@ add_definitions(-DUNICODE
 FetchContent_Declare(
   catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2
+  GIT_TAG        origin/v2.x
 )
 FetchContent_GetProperties(catch2)
 if(NOT catch2_POPULATED)
