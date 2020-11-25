@@ -144,15 +144,30 @@ std::vector<uint8_t> PacketFile::CreateRawDataFromFile(std::unique_ptr<PacketFil
     std::vector<uint8_t> final_data        = std::move(_file->m_FinalData);
     std::vector<uint8_t> references_data   = PacketFileReferences::TransformIntoData(_file->GetFileReferences());
 
-    // Compose the final data
     std::vector<uint8_t> file_data;
-    std::copy(header_data.begin(), header_data.end(), std::back_inserter(file_data));
-    std::copy(icon_data.begin(), icon_data.end(), std::back_inserter(file_data));
-    std::copy(properties_data.begin(), properties_data.end(), std::back_inserter(file_data));
-    std::copy(original_data.begin(), original_data.end(), std::back_inserter(file_data));
-    std::copy(intermediate_data.begin(), intermediate_data.end(), std::back_inserter(file_data));
-    std::copy(final_data.begin(), final_data.end(), std::back_inserter(file_data));
-    std::copy(references_data.begin(), references_data.end(), std::back_inserter(file_data));
+    file_data.resize(header_data.size() 
+        + icon_data.size() 
+        + properties_data.size()
+        + original_data.size()
+        + intermediate_data.size()
+        + final_data.size()
+        + references_data.size());
+
+    size_t header_data_position       = 0;
+    size_t icon_data_position         = header_data_position       + header_data.size();
+    size_t properties_data_position   = icon_data_position         + icon_data.size();
+    size_t original_data_position     = properties_data_position   + properties_data.size();
+    size_t intermediate_data_position = original_data_position     + original_data.size();
+    size_t final_data_position        = intermediate_data_position + intermediate_data.size();
+    size_t references_data_position   = final_data_position        + final_data.size();
+
+    std::memcpy(&file_data.data()[header_data_position], header_data.data(), header_data.size());
+    std::memcpy(&file_data.data()[icon_data_position], icon_data.data(), icon_data.size());
+    std::memcpy(&file_data.data()[properties_data_position], properties_data.data(), properties_data.size());
+    std::memcpy(&file_data.data()[original_data_position], original_data.data(), original_data.size());
+    std::memcpy(&file_data.data()[intermediate_data_position], intermediate_data.data(), intermediate_data.size());
+    std::memcpy(&file_data.data()[final_data_position], final_data.data(), final_data.size());
+    std::memcpy(&file_data.data()[references_data_position], references_data.data(), references_data.size());
 
     return file_data;
 }
