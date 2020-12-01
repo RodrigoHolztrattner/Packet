@@ -366,6 +366,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
             }
         }
 
+        resource->IncrementNumberReferences(); // Referenced by m_resource_proxies_waiting_evaluation bellow (maybe the proxy could own this reference?)
         m_resource_proxies_waiting_evaluation.push_back({ std::move(creationProxy) , resource });
     }
 
@@ -377,6 +378,7 @@ void PacketResourceManager::AsynchronousResourceProcessment()
         auto& [creation_proxy, resource] = m_resource_proxies_waiting_evaluation[i];
         if (TryApplyCreationProxyToResource(creation_proxy, resource))
         {
+            resource->DecrementNumberReferences(); // Referenced by m_resource_proxies_waiting_evaluation bellow (maybe the proxy could own this reference?)
             m_resource_proxies_waiting_evaluation.erase(m_resource_proxies_waiting_evaluation.begin() + i);
         }
     }
